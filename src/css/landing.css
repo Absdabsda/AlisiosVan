@@ -1,0 +1,294 @@
+/* --- BASE --- */
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-niebla);
+    color: var(--color-texto);
+}
+
+label {
+    color: var(--color-texto);
+    font-weight: 500;
+}
+
+
+/* --- TÍTULOS Y TEXTOS --- */
+.title-wrapper {
+    position: absolute;
+    top: 20vh;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: var(--color-blanco);
+    z-index: 25;
+}
+
+.landing-title {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: var(--color-blanco);
+}
+
+.subheading-title {
+    font-size: 2rem;
+    margin: 0 0 2rem 0;
+    color: var(--color-blanco);
+}
+
+/* --- SWIPER --- */
+/*.swiper-container {
+    width: 100%;
+    height: 100vh;
+}
+
+.swiper-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+    color: var(--color-mar);
+    transition: color 0.3s ease;
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+    color: var(--color-atardecer);
+}*/
+
+/* --- FORMULARIO --- */
+.search-wrapper {
+    position: absolute;
+    bottom: 10vh;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.search-form {
+    pointer-events: auto;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 1.5rem 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-medium);
+    color: var(--color-texto);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.search-form label {
+    color: var(--color-texto) !important;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.search-form input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--color-piedra-claro);
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    color: var(--color-texto);
+    box-sizing: border-box;
+}
+
+/* --- FLATPICKR --- */
+.flatpickr-calendar {
+    font-family: 'Arial', sans-serif;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-medium);
+    width: auto !important;
+    padding: 10px 15px;
+}
+
+.flatpickr-months {
+    gap: 1.5rem;
+}
+
+.flatpickr-month {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-mar);
+}
+
+.flatpickr-weekday {
+    color: var(--color-piedra-claro);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.flatpickr-day.today {
+    border-color: var(--color-mar);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: var(--color-mar);
+    color: var(--color-blanco);
+}
+
+.flatpickr-day:hover {
+    background: var(--color-mar-soft);
+    cursor: pointer;
+}
+
+/* --- BOTÓN --- */
+.btn-primary {
+    background-color: var(--color-mar);
+    border-color: var(--color-mar);
+    padding: 1rem 1.2rem;
+    color: var(--color-blanco);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-mar-soft);
+    border-color: var(--color-mar-soft);
+}
+
+/* --- LANDING --- */
+.landing-hero {
+    position: relative;
+    width: 100%;
+    height: 70vh;
+    overflow: hidden;
+    background-position: center;
+}
+
+.landing-hero img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 1;
+}
+
+
+/*.landing-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-height: 80vh;
+    object-fit: cover;
+    z-index: 1;
+    overflow: hidden;
+}*/
+
+.landing-overlay {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 62vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20vh 2rem 2rem 2rem;
+    color: var(--color-blanco);
+    text-align: center;
+    /*background: rgba(0, 0, 0, 0.3);*/
+}
+
+/*---RESEÑAS----*/
+.testimonials-section .container {
+    position: relative;
+}
+
+.swiper-container-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: 0 60px;
+}
+
+.swiper-wrapper {
+    width: 90%;
+}
+
+
+.swiper-slide {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    height: auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+}
+
+.testimonials-swiper {
+    position: relative;
+    padding: 40px 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.testimonials-swiper .swiper-slide {
+    width: 90%;
+    max-width: 90%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.testimonials-swiper .swiper-wrapper {
+    padding-bottom: 40px;
+}
+
+.testimonials-swiper .swiper-button-next,
+.testimonials-swiper .swiper-button-prev {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-mar);
+}
+
+.testimonials-swiper .swiper-button-prev {
+    left: 10px;
+}
+
+.testimonials-swiper .swiper-button-next {
+    right: 10px;
+}
+
+.review-stars {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.review-stars i {
+    color: #f8b500; /* dorado */
+    font-size: 1.4rem;
+}
+
+.nombre {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+

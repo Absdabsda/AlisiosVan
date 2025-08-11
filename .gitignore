@@ -1,0 +1,15 @@
+# JetBrains / PhpStorm
+.idea/
+
+# PHP / Composer
+vendor/
+.env
+
+# Node (si aplica)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# SO
+.DS_Store
+Thumbs.db

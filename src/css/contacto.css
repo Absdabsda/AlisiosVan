@@ -1,0 +1,87 @@
+/* Hero de Contact */
+.page-hero.contact-hero{
+    background-image: url('../img/matcha-fondo-montaña.jpeg');
+    background-size: cover;
+    background-position: center 55%;
+    background-repeat: no-repeat;
+    height: 25vh;
+    min-height: 260px;
+}
+
+/* Bloque contacto */
+.contact-block{
+    padding: 4rem 0;
+    background: var(--color-arena);
+}
+
+.contact-grid{
+    display: grid;
+    grid-template-columns: 1.1fr 1.4fr;
+    gap: 2rem;
+}
+
+@media (max-width: 992px){
+    .contact-grid{ grid-template-columns: 1fr; }
+}
+
+/* Tarjetas */
+.contact-card{
+    background: var(--color-blanco);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-light);
+    padding: 2rem;
+}
+
+.contact-info .custom-title{ margin-bottom: 1rem; }
+
+.contact-ways{
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 1.25rem;
+    display: grid;
+    gap: .5rem;
+}
+.contact-ways li{ display:flex; align-items:center; gap:.6rem; }
+.contact-ways i{ opacity:.7; }
+
+.muted{ color: var(--text-secundario); font-size: .95rem; }
+.mini-note{ margin-top: .5rem; color: var(--text-secundario); }
+
+/* Formulario */
+.form-row{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem 1.25rem;
+}
+.field--full{ grid-column: 1 / -1; }
+
+.field label{
+    display:block;
+    font-weight:600;
+    margin-bottom:.35rem;
+    color: var(--text-principal);
+}
+
+.field input,
+.field select,
+.field textarea{
+    width:100%;
+    border: 1px solid var(--color-piedra-claro);
+    border-radius: var(--border-radius);
+    padding: .65rem .8rem;
+    background: #fff;
+}
+
+/* errores mínimos */
+.invalid{ display:none; color:#b00020; font-size:.9rem; margin-top:.25rem; }
+.field.error .invalid{ display:block; }
+
+/* Botón ya hereda de estilos.css (.btn) */
+
+/* Mapa */
+.map-section{ background:#f6f5f4; padding: 3rem 0; }
+.map-container{ margin-top: 1rem; border-radius: var(--border-radius); overflow:hidden; }
+
+#privacy {
+    width: unset;
+}

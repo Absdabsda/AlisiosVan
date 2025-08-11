@@ -1,0 +1,27 @@
+/* --- NAVEGACIÓN --- */
+nav.navbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 30;
+    background-color: transparent !important;
+}
+
+.navbar-brand,
+.nav-link,
+.navbar .instagram-link {
+    color: white !important;
+    /*font-weight: bold;*/
+    font-size: 1.5rem;
+}
+
+.nav-link:hover,
+.navbar .instagram-link:hover {
+    color: white !important;
+}
+
+.navbar .instagram-link {
+    font-size: 2.2rem;
+    display: flex;
+}

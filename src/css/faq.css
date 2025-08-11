@@ -1,0 +1,94 @@
+/* Hero específico de FAQ */
+.page-hero.faq-hero{
+    background-image: url('../img/skye-horizontal.JPG');
+    background-size: cover;
+    background-position: center 70%;
+    background-repeat: no-repeat;
+    height: 25vh;
+    min-height: 260px;
+}
+
+
+/* Grid de FAQs en 3 columnas (responsive) */
+
+.faq-grid{
+    column-count: 3;
+    column-gap: 1.25rem;
+}
+@media (max-width: 992px){ .faq-grid{ column-count: 2; } }
+@media (max-width: 576px){ .faq-grid{ column-count: 1; } }
+
+.faq-card{
+    display: block;
+    break-inside: avoid;
+    background: var(--color-blanco);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-light);
+    border: 1px solid rgba(0,0,0,.06);
+    margin: 0 0 1.25rem;
+    overflow: hidden;
+}
+
+
+/* Tarjeta de FAQ */
+.faq-card{
+    background: var(--color-blanco);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-light);
+    border: 1px solid rgba(0,0,0,.06);
+    overflow: hidden;
+}
+
+/* Cabecera clicable */
+.faq-card > summary{
+    cursor: pointer;
+    list-style: none;
+    padding: 1rem 1.25rem;
+    font-weight: 700;
+    color: var(--text-principal);
+    position: relative;
+}
+
+.faq-card > summary::-webkit-details-marker{ display:none; }
+
+/* Icono de despliegue */
+.faq-card > summary::after{
+    content: "▾";
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(0deg);
+    transition: transform .2s ease;
+    opacity: .6;
+}
+
+.faq-card[open] > summary::after{
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Cuerpo respuesta */
+.faq-answer{
+    padding: 0 1.25rem 1rem;
+    color: var(--text-secundario);
+    line-height: 1.7;
+}
+
+/* Hover/estado abierto */
+.faq-card:hover > summary{
+    background: rgba(0,0,0,.02);
+}
+
+/* estado cerrado/abierto sin JS */
+.faq-card .faq-answer{ display: none; }
+.faq-card[open] .faq-answer{ display: block; }
+
+/* chevron que gira solo en la tarjeta abierta */
+.faq-card > summary::after{
+    content: "▾";
+    position: absolute;
+    right: 1rem; top: 50%;
+    transform: translateY(-50%) rotate(0deg);
+    transition: transform .2s ease;
+    opacity: .6;
+}
+.faq-card[open] > summary::after{ transform: translateY(-50%) rotate(180deg); }
