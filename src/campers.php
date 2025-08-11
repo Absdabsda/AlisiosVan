@@ -18,8 +18,13 @@
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/campers.css">
-
+    <script src="js/header.js" defer></script>
     <script src="js/campers.js" defer></script>
+
+    <style>
+        :root { --header-bg-rgb: 133,126,110; } /* #857E6E */
+    </style>
+
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>

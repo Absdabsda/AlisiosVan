@@ -1,5 +1,5 @@
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
+<nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
         <!-- Logo a la izquierda -->
         <a class="navbar-brand" href="index.php">Alisios Van</a>

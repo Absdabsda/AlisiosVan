@@ -1,17 +1,6 @@
 // src/js/landing.js
 document.addEventListener('DOMContentLoaded', () => {
 
-    const hero = document.querySelector('.swiper-container');
-    if (hero) {
-        new Swiper(hero, {
-            spaceBetween: 30,
-            effect: 'fade',
-            loop: true,
-            autoplay: { delay: 3000, disableOnInteraction: false },
-            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
-        });
-    }
-
     // Swiper testimonios
     new Swiper('.testimonials-swiper', {
         slidesPerView: 1,

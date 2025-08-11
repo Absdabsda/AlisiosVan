@@ -29,8 +29,12 @@
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/sobre-nosotros.css">
-
+    <script src="js/header.js" defer></script>
     <script src="js/campers.js" defer></script>
+
+    <style>
+        :root { --header-bg-rgb: 37,50,48; } /* #253230 */
+    </style>
 
 </head>
 <body>

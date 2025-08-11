@@ -18,8 +18,12 @@
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/faq.css">
-
+    <script src="js/header.js" defer></script>
     <script src="js/faq.js" defer></script>
+
+    <style>
+        :root { --header-bg-rgb: 82,118,159; } /* #52769F */
+    </style>
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>

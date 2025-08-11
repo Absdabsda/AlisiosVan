@@ -18,8 +18,12 @@
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/contacto.css">
-
+    <script src="js/header.js" defer></script>
     <script src="js/contacto.js" defer></script>
+
+    <style>
+        :root { --header-bg-rgb: 84,70,62; } /* #54463E */
+    </style>
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>
