@@ -33,6 +33,53 @@
         </div>
     </section>
 
+    <!-- Highlights (tira superior) -->
+    <section class="fleet-highlights text-white py-3">
+        <div class="container d-flex flex-wrap gap-4 justify-content-center text-center small">
+            <div class="d-flex align-items-center gap-2"><i class="bi bi-geo-alt"></i> Pick-up at Puerto del Rosario</div>
+            <div class="d-flex align-items-center gap-2"><i class="bi bi-shield-check"></i> Seguro e asistencia 24/7</div>
+            <div class="d-flex align-items-center gap-2"><i class="bi bi-fuel-pump"></i> Consumo eficiente</div>
+            <div class="d-flex align-items-center gap-2"><i class="bi bi-sun"></i> Clima perfecto todo el año</div>
+        </div>
+    </section>
+
+    <!-- Intro / Qué incluyen -->
+    <section class="campers-intro py-5 border-bottom">
+        <div class="container">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7">
+                    <h2 class="h1 mb-3">Classic VW campers, fully equipped</h2>
+                    <p class="lead mb-3">
+                        Todas nuestras furgos están revisadas y listas para recorrer Fuerteventura.
+                        Ideal para parejas o amigos que quieran libertad total.
+                    </p>
+
+                    <ul class="icon-list mb-4">
+                        <li>Cama para 2, ropa de cama y almohadas</li>
+                        <li>Kit de cocina (hornillo, menaje, nevera)</li>
+                        <li>Iluminación interior + ducha solar exterior</li>
+                        <li>Asesoramiento de rutas y spots para dormir</li>
+                    </ul>
+
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="p-4 rounded-4 shadow-sm bg-light">
+                        <h3 class="h5 mb-3">What’s included</h3>
+                        <ul class="small mb-0">
+                            <li>Seguro básico y asistencia</li>
+                            <li>Km libres en la isla</li>
+                            <li>Limpieza y desinfección previa</li>
+                            <li>Entrega/recogida flexible (según disponibilidad)</li>
+                            <li>Soporte por WhatsApp durante el viaje</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
     <!-- Filtros -->
     <section class="py-3 border-top">
         <div class="container">
@@ -85,13 +132,6 @@
             </div>
 
         </div>
-        <!-- Proceso de reserva -->
-        <section class="catalogo-campers py-5">
-            <div class="container">
-                <h4 class="catalogo-title">For available campers</h4>
-                <div id="results" class="row g-4"></div>
-            </div>
-        </section>
         <script src="js/campers.js" defer></script>
 
     </section>

@@ -94,7 +94,7 @@
                 <p>Each Alisios Van camper is lovingly prepared by our team, ensuring every detail is ready for your next adventure.
                     We believe in slow, conscious travel – enjoying the journey as much as the destination.</p>
                 <p>From maintenance to cleaning, we put our hearts into making sure your camper feels like home on wheels.</p>
-                <a href="contacto.php" class="btn">Start your journey</a>
+                <a href="contacto.php" class="btn">Tell us about your journey</a>
             </div>
         </div>
     </section>

@@ -1,6 +1,6 @@
 // src/js/buscar.js
 (function () {
-    const PREFIX = '/CanaryVan';
+    const PREFIX = '/CanaryVanGit/AlisiosVan';
 
     const qs = new URLSearchParams(location.search);
     let start = qs.get('start') || '';

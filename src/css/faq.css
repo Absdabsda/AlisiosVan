@@ -1,4 +1,4 @@
-/* Hero específico de FAQ */
+/* Hero FAQ */
 .page-hero.faq-hero{
     background-image: url('../img/skye-horizontal.JPG');
     background-size: cover;
@@ -8,87 +8,161 @@
     min-height: 260px;
 }
 
-
-/* Grid de FAQs en 3 columnas (responsive) */
-
-.faq-grid{
-    column-count: 3;
-    column-gap: 1.25rem;
-}
-@media (max-width: 992px){ .faq-grid{ column-count: 2; } }
-@media (max-width: 576px){ .faq-grid{ column-count: 1; } }
-
-.faq-card{
-    display: block;
-    break-inside: avoid;
+.faq-search{
+    flex: 0 1 clamp(360px, 50%, 720px);
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    padding:.5rem .75rem;
+    border:1px solid rgba(0,0,0,.1);
+    border-radius:12px;
     background: var(--color-blanco);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow-light);
-    border: 1px solid rgba(0,0,0,.06);
-    margin: 0 0 1.25rem;
+}
+
+
+.faq-search .search{
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    flex: 1;
+    min-width: 0;
+}
+
+
+#faqSearch{
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+
+}
+
+
+#faqSearch::placeholder{
+    font-size: .9rem;
+    color: var(--color-piedra-claro);
+    opacity: 1;
+}
+
+.faq-tools{
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search {
+   display: flex;
+    align-items: center;
+}
+
+.faq-search i{
+    opacity:.6;
+}
+.faq-search input{
+    border:0;
+    outline:0;
+    max-width:100vw;
+    background:transparent;
+}
+
+.faq-meta{
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    flex-wrap:wrap; }
+
+/* Dos columnas */
+.faq-columns{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:2rem;
+}
+@media (max-width: 992px){
+    .faq-columns{
+        grid-template-columns:1fr;
+    }
+}
+
+/* Acordeón */
+.faq-item{
+    border-bottom:1px solid rgba(0,0,0,.12);
+    padding:.4rem 0;
+}
+.faq-item > summary{
+    cursor:pointer;
+    list-style:none;
+    position:relative;
+    padding:1rem 2.5rem 1rem 0;
+    font-weight:700;
+    color:var(--text-principal);
+}
+.faq-item > summary::-webkit-details-marker{
+    display:none;
+}
+
+/* Icono + / – a la derecha */
+.faq-item > summary::after{
+    content:"+";
+    position:absolute;
+    right:.25rem;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:1.4rem;
+    line-height:1;
+    opacity:.6;
+    transition:transform .2s ease, opacity .2s ease;
+}
+.faq-item[open] > summary::after{
+    content:"–";
+    opacity:.9;
+}
+
+/* Cuerpo */
+.faq-item .content{
+    color:var(--text-secundario);
+    line-height:1.7;
+    padding:0 0 1rem 0;
+}
+
+/* Resaltado de búsqueda */
+mark{
+    background:#fff2a8;
+    padding:.05em .15em;
+    border-radius:.2em;
+}
+
+.faq-chips {
+    display:flex;
+    flex-wrap:wrap;
+    gap:.5rem;
+}
+.chip{
+    padding:.45rem .8rem;
+    border:1px solid var(--color-mar);
+    border-radius:999px;
+    background:#fff;
+    cursor:pointer;
+    font-weight:600;
+    color: var(--color-piedra);
+}
+.chip.active{
+    background:var(--color-mar);
+    color:#fff;
+    border-color:var(--color-mar);
+}
+
+.faq-item .content{
     overflow: hidden;
+    max-height: 0;
+    transition: max-height .25s ease;
+    padding: 0;              /* el padding lo ponemos solo cuando esté abierto */
+}
+.faq-item[open] .content{
+    max-height: 600px;       /* un tope suficientemente grande */
+    padding: 0 0 1rem 0;
 }
 
-
-/* Tarjeta de FAQ */
-.faq-card{
-    background: var(--color-blanco);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow-light);
-    border: 1px solid rgba(0,0,0,.06);
-    overflow: hidden;
-}
-
-/* Cabecera clicable */
-.faq-card > summary{
-    cursor: pointer;
-    list-style: none;
-    padding: 1rem 1.25rem;
-    font-weight: 700;
-    color: var(--text-principal);
-    position: relative;
-}
-
-.faq-card > summary::-webkit-details-marker{ display:none; }
-
-/* Icono de despliegue */
-.faq-card > summary::after{
-    content: "▾";
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%) rotate(0deg);
-    transition: transform .2s ease;
-    opacity: .6;
-}
-
-.faq-card[open] > summary::after{
-    transform: translateY(-50%) rotate(180deg);
-}
-
-/* Cuerpo respuesta */
-.faq-answer{
-    padding: 0 1.25rem 1rem;
-    color: var(--text-secundario);
-    line-height: 1.7;
-}
-
-/* Hover/estado abierto */
-.faq-card:hover > summary{
-    background: rgba(0,0,0,.02);
-}
-
-/* estado cerrado/abierto sin JS */
-.faq-card .faq-answer{ display: none; }
-.faq-card[open] .faq-answer{ display: block; }
-
-/* chevron que gira solo en la tarjeta abierta */
-.faq-card > summary::after{
-    content: "▾";
-    position: absolute;
-    right: 1rem; top: 50%;
-    transform: translateY(-50%) rotate(0deg);
-    transition: transform .2s ease;
-    opacity: .6;
-}
-.faq-card[open] > summary::after{ transform: translateY(-50%) rotate(180deg); }
