@@ -1,3 +1,9 @@
+<?php
+session_start();
+if (empty($_SESSION['csrf'])) {
+    $_SESSION['csrf'] = bin2hex(random_bytes(32));
+}
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -42,7 +48,7 @@
                     <p>Tell us your dates and the van you’d like. We’ll get back to you quickly with availability and a simple quote.</p>
 
                     <ul class="contact-ways">
-                        <li><i class="bi bi-envelope"></i> <a href="mailto:hello@alisiosvan.com">hello@alisiosvan.com</a></li>
+                        <li><i class="bi bi-envelope"></i> <a href="mailto:hello@alisiosvan.com">alisios.van@gmail.com</a></li>
                         <li><i class="bi bi-telephone"></i> <a href="tel:+34610136383">+34 610136383</a> <span class="muted">(WhatsApp)</span></li>
                         <li><i class="bi bi-geo-alt"></i> Puerto del Rosario, Fuerteventura</li>
                     </ul>
@@ -54,7 +60,12 @@
 
                 <!-- Columna derecha: formulario -->
                 <section class="contact-card">
-                    <form id="contactForm" action="inc/send-contact.php" method="post" novalidate>
+                    <form id="contactForm" action="../api/contact.php" method="post" novalidate>
+
+                    <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf']) ?>">
+                        <input type="text" name="website" tabindex="-1" autocomplete="off"
+                               style="position:absolute;left:-9999px;opacity:0" aria-hidden="true">
+
                         <div class="form-row">
                             <div class="field">
                                 <label for="name">Name*</label>
@@ -101,7 +112,7 @@
 
                             <div class="field field--full checkbox">
                                 <label>
-                                    <input type="checkbox" id="privacy" required />
+                                    <input type="checkbox" id="privacy" name="privacy" required />
                                     I agree to the privacy policy.
                                 </label>
                                 <div class="invalid">Please accept to continue.</div>
@@ -133,6 +144,54 @@
         </div>
     </section>
 </main>
+
+<!-- WhatsApp Chat – Alisios Van -->
+<a id="wa-chat"
+   href="https://wa.me/34610136383"
+   target="_blank"
+   rel="nofollow noopener"
+   aria-label="Chat on WhatsApp"
+   style="position:fixed; right:16px; bottom:16px; z-index:1050; display:flex; align-items:center; gap:.5rem; background:#25D366; color:#fff; padding:12px 14px; border-radius:24px; text-decoration:none; box-shadow:0 2px 10px rgba(0,0,0,.2); font-family:Quicksand,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-weight:700;">
+    <i class="bi bi-whatsapp" aria-hidden="true" style="font-size:1.25rem;"></i>
+    <span class="wa-text">WhatsApp</span>
+</a>
+
+<script>
+    (function () {
+        // 👉 Ajusta tu número aquí (sin +): 34 + número
+        var phone = '34610136383';
+
+        // 👉 Mensaje inicial (puedes editarlo)
+        var msg = "Hi! I'd like info about a camper rental. I'm contacting you from the Contact page:";
+
+        // Construye el enlace con texto + URL de la página
+        var url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg + ' ' + window.location.href);
+
+        var a = document.getElementById('wa-chat');
+        a.href = url;
+
+        // (Opcional) Mide clics si tienes Analytics
+        if (typeof gtag === 'function') {
+            a.addEventListener('click', function () {
+                gtag('event', 'click', { event_category: 'engagement', event_label: 'whatsapp_contact_page' });
+            });
+        } else if (window.dataLayer) {
+            a.addEventListener('click', function () {
+                window.dataLayer.push({ event: 'whatsapp_click', location: 'contact' });
+            });
+        }
+    })();
+</script>
+
+<style>
+    /* Oculta el texto en móvil: solo icono */
+    @media (max-width: 575.98px) {
+        #wa-chat .wa-text { display: none; }
+    }
+    /* Pequeña animación al pasar el ratón (respeta reduced motion por defecto) */
+    #wa-chat:hover { filter: brightness(1.05); transform: translateY(-1px); }
+</style>
+
 
 <?php include 'inc/footer.inc'; ?>
 </body>
