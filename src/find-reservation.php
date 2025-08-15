@@ -15,7 +15,14 @@ use PHPMailer\PHPMailer\Exception as MailException;
 Stripe::setApiKey($_ENV['STRIPE_SECRET']);
 
 function columnExists(PDO $pdo, string $table, string $column): bool {
-    $st=$pdo->prepare("SHOW COLUMNS FROM `$table` LIKE ?"); $st->execute([$column]); return (bool)$st->fetch();
+    $st = $pdo->prepare("
+    SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND TABLE_NAME = :t AND COLUMN_NAME = :c
+     LIMIT 1
+  ");
+    $st->execute([':t'=>$table, ':c'=>$column]);
+    return (bool)$st->fetchColumn();
 }
 function publicBaseUrl(): string {
     $env = rtrim($_ENV['PUBLIC_BASE_URL'] ?? '', '/');
@@ -26,93 +33,110 @@ function publicBaseUrl(): string {
     return rtrim("$scheme://$host$dir", '/');
 }
 
-$msg = '';
+$msg = ''; $msgType = 'info';
 if ($_SERVER['REQUEST_METHOD']==='POST') {
     $rid   = (int)($_POST['rid'] ?? 0);
     $email = trim((string)($_POST['email'] ?? ''));
 
     if ($rid && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        // Carga reserva
         $st = $pdo->prepare("SELECT id, stripe_session_id, manage_token FROM reservations WHERE id=? LIMIT 1");
         $st->execute([$rid]);
         $r = $st->fetch(PDO::FETCH_ASSOC);
 
         if ($r && !empty($r['stripe_session_id'])) {
-            // Email del cliente desde Stripe
             $sess = CheckoutSession::retrieve($r['stripe_session_id'], ['expand'=>['customer','customer_details']]);
             $custEmail = $sess->customer_details->email ?? $sess->customer_email ?? '';
 
             if ($custEmail && strcasecmp($custEmail, $email)===0) {
-                // Enlace de gestión
                 if (!columnExists($pdo,'reservations','manage_token') || empty($r['manage_token'])) {
-                    $msg = 'Tu reserva no tiene enlace de gestión asociado todavía. Escríbenos por email 😊';
+                    $msg='Tu reserva todavía no tiene enlace de gestión. Escríbenos por email 😊'; $msgType='warning';
                 } else {
                     $manageUrl = publicBaseUrl().'/manage.php?rid='.$r['id'].'&t='.$r['manage_token'];
 
-                    // Enviamos el enlace por correo
-                    $host = $_ENV['SMTP_HOST'] ?? $_ENV['MAIL_HOST'] ?? '';
-                    $port = (int)($_ENV['SMTP_PORT'] ?? $_ENV['MAIL_PORT'] ?? 587);
-                    $user = $_ENV['SMTP_USER'] ?? $_ENV['MAIL_USER'] ?? '';
-                    $pass = $_ENV['SMTP_PASS'] ?? $_ENV['MAIL_PASS'] ?? '';
-                    $from = $_ENV['SMTP_FROM'] ?? $_ENV['MAIL_FROM'] ?? $user;
-                    $fromName = $_ENV['SMTP_FROM_NAME'] ?? $_ENV['MAIL_FROM_NAME'] ?? 'Alisios Van';
+                    // Enviamos el enlace
+                    $host=$_ENV['SMTP_HOST'] ?? $_ENV['MAIL_HOST'] ?? '';
+                    $port=(int)($_ENV['SMTP_PORT'] ?? $_ENV['MAIL_PORT'] ?? 587);
+                    $user=$_ENV['SMTP_USER'] ?? $_ENV['MAIL_USER'] ?? ''; $pass=$_ENV['SMTP_PASS'] ?? $_ENV['MAIL_PASS'] ?? '';
+                    $from=$_ENV['SMTP_FROM'] ?? $_ENV['MAIL_FROM'] ?? $user; $fromName=$_ENV['SMTP_FROM_NAME'] ?? $_ENV['MAIL_FROM_NAME'] ?? 'Alisios Van';
 
                     if ($host && $user && $pass) {
                         try {
-                            $mail = new PHPMailer(true);
+                            $mail=new PHPMailer(true);
                             $mail->CharSet='UTF-8'; $mail->Encoding='quoted-printable';
                             $mail->isSMTP(); $mail->Host=$host; $mail->SMTPAuth=true; $mail->Username=$user; $mail->Password=$pass;
-                            if ($port===465 || (($_ENV['SMTP_SECURE'] ?? 'tls')==='ssl')) {
-                                $mail->SMTPSecure=PHPMailer::ENCRYPTION_SMTPS; $mail->Port=$port ?: 465;
-                            } else {
-                                $mail->SMTPSecure=PHPMailer::ENCRYPTION_STARTTLS; $mail->Port=$port ?: 587;
-                            }
-                            $mail->setFrom($from, $fromName);
+                            if ($port===465 || (($_ENV['SMTP_SECURE'] ?? 'tls')==='ssl')) { $mail->SMTPSecure=PHPMailer::ENCRYPTION_SMTPS; $mail->Port=$port ?: 465; }
+                            else { $mail->SMTPSecure=PHPMailer::ENCRYPTION_STARTTLS; $mail->Port=$port ?: 587; }
+                            $mail->setFrom($from,$fromName);
                             $mail->addAddress($custEmail);
-                            $mail->Subject = "Manage your reservation #{$r['id']}";
+                            $mail->Subject="Manage your reservation #{$r['id']}";
                             $mail->isHTML(true);
-                            $mail->Body = '<p>Here is your link to manage your booking:</p><p><a href="'.htmlspecialchars($manageUrl,ENT_QUOTES,'UTF-8').'">'.$manageUrl.'</a></p>';
-                            $mail->AltBody = "Manage link: $manageUrl";
+                            $mail->Body='<p>Here is your link to manage your booking:</p><p><a href="'.htmlspecialchars($manageUrl,ENT_QUOTES,'UTF-8').'">'.$manageUrl.'</a></p>';
+                            $mail->AltBody="Manage link: $manageUrl";
                             $mail->send();
-                            $msg = 'Te hemos enviado un correo con tu enlace de gestión.';
+                            $msg='Te hemos enviado un correo con tu enlace de gestión.'; $msgType='success';
                         } catch (MailException $e) {
-                            $msg = 'No se pudo enviar el correo. Escríbenos, por favor.';
                             error_log('find-reservation mail error: '.$e->getMessage());
+                            $msg='No se pudo enviar el correo. Escríbenos, por favor.'; $msgType='danger';
                         }
                     } else {
-                        $msg = 'Correo no configurado. Contacta con nosotros, por favor.';
+                        $msg='Correo no configurado. Contacta con nosotros, por favor.'; $msgType='danger';
                     }
                 }
-            } else {
-                $msg = 'No coincide el email con la reserva.';
-            }
-        } else {
-            $msg = 'Reserva no encontrada.';
-        }
-    } else {
-        $msg = 'Introduce un número de reserva y un email válidos.';
-    }
+            } else { $msg='No coincide el email con la reserva.'; $msgType='danger'; }
+        } else { $msg='Reserva no encontrada.'; $msgType='danger'; }
+    } else { $msg='Introduce un número de reserva y un email válidos.'; $msgType='warning'; }
 }
 ?>
-<!doctype html><html lang="es"><head>
+<!doctype html>
+<html lang="es">
+<head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Encontrar reserva</title>
+    <title>Gestionar mi reserva | Alisios Van</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-</head><body class="p-4">
-<div class="container" style="max-width:560px">
-    <h1 class="h4 mb-3">Gestionar mi reserva</h1>
-    <p class="text-muted">Introduce tu nº de reserva y tu email. Te enviaremos un enlace para gestionarla.</p>
-    <?php if($msg): ?><div class="alert alert-info"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
-    <form method="post" class="card p-3">
-        <div class="mb-3">
-            <label class="form-label">Nº de reserva</label>
-            <input name="rid" type="number" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input name="email" type="email" class="form-control" required>
-        </div>
-        <button class="btn btn-primary">Enviar enlace</button>
-    </form>
-</div>
-</body></html>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/header.css">
+</head>
+<body>
+<?php include 'inc/header.inc'; ?>
+
+<section class="page-hero" style="background-image:url('img/landing-matcha.02.31.jpeg')">
+    <div class="page-hero__content">
+        <h1 class="page-hero__title">Manage your booking</h1>
+        <p class="mt-2">Encuentra tu reserva y recibe tu enlace seguro</p>
+    </div>
+</section>
+
+<main class="wrap">
+    <div class="cardy mb-3">
+        <h2 class="h4 mb-3">Buscar reserva</h2>
+        <p class="text-muted">Introduce tu <strong>nº de reserva</strong> y tu <strong>email</strong>. Te enviaremos un enlace para gestionar/cancelar.</p>
+
+        <?php if($msg): ?>
+            <div class="alert alert-<?= htmlspecialchars($msgType) ?>"><?= htmlspecialchars($msg) ?></div>
+        <?php endif; ?>
+
+        <form method="post" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Nº de reserva</label>
+                <input name="rid" type="number" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input name="email" type="email" class="form-control" required>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn w-100"><i class="bi bi-envelope-check"></i> Enviar enlace</button>
+            </div>
+        </form>
+    </div>
+
+    <p class="text-muted small">¿Dudas? Escríbenos a <a href="mailto:alisios.van@gmail.com">alisios.van@gmail.com</a>.</p>
+</main>
+
+<?php include 'inc/footer.inc'; ?>
+</body>
+</html>

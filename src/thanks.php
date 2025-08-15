@@ -60,23 +60,42 @@ try {
         ");
         $up->execute([':pi' => (string)$session->payment_intent, ':ssid' => $sessionId]);
 
-        // --- Invoice (puede tardar un instante en estar lista) ---------------
+        // --- Invoice (puede tardar un instante en estar lista) -----------------------
         $invoiceId = null;
+        $invoicePdf = null;
+        $invoiceUrl = null;
+        $invoiceStatus = null;
+        $invoicePaid = false;
+
+        // 1) session->invoice
         if (!empty($session->invoice)) {
             $invoiceId = is_object($session->invoice) ? $session->invoice->id : (string)$session->invoice;
         }
 
-        $invoicePdf = null;
-        $invoiceUrl = null;
+        // 2) payment_intent->invoice
+        $pi = $session->payment_intent ?? null;
+        if (!$invoiceId && $pi && !empty($pi->invoice)) {
+            $invoiceId = is_object($pi->invoice) ? $pi->invoice->id : (string)$pi->invoice;
+        }
+
+        // 3) buscar por payment_intent
+        if (!$invoiceId && $pi && !empty($pi->id)) {
+            try {
+                $list = \Stripe\Invoice::all(['limit' => 1, 'payment_intent' => $pi->id]);
+                if (!empty($list->data[0])) { $invoiceId = $list->data[0]->id; }
+            } catch (Throwable $e) { /* ignore */ }
+        }
+
+        // 4) reintento corto hasta que tenga URL/PDF/estado
         if ($invoiceId) {
-            for ($i=0; $i<5; $i++) { // ~2s total
-                $inv = StripeInvoice::retrieve($invoiceId);
-                $invoicePdf = $inv->invoice_pdf ?? null;
-                $invoiceUrl = $inv->hosted_invoice_url ?? null;
-                if ($invoicePdf || $invoiceUrl) {
-                    break;
-                }
-                usleep(400000);
+            for ($i=0; $i<10; $i++) { // ~6s total
+                $inv = \Stripe\Invoice::retrieve($invoiceId);
+                $invoicePdf    = $inv->invoice_pdf ?? null;
+                $invoiceUrl    = $inv->hosted_invoice_url ?? null;
+                $invoiceStatus = $inv->status ?? null;  // open | draft | paid | uncollectible | void
+                $invoicePaid   = ($invoiceStatus === 'paid');
+                if ($invoicePdf || $invoiceUrl || $invoicePaid) { break; }
+                usleep(600000); // 0.6s
             }
         }
 
@@ -168,7 +187,7 @@ try {
 
       <div style="border:1px solid rgba(0,0,0,0.06);border-radius:10px;padding:12px 14px;background:#fbfbfb;margin-bottom:14px;">
         <div style="display:flex;justify-content:space-between;padding:6px 0;"><span>Camper</span><span><strong>'.htmlspecialchars($res['camper'],ENT_QUOTES,'UTF-8').'</strong></span></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed rgba(0,0,0,0.08);"><span>Dates</span><span>'.$startHuman.' → '.$endHuman.'</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed rgba(0,0,0,0.08);"><span>Dates</span><span style="white-space:nowrap">'.htmlspecialchars($startHuman,ENT_QUOTES,'UTF-8').'&nbsp;→&nbsp;'.htmlspecialchars($endHuman,ENT_QUOTES,'UTF-8').'</span></div>
         <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed rgba(0,0,0,0.08);"><span>Nights</span><span>'.$nights.'</span></div>
         <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed rgba(0,0,0,0.08);"><span>Price/night</span><span>€'.number_format($price,2).'</span></div>
         <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed rgba(0,0,0,0.08);font-weight:700;"><span>Total paid</span><span>€'.number_format($total,2).'</span></div>
@@ -406,7 +425,7 @@ try {
                         'UID:'+uid,'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z',
                         'DTSTART;VALUE=DATE:'+start,'DTEND;VALUE=DATE:'+end,
                         'SUMMARY:'+title,'DESCRIPTION:Reservation confirmed','END:VEVENT','END:VCALENDAR'
-                    ].join('\\r\\n');
+                    ].join('\r\n');
                     const blob = new Blob([ics], {type:'text/calendar'});
                     const url  = URL.createObjectURL(blob);
                     const a = document.createElement('a'); a.href = url; a.download = 'alisiosvan-reservation.ics'; a.click();
