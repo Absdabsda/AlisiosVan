@@ -9,29 +9,47 @@ $pdo = get_pdo();
 
 use Stripe\Stripe;
 use Stripe\Checkout\Session as CheckoutSession;
-use Stripe\Invoice as StripeInvoice; // <-- añadimos Invoice
+use Stripe\Invoice as StripeInvoice;
 
-//PHPMailer
+// PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as MailException;
 
 $sessionId = $_GET['session_id'] ?? '';
-if (!$sessionId) {
-    http_response_code(400);
-    echo 'Missing session_id';
-    exit;
+if (!$sessionId) { http_response_code(400); echo 'Missing session_id'; exit; }
+
+// Helpers --------------------------------------------------------------------
+function columnExists(PDO $pdo, string $table, string $column): bool {
+    $sql = "SELECT 1
+              FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE()
+               AND TABLE_NAME = :t
+               AND COLUMN_NAME = :c
+             LIMIT 1";
+    $st = $pdo->prepare($sql);
+    $st->execute([':t'=>$table, ':c'=>$column]);
+    return (bool)$st->fetchColumn();
+}
+
+function publicBaseUrl(): string {
+    $env = rtrim($_ENV['PUBLIC_BASE_URL'] ?? '', '/');
+    if ($env) return $env;
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $dir    = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+    return rtrim("$scheme://$host$dir", '/');
 }
 
 try {
     Stripe::setApiKey($_ENV['STRIPE_SECRET']);
 
-    // Recupera la sesión e incluimos invoice expandida
+    // Recupera la sesión e incluimos invoice/customer
     $session = CheckoutSession::retrieve($sessionId, [
         'expand' => ['payment_intent', 'invoice', 'customer']
     ]);
 
     if ($session->payment_status === 'paid') {
-        // Marca reserva como pagada
+        // Marca la reserva como pagada
         $up = $pdo->prepare("
             UPDATE reservations
                SET status='paid',
@@ -40,48 +58,56 @@ try {
              WHERE stripe_session_id=:ssid
              LIMIT 1
         ");
-        $up->execute([
-            ':pi'   => (string)$session->payment_intent,
-            ':ssid' => $sessionId
-        ]);
+        $up->execute([':pi' => (string)$session->payment_intent, ':ssid' => $sessionId]);
 
-        // Id de factura (puede venir nulo si no activaste invoice_creation)
+        // --- Invoice (puede tardar un instante en estar lista) ---------------
         $invoiceId = null;
         if (!empty($session->invoice)) {
-            // Si viene expandida, es objeto; si no, es string
             $invoiceId = is_object($session->invoice) ? $session->invoice->id : (string)$session->invoice;
         }
 
-        // Intentamos obtener PDF/URL de la factura con un pequeño retry
         $invoicePdf = null;
         $invoiceUrl = null;
         if ($invoiceId) {
-            for ($i=0; $i<5; $i++) { // ~2s máx
+            for ($i=0; $i<5; $i++) { // ~2s total
                 $inv = StripeInvoice::retrieve($invoiceId);
                 $invoicePdf = $inv->invoice_pdf ?? null;
                 $invoiceUrl = $inv->hosted_invoice_url ?? null;
-                if ($invoicePdf || $invoiceUrl) { break; }
-                usleep(400000); // 0.4s
+                if ($invoicePdf || $invoiceUrl) {
+                    break;
+                }
+                usleep(400000);
             }
         }
 
-        // Guarda opcionalmente el id de la factura
-        if ($invoiceId) {
+        // Guarda en BD solo si existen las columnas
+        if ($invoiceId && columnExists($pdo, 'reservations', 'stripe_invoice_id')) {
             $pdo->prepare("UPDATE reservations SET stripe_invoice_id=:iid WHERE stripe_session_id=:ssid LIMIT 1")
                 ->execute([':iid'=>$invoiceId, ':ssid'=>$sessionId]);
         }
+        if (($invoicePdf || $invoiceUrl)
+            && columnExists($pdo,'reservations','stripe_invoice_pdf')
+            && columnExists($pdo,'reservations','stripe_invoice_url')) {
+            $pdo->prepare("UPDATE reservations
+                              SET stripe_invoice_pdf=:pdf, stripe_invoice_url=:url
+                            WHERE stripe_session_id=:ssid LIMIT 1")
+                ->execute([':pdf'=>$invoicePdf, ':url'=>$invoiceUrl, ':ssid'=>$sessionId]);
+        }
 
-        // Datos de la reserva
-        $st = $pdo->prepare("
+        // --- Datos de la reserva --------------------------------------------
+        $hasManage = columnExists($pdo, 'reservations', 'manage_token');
+        $select = "
             SELECT r.id, r.start_date, r.end_date,
-                   c.name AS camper,
-                   c.price_per_night,
-                   DATEDIFF(r.end_date, r.start_date) AS nights
+                   c.name AS camper, c.price_per_night,
+                   DATEDIFF(r.end_date, r.start_date) AS nights";
+        if ($hasManage) { $select .= ", r.manage_token"; }
+        $select .= "
               FROM reservations r
               JOIN campers c ON c.id = r.camper_id
              WHERE r.stripe_session_id = :ssid
-             LIMIT 1
-        ");
+             LIMIT 1";
+
+        $st = $pdo->prepare($select);
         $st->execute([':ssid' => $sessionId]);
         $res = $st->fetch(PDO::FETCH_ASSOC);
         if (!$res) { throw new Exception('Reservation not found after payment.'); }
@@ -90,7 +116,13 @@ try {
         $price  = (float)$res['price_per_night'];
         $total  = $nights * $price;
 
-        // -------- Email --------
+        // Manage URL (si existe manage_token)
+        $manageUrl = null;
+        if ($hasManage && !empty($res['manage_token'])) {
+            $manageUrl = publicBaseUrl() . '/manage.php?rid='.(int)$res['id'].'&t='.$res['manage_token'];
+        }
+
+        // --- Email -----------------------------------------------------------
         $customerEmail = $session->customer_details->email ?? $session->customer_email ?? '';
         $customerName  = $session->customer_details->name  ?? '';
 
@@ -109,7 +141,7 @@ try {
         $startHuman = date('j M Y', strtotime($res['start_date']));
         $endHuman   = date('j M Y', strtotime($res['end_date']));
 
-        // .ics
+        // .ics (evento de día completo)
         $endExclusive = (new DateTime($endFmt))->modify('+1 day')->format('Ymd');
         $ics = implode("\r\n", [
             'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Alisios Van//EN','BEGIN:VEVENT',
@@ -122,7 +154,7 @@ try {
             'END:VEVENT','END:VCALENDAR'
         ]);
 
-        // Plantilla e-mail (igual a la tuya, añado enlaces de factura)
+        // Plantilla email -----------------------------------------------------
         $html = '
 <div style="font-family:Quicksand,Arial,sans-serif;line-height:1.55;color:#333;background:#e8e6e4;padding:24px;">
   <div style="max-width:640px;margin:0 auto;background:#FFFFFF;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.10);overflow:hidden;border:1px solid rgba(0,0,0,0.04);">
@@ -155,6 +187,14 @@ try {
   </div>
 </div>';
 
+        // Añade enlace de gestión si existe
+        if ($manageUrl) {
+            $html .= '<div style="max-width:640px;margin:0 auto;padding:0 24px 24px 24px;font-family:Quicksand,Arial,sans-serif;">
+                        <p style="margin:12px 0">Manage your booking: <a href="'.
+                htmlspecialchars($manageUrl,ENT_QUOTES,'UTF-8').'">Open management page</a></p>
+                      </div>';
+        }
+
         $alt = "Payment confirmed\n".
             "Reservation #{$res['id']}\n".
             "Camper: {$res['camper']}\n".
@@ -164,9 +204,10 @@ try {
             "Total paid: €".number_format($total,2)."\n".
             ($receiptUrl ? "Receipt: $receiptUrl\n" : "") .
             (($invoicePdf || $invoiceUrl) ? "Invoice: ".($invoicePdf ?: $invoiceUrl)."\n" : "") .
+            ($manageUrl ? "Manage: $manageUrl\n" : "") .
             "We attach a .ics file to add the trip to your calendar.\n";
 
-        // SMTP config
+        // SMTP config ---------------------------------------------------------
         $host = $_ENV['SMTP_HOST'] ?? $_ENV['MAIL_HOST'] ?? '';
         $port = (int)($_ENV['SMTP_PORT'] ?? $_ENV['MAIL_PORT'] ?? 587);
         $user = $_ENV['SMTP_USER'] ?? $_ENV['MAIL_USER'] ?? '';
@@ -176,7 +217,7 @@ try {
         $fromName  = $_ENV['SMTP_FROM_NAME'] ?? $_ENV['MAIL_FROM_NAME'] ?? 'Alisios Van';
         $adminTo   = $_ENV['SMTP_TO'] ?? $_ENV['MAIL_BCC'] ?? '';
 
-        // Helper: descargar URL de forma robusta (cURL)
+        // Helper: descargar URL (cURL)
         $fetch = function(string $url): ?string {
             if (!$url) return null;
             $ch = curl_init($url);
@@ -225,7 +266,7 @@ try {
                 // Adjunta ICS
                 $mail->addStringAttachment($ics, 'alisiosvan-reservation.ics', 'base64', 'text/calendar');
 
-                // Adjunta la factura PDF si ya está disponible
+                // Adjunta la factura PDF si está disponible
                 if ($invoicePdf) {
                     $pdfData = $fetch($invoicePdf);
                     if ($pdfData) {
@@ -242,9 +283,8 @@ try {
         } else {
             error_log('Mail not sent: missing SMTP config or customer email.');
         }
-        // -------- /Email --------
 
-        // -------- Página --------
+        // ------------------ Página ------------------------------------------
         ?>
         <!doctype html>
         <html lang="en">
@@ -308,6 +348,11 @@ try {
                                     <i class="bi bi-receipt"></i> View invoice online
                                 </a>
                             <?php endif; ?>
+                            <?php if ($manageUrl): ?>
+                                <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($manageUrl, ENT_QUOTES, 'UTF-8') ?>">
+                                    <i class="bi bi-gear"></i> Manage / cancel reservation
+                                </a>
+                            <?php endif; ?>
                             <button class="btn btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
                         </div>
 
@@ -337,6 +382,7 @@ try {
                 Questions? Email us at <a href="mailto:alisios.van@gmail.com">alisios.van@gmail.com</a>.
             </p>
 
+            <!-- Data for ICS generation -->
             <div id="icsData"
                  data-title="<?= htmlspecialchars('Alisios Van · '.$res['camper'], ENT_QUOTES, 'UTF-8') ?>"
                  data-start="<?= htmlspecialchars($startFmt, ENT_QUOTES, 'UTF-8') ?>"
