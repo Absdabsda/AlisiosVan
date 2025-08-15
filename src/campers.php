@@ -99,7 +99,7 @@
             <div class="row g-4">
                 <!-- Camper 1 -->
                 <div class="col-md-4 camper-col">
-                    <div class="camper-card" data-name="Matcha" data-series="T3" data-price="115">
+                    <div class="camper-card" data-id="1" data-name="Matcha" data-series="T3" data-price="115">
                         <img src="img/carousel/matcha-surf.34.32.jpeg" alt="Volkswagen T3 'Matcha' by the beach" loading="lazy">
                         <div class="camper-info">
                             <h3>"Matcha"</h3>
@@ -110,7 +110,7 @@
 
                 <!-- Camper 2 -->
                 <div class="col-md-4 camper-col">
-                    <div class="camper-card" data-name="Skye" data-series="T3" data-price="100">
+                    <div class="camper-card" data-id="2" data-name="Skye" data-series="T3" data-price="100">
                         <img src="img/carousel/t3-azul-playa.webp" alt="'Skye' parked near the sea" loading="lazy">
                         <div class="camper-info">
                             <h3>"Skye"</h3>
@@ -121,7 +121,7 @@
 
                 <!-- Camper 3 -->
                 <div class="col-md-4 camper-col">
-                    <div class="camper-card" data-name="Rusty" data-series="T4" data-price="85">
+                    <div class="camper-card" data-id="3" data-name="Rusty" data-series="T4" data-price="85">
                         <img src="img/carousel/t4-sol.webp" alt="'Rusty' at sunset" loading="lazy">
                         <div class="camper-info">
                             <h3>"Rusty"</h3>
@@ -132,7 +132,6 @@
             </div>
 
         </div>
-        <script src="js/campers.js" defer></script>
 
     </section>
 </main>
