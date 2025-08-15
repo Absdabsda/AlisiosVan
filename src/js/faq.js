@@ -28,6 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const activeTags = new Set(); // OR entre etiquetas
     let bulk = false;             // ← estamos haciendo abrir/cerrar “en bloque”
 
+    // Helpers
+    const visibleItems = () => items.filter(it => it.offsetParent !== null);
+
     // Lee parámetros ?q= & ?tags=
     const params    = new URLSearchParams(location.search);
     const qParam    = params.get("q");
@@ -44,20 +47,28 @@ document.addEventListener("DOMContentLoaded", () => {
         else (activeTags.has(tag) ? ch.classList.add("active") : ch.classList.remove("active"));
     });
 
-    // Acordeón por columna — solo en clics del usuario, y solo si NO hay filtros/búsqueda ni modo “bulk”
+    // Acordeón por columna — solo en clics reales del usuario
     cols.forEach(col => {
         qsa("details.faq-item", col).forEach(d => {
-            d.addEventListener("toggle", (e) => {
-                const userClick = e.isTrusted === true; // ← evento disparado por el usuario
-                if (!userClick) return;                 // ignorar cambios programáticos
-                if (bulk) return;                       // ignorar durante abrir/cerrar todo
-                if (query) return;                      // con búsqueda activa no cerramos hermanos
-                if (activeTags.size > 0) return;        // con chips activos tampoco
+            // Marcamos que el usuario hizo click en el summary (capturing para ir antes del toggle)
+            const sum = d.querySelector("summary");
+            sum?.addEventListener("click", () => { d.dataset.fromClick = "1"; }, true);
 
-                // Solo cuando se ABRE, cerramos hermanos de su columna
-                if (!e.target.open) return;
+            d.addEventListener("toggle", () => {
+                // Si estamos en modo "bulk" o el cambio no viene de click real, no aplicar acordeón
+                if (bulk) return;
+
+                const fromClick = d.dataset.fromClick === "1";
+                d.dataset.fromClick = ""; // limpiar marca
+
+                // Solo colapsar hermanos cuando el usuario abre un item (sin filtros/búsqueda)
+                if (!fromClick) return;
+                if (query) return;
+                if (activeTags.size > 0) return;
+                if (!d.open) return;
+
                 qsa("details.faq-item", col).forEach(other => {
-                    if (other !== e.target) other.open = false;
+                    if (other !== d) other.open = false;
                 });
             });
         });
@@ -98,15 +109,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Abrir / cerrar todo — desactiva el cierre de hermanos mientras dura
+    // Abrir / cerrar todo — solo sobre los visibles y desactiva acordeón mientras dura
     btnOpen?.addEventListener("click", () => {
         bulk = true;
-        items.forEach(i => i.open = true);
+        visibleItems().forEach(i => { i.open = true; });
         bulk = false;
     });
+
     btnClose?.addEventListener("click", () => {
         bulk = true;
-        items.forEach(i => i.open = false);
+        visibleItems().forEach(i => { i.open = false; });
         bulk = false;
     });
 
@@ -114,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function filter() {
         let visible = 0;
 
-        // reset highlights
+        // Reset highlights
         items.forEach(it => {
             const s = it.querySelector("summary");
             if (s) s.innerHTML = s.textContent;

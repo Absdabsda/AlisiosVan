@@ -69,8 +69,8 @@
                 <details class="faq-item" id="faq-included" data-tags="booking,vehicle">
                     <summary>What does the camper rental include?</summary>
                     <div class="content">
-                        Bed setup, basic kitchen kit (stove, cookware, utensils), fridge, interior lighting, and cleaning kit.
-                        Some models add awning, outdoor table/chairs, and a solar shower.
+                        Bed setup, basic kitchen kit (stove, cookware, utensils), fridge, exterior shower, interior lighting, and cleaning kit.
+                        Some models add an awning and an outdoor table and chairs.
                     </div>
                 </details>
 
@@ -81,12 +81,16 @@
 
                 <details class="faq-item" id="faq-age" data-tags="drivers">
                     <summary>What is the minimum driver age?</summary>
-                    <div class="content">Usually 23+ with at least 2 years of driving experience. Extra drivers can be added (bring their documents too).</div>
+                    <div class="content">
+                        24+ with at least 2 years of driving experience. Exceptions may be considered case-by-case with prior notice—please contact us in advance. Extra drivers can be added (bring their documents too).
+                    </div>
                 </details>
 
                 <details class="faq-item" id="faq-mileage" data-tags="vehicle,booking">
                     <summary>Is there a mileage limit?</summary>
-                    <div class="content">We include 200 km/day. Extra kilometres can be purchased at a small fee. Ask us if you plan a long route.</div>
+                    <div class="content">
+                        We include 150 km/day. Extra kilometres can be purchased for a small fee. Let us know if you’re planning a long route.
+                    </div>
                 </details>
 
                 <details class="faq-item" id="faq-pets" data-tags="rules,vehicle">
@@ -129,7 +133,7 @@
 
                 <details class="faq-item" id="faq-sleep" data-tags="camping,rules">
                     <summary>Where can I sleep/camp?</summary>
-                    <div class="content">Respect local regulations. Rules vary by municipality/protected areas. We’ll share a map with legal spots and campsites.</div>
+                    <div class="content">Respect local regulations. Rules vary by municipality and in protected areas.</div>
                 </details>
 
                 <details class="faq-item" id="faq-dirt" data-tags="vehicle,rules">
@@ -139,12 +143,14 @@
 
                 <details class="faq-item" id="faq-power" data-tags="vehicle">
                     <summary>What about electricity and charging?</summary>
-                    <div class="content">House battery powers lights/fridge/USB. Some vans include inverter or 230V when connected at campsites.</div>
+                    <div class="content">The house battery powers lights, fridge, and USB. Some vans include an inverter or 230V when connected at campsites.</div>
                 </details>
 
                 <details class="faq-item" id="faq-breakdown" data-tags="insurance,vehicle">
                     <summary>What if I have a breakdown?</summary>
-                    <div class="content">24/7 roadside assistance is included. Call the number in your contract and then contact us; we’ll coordinate everything.</div>
+                    <div class="content">
+                        24/7 roadside assistance is included. Call us first and we will help you and coordinate everything to make it easier for you.
+                    </div>
                 </details>
 
                 <details class="faq-item" id="faq-payment-cancel" data-tags="payments,booking">
