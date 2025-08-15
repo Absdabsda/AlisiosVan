@@ -117,7 +117,7 @@ if (empty($_SESSION['csrf'])) {
 
 <script>
     (function () {
-        // 👉 Ajusta tu número (sin +), ej: 34 + móvil
+        //Ajusta tu número (sin +), ej: 34 + móvil
         var PHONE = '34610136383';
 
         var launcher = document.getElementById('wa-launcher');

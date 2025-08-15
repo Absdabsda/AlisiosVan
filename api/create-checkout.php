@@ -62,23 +62,59 @@ try {
         'success_url' => $base . '/thanks.php?session_id={CHECKOUT_SESSION_ID}',
         'cancel_url'  => $base . '/cancel.php?rid=' . $reservationId,
 
+        //LÍNEA: depósito (1ª noche)
         'line_items' => [[
             'price_data' => [
                 'currency' => 'eur',
                 'product_data' => [
-                    // depósito de 1ª noche
                     'name' => sprintf(
                         "%s (%s) – Depósito 1ª noche (%d noches totales)",
                         $camper['name'],
                         $camper['series'],
                         $nights
                     ),
+                    // opcional: info extra que verán en la factura
+                    'description' => sprintf(
+                        "Reserva %d · Fechas %s → %s · Importe total estimado €%0.2f (pago ahora solo el depósito)",
+                        $reservationId,
+                        $start,
+                        $end,
+                        $totalCents / 100
+                    ),
                 ],
-                'unit_amount' => $depositCents, // << solo 1 noche
+                'unit_amount' => $depositCents, // solo 1 noche (depósito)
             ],
             'quantity' => 1,
         ]],
 
+        // Recoge dirección de facturación y NIF/VAT para que salgan en la factura
+        'billing_address_collection' => 'required',
+        'tax_id_collection' => ['enabled' => true], // si vendes a empresas/UE
+
+        //Asegura que se cree un Customer y se guarden sus datos
+        'customer_creation' => 'always',
+
+        //Crea FACTURA tras el pago de Checkout
+        'invoice_creation' => [
+            'enabled' => true,
+            'invoice_data' => [
+                'metadata' => [
+                    'reservation_id' => (string)$reservationId,
+                    'camper_id' => (string)$camperId,
+                    'start' => $start,
+                    'end' => $end,
+                    'nights' => (string)$nights,
+                    'price_per_night_eur' => (string)$unit,
+                    'total_due_cents' => (string)$totalCents,
+                    'deposit_cents' => (string)$depositCents,
+                    'deposit_type' => 'first_night',
+                ],
+                // aparece al pie del PDF/hosted invoice
+                'footer' => "Alisios Van · NIF X12345678 · Canarias · alisios.van@gmail.com",
+            ],
+        ],
+
+        //textos/consent
         'consent_collection' => [
             'terms_of_service' => 'required',
         ],
@@ -89,8 +125,7 @@ try {
             ],
         ],
 
-
-        // Metadata útil para el webhook/backoffice
+        // Metadata útil para tu backoffice (también la duplico en la factura arriba)
         'metadata' => [
             'reservation_id' => (string)$reservationId,
             'camper_id' => (string)$camperId,
@@ -102,8 +137,8 @@ try {
             'deposit_cents' => (string)$depositCents,
             'deposit_type' => 'first_night',
         ],
-
     ]);
+
 
     // guarda checkout id para el webhook
     $st = $pdo->prepare("UPDATE reservations SET stripe_session_id=? WHERE id=?");
