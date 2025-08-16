@@ -30,15 +30,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Calendario (máquina Y-m-d, humano con alt)
+    // Calendario (máquina Y-m-d, humano con alt)
     const fp = flatpickr('#date-range', {
         mode: 'range',
         minDate: 'today',
-        dateFormat: 'Y-m-d',    // <-- máquina
+        dateFormat: 'Y-m-d',  // máquina
         altInput: true,
-        altFormat: 'j M Y',     // <-- humano
-        showMonths: 2,
+        altFormat: 'j M Y',   // humano
+        //no corte el hero ni otros contenedores
+        appendTo: document.body,
+        position: 'auto',     // elige arriba/abajo según espacio
+        disableMobile: true,  // mismo UI en iOS/Android
+        showMonths: 2,        // según viewport
         locale: localeEN,
+        onOpen(_, __, inst){
+            // por si hay header fijo, chat, etc.
+            inst.calendarContainer.style.zIndex = '10010';
+        },
+        onReady(_, __, inst){
+            // responsive: 1 mes en móvil, 2 en desktop
+            const apply = () => {
+                const small = window.matchMedia('(max-width: 576px)').matches;
+                inst.set('showMonths', small ? 1 : 2);
+            };
+            apply();
+            window.addEventListener('resize', apply);
+        }
     });
+
 
     // Helper: Y-m-d en LOCAL (sin UTC)
     const toYMD = d => {
