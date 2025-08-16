@@ -9,7 +9,6 @@ $pdo = get_pdo();
 
 use Stripe\Stripe;
 use Stripe\Checkout\Session as CheckoutSession;
-use Stripe\Invoice as StripeInvoice;
 
 // PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
@@ -92,7 +91,7 @@ try {
                 $inv = \Stripe\Invoice::retrieve($invoiceId);
                 $invoicePdf    = $inv->invoice_pdf ?? null;
                 $invoiceUrl    = $inv->hosted_invoice_url ?? null;
-                $invoiceStatus = $inv->status ?? null;  // open | draft | paid | uncollectible | void
+                $invoiceStatus = $inv->status ?? null;
                 $invoicePaid   = ($invoiceStatus === 'paid');
                 if ($invoicePdf || $invoiceUrl || $invoicePaid) { break; }
                 usleep(600000); // 0.6s
@@ -173,46 +172,91 @@ try {
             'END:VEVENT','END:VCALENDAR'
         ]);
 
+        // --- TABLA RESUMEN (email-safe) ------------------------------------
+        $summaryTable = '
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+       style="border:1px solid rgba(0,0,0,0.06); border-radius:10px; background:#fbfbfb; margin-bottom:14px;">
+  <tr>
+    <td style="padding:0">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+             style="font-family:Arial, sans-serif; font-size:14px; line-height:20px; mso-line-height-rule:exactly;">
+        <tr>
+          <td style="padding:10px 14px;">Camper</td>
+          <td align="right" style="padding:10px 14px;"><strong>'.htmlspecialchars($res['camper'],ENT_QUOTES,'UTF-8').'</strong></td>
+        </tr>
+        <tr>
+          <td style="padding:10px 14px; border-top:1px dashed #DDD;">Dates</td>
+          <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD; white-space:nowrap;">'
+            .htmlspecialchars($startHuman,ENT_QUOTES,'UTF-8').' &nbsp;&rarr;&nbsp; '
+            .htmlspecialchars($endHuman,ENT_QUOTES,'UTF-8').'</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 14px; border-top:1px dashed #DDD;">Nights</td>
+          <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD;">'.$nights.'</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 14px; border-top:1px dashed #DDD;">Price/night</td>
+          <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD;">€'.number_format($price,2).'</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">Total paid</td>
+          <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">€'.number_format($total,2).'</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>';
+
         // Plantilla email -----------------------------------------------------
         $html = '
-<div style="font-family:Quicksand,Arial,sans-serif;line-height:1.55;color:#333;background:#e8e6e4;padding:24px;">
-  <div style="max-width:640px;margin:0 auto;background:#FFFFFF;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.10);overflow:hidden;border:1px solid rgba(0,0,0,0.04);">
-    <div style="background:#80C1D0;color:#fff;padding:18px 22px;">
-      <h1 style="margin:0;font-family:\'Playfair Display\',serif;letter-spacing:0.5px;font-size:22px;">Payment confirmed</h1>
-      <div style="opacity:.9;margin-top:4px;">Reservation #'.(int)$res['id'].' — Thank you for choosing Alisios Van</div>
-    </div>
-    <div style="padding:20px 22px;">
-      <p style="margin:0 0 8px 0">Hi'.($customerName ? ' '.htmlspecialchars($customerName,ENT_QUOTES,'UTF-8') : '').',</p>
-      <p style="margin:0 0 12px 0">Your reservation is <strong>confirmed</strong>. Here are your details:</p>
+<div style="font-family:Arial,sans-serif;line-height:1.55;color:#333;background:#e8e6e4;padding:24px;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="640" cellspacing="0" cellpadding="0"
+               style="background:#FFFFFF;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.10);overflow:hidden;border:1px solid rgba(0,0,0,0.04);">
+          <tr>
+            <td style="background:#80C1D0;color:#fff;padding:18px 22px;">
+              <div style="font-size:22px;font-weight:700;margin:0;">Payment confirmed</div>
+              <div style="opacity:.9;margin-top:4px;">Reservation #'.(int)$res['id'].' — Thank you for choosing Alisios Van</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 22px;">
+              <p style="margin:0 0 8px 0">Hi'.($customerName ? ' '.htmlspecialchars($customerName,ENT_QUOTES,'UTF-8') : '').',</p>
+              <p style="margin:0 0 12px 0">Your reservation is <strong>confirmed</strong>. Here are your details:</p>
 
-      <div style="border:1px solid rgba(0,0,0,0.06);border-radius:10px;padding:12px 14px;background:#fbfbfb;margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;padding:6px 0;"><span>Camper</span><span><strong>'.htmlspecialchars($res['camper'],ENT_QUOTES,'UTF-8').'</strong></span></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed rgba(0,0,0,0.08);"><span>Dates</span><span style="white-space:nowrap">'.htmlspecialchars($startHuman,ENT_QUOTES,'UTF-8').'&nbsp;→&nbsp;'.htmlspecialchars($endHuman,ENT_QUOTES,'UTF-8').'</span></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed rgba(0,0,0,0.08);"><span>Nights</span><span>'.$nights.'</span></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed rgba(0,0,0,0.08);"><span>Price/night</span><span>€'.number_format($price,2).'</span></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed rgba(0,0,0,0.08);font-weight:700;"><span>Total paid</span><span>€'.number_format($total,2).'</span></div>
-      </div>' .
-            ($receiptUrl ? '<p style="margin:0 0 12px 0">Receipt: <a href="'.htmlspecialchars($receiptUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">View Stripe receipt</a></p>' : '') .
-            (($invoicePdf || $invoiceUrl) ? (
+              '.$summaryTable.'
+
+              '.
+            ($receiptUrl ? '<p style="margin:0 0 12px 0">Receipt: <a href="'.htmlspecialchars($receiptUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">View Stripe receipt</a></p>' : '')
+            .(($invoicePdf || $invoiceUrl) ?
                 '<p style="margin:0 0 12px 0">' .
                 ($invoicePdf ? 'Invoice: <a href="'.htmlspecialchars($invoicePdf,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">Download PDF</a><br>' : '') .
                 ($invoiceUrl ? '<a href="'.htmlspecialchars($invoiceUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">View invoice online</a>' : '') .
-                '</p>'
-            ) : '') .
-            '<p style="margin:0 0 12px 0">We\'ve attached a calendar file (.ics) so you can add the trip to your calendar.</p>
-      <p style="margin:0;color:#555">Questions? Write us at <a href="mailto:alisios.van@gmail.com" style="color:#5698A6;">alisios.van@gmail.com</a>.</p>
-    </div>
-    <div style="padding:12px 22px;background:#f7f7f7;color:#7D7D7D;font-size:12px;">Alisios Van · Canary Islands</div>
-  </div>
-</div>';
+                '</p>' : ''
+            ).'
+              <p style="margin:0 0 12px 0">We\'ve attached a calendar file (.ics) so you can add the trip to your calendar.</p>
+              <p style="margin:0;color:#555">Questions? Write us at <a href="mailto:alisios.van@gmail.com" style="color:#5698A6;">alisios.van@gmail.com</a>.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:12px 22px;background:#f7f7f7;color:#7D7D7D;font-size:12px;">Alisios Van · Canary Islands</td>
+          </tr>
+        </table>
 
-        // Añade enlace de gestión si existe
-        if ($manageUrl) {
-            $html .= '<div style="max-width:640px;margin:0 auto;padding:0 24px 24px 24px;font-family:Quicksand,Arial,sans-serif;">
-                        <p style="margin:12px 0">Manage your booking: <a href="'.
-                htmlspecialchars($manageUrl,ENT_QUOTES,'UTF-8').'">Open management page</a></p>
-                      </div>';
-        }
+        '.($manageUrl
+                ? '<div style="max-width:640px;margin:0 auto;padding:12px 0 0 0;font-family:Arial,sans-serif;">
+                 <p style="margin:12px 0">Manage your booking:
+                   <a href="'.htmlspecialchars($manageUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">Open management page</a>
+                 </p>
+               </div>'
+                : ''
+            ).'
+      </td>
+    </tr>
+  </table>
+</div>';
 
         $alt = "Payment confirmed\n".
             "Reservation #{$res['id']}\n".
@@ -303,7 +347,7 @@ try {
             error_log('Mail not sent: missing SMTP config or customer email.');
         }
 
-        // ------------------ Página ------------------------------------------
+        // ------------------ Página (para navegador) --------------------------
         ?>
         <!doctype html>
         <html lang="en">
@@ -319,7 +363,6 @@ try {
             <link rel="stylesheet" href="css/estilos.css">
             <link rel="stylesheet" href="css/cookies.css">
             <script src="js/cookies.js" defer></script>
-
 
             <style>
                 .page-hero{ background-image:url('img/landing-matcha.02.31.jpeg'); }
@@ -428,7 +471,7 @@ try {
                         'UID:'+uid,'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z',
                         'DTSTART;VALUE=DATE:'+start,'DTEND;VALUE=DATE:'+end,
                         'SUMMARY:'+title,'DESCRIPTION:Reservation confirmed','END:VEVENT','END:VCALENDAR'
-                    ].join('\r\n');
+                    ].join('\\r\\n');
                     const blob = new Blob([ics], {type:'text/calendar'});
                     const url  = URL.createObjectURL(blob);
                     const a = document.createElement('a'); a.href = url; a.download = 'alisiosvan-reservation.ics'; a.click();

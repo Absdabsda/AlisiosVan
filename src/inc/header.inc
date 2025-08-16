@@ -6,7 +6,7 @@ function navActive(string $file): string {
 }
 ?>
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="light">
+<nav class="navbar navbar-expand-lg" data-bs-theme="light">
     <div class="container-fluid px-3 px-lg-3">
         <!-- Logo -->
         <a class="navbar-brand d-flex align-items-center gap-2" href="index.php" aria-label="Alisios Van — Home">
