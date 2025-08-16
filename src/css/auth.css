@@ -1,0 +1,162 @@
+/* ===== Variables ===== */
+:root{
+    --header-h: 72px; /* altura real del header fijo */
+    --header-bg-rgb: 28,83,152; /* #1c5398 */
+}
+
+html, body { height: 100%; }
+
+.auth-split{
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 50 / 50 */
+    /* Por defecto (REGISTER): imagen izquierda, panel derecha */
+    grid-template-areas: "media panel";
+    min-height: 100vh;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+/* Para LOGIN: invertimos las áreas (panel izquierda, imagen derecha) */
+.auth-split[data-auth-context="login"]{
+    grid-template-areas: "panel media";
+}
+
+.auth-split::before{
+    content: none;
+}
+
+/* ===== Mitad izquierda/derecha (imagen) ===== */
+.auth-media{
+    grid-area: media;      /* clave para poder invertir con grid-template-areas */
+    position: relative;
+    z-index: 0;            /* debajo del header */
+    pointer-events: none;
+    background-image: var(--auth-media-image, url('../img/skye-horizontal.JPG'));
+    background-size: cover;
+    background-repeat: no-repeat;
+    transform: translateX(0);
+    transition: transform .7s ease;
+
+    /* Comienza bajo el header */
+    margin-top: var(--header-h);
+    height: calc(100vh - var(--header-h));
+}
+
+/* (sin overlay oscuro) */
+.auth-media__overlay{
+    position:absolute; inset:0;
+    display:grid; place-content:end start;
+    padding: clamp(1rem, 3vw, 2rem);
+    color:#fff;
+    z-index: 1;
+}
+.auth-media__title{
+    font-family:'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    margin:0 0 .25rem 0;
+    color:#fff;
+}
+.auth-media__subtitle{ margin:0; opacity:.9; }
+
+/* ===== Mitad opuesta (formulario) ===== */
+.auth-panel{
+    grid-area: panel;      /* clave para poder invertir con grid-template-areas */
+    position: relative;
+    z-index: 1;
+    display:grid;
+    place-items:center;
+    background: linear-gradient(180deg, rgba(var(--color-arena-rgb), .7), rgba(255,255,255,.7));
+    transform: translateX(0);
+    transition: transform .7s ease;
+}
+
+/* comienza debajo del header */
+.auth-panel.under-header{
+    margin-top: 0;
+    padding-top: calc(var(--header-h) + clamp(1rem, 2.5vw, 2rem));
+    padding-right: clamp(1rem, 3vw, 2rem);
+    padding-bottom: clamp(1rem, 3vw, 2rem);
+    padding-left: clamp(1rem, 3vw, 2rem);
+}
+
+.auth-card{
+    width: min(520px, 92vw);
+    background: var(--color-blanco);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-medium);
+    padding: clamp(1rem, 3vw, 2rem);
+}
+
+.auth-meta a{ color: var(--color-mar); }
+
+.auth-link{
+    color: var(--color-mar);
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+}
+.auth-link:hover,
+.auth-link:focus{
+    text-decoration-thickness: 2px;
+    outline: none;
+}
+
+/* ===== Animación salida → navegación ===== */
+/* Normal (REGISTER → LOGIN): imagen hacia la derecha, panel hacia la izquierda */
+.auth-split.leaving .auth-media{ transform: translateX(100%); }
+.auth-split.leaving .auth-panel{ transform: translateX(-100%); }
+
+/* Inversa (LOGIN → REGISTER): imagen hacia la izquierda, panel hacia la derecha */
+.auth-split.leaving-reverse .auth-media{ transform: translateX(-100%); }
+.auth-split.leaving-reverse .auth-panel{ transform: translateX(100%); }
+
+/* ===== Motion reduce ===== */
+@media (prefers-reduced-motion: reduce){
+    .auth-media, .auth-panel{ transition: none !important; transform: none !important; }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 992px){
+    .auth-split{
+        grid-template-columns: 1fr;
+        /* En móvil apilamos: imagen arriba, panel abajo en ambos contextos */
+        grid-template-areas:
+            "media"
+            "panel";
+    }
+    /* En móvil no invertimos, se mantiene el apilado anterior */
+    .auth-split[data-auth-context="login"]{
+        grid-template-areas:
+            "media"
+            "panel";
+    }
+
+    .auth-media{
+        margin-top: 0;
+        height: 40vh;
+    }
+    .auth-panel.under-header{
+        margin-top: 0;
+        padding-top: clamp(1rem, 3vw, 2rem);
+    }
+
+    /* En móvil desactivas el desplazamiento cruzado */
+    .auth-split.leaving .auth-media,
+    .auth-split.leaving .auth-panel,
+    .auth-split.leaving-reverse .auth-media,
+    .auth-split.leaving-reverse .auth-panel{
+        transform: none !important;
+    }
+}
+
+/* ===== Navbar opaco desde el inicio (sin tocar global) ===== */
+nav.navbar {
+    background: rgb(var(--header-bg-rgb)) !important;
+    height: var(--header-h);
+}
+
+input {
+    padding: 0;
+}

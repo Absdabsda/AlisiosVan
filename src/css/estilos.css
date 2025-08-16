@@ -94,6 +94,54 @@ button:hover, .btn:hover {
     background-color: var(--color-mar-oscuro);
 }
 
+/* === Variantes de botón === */
+
+/* Accesibilidad foco */
+button:focus, .btn:focus,
+button:focus-visible, .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(128, 193, 208, 0.35); /* usa tu color-mar */
+}
+
+/* ---- Secundario: blanco con borde y texto azul ---- */
+.btn-outline-secondary {
+    background-color: var(--color-blanco) !important;
+    color: var(--color-mar-oscuro) !important;
+    border: 2px solid var(--color-mar) !important;
+}
+.btn-outline-secondary:hover {
+    background-color: rgba(128, 193, 208, 0.10) !important; /* azul 10% */
+    color: var(--color-mar-oscuro) !important;
+    border-color: var(--color-mar-oscuro) !important;
+}
+
+/* ---- Danger: rojo para cancelar/eliminar ---- */
+.btn-danger {
+    background-color: var(--color-atardecer) !important; /* rojo de tu paleta */
+    color: var(--color-blanco) !important;
+    border: 2px solid var(--color-atardecer) !important;
+}
+.btn-danger:hover {
+    background-color: #D93B61 !important; /* un poco más oscuro */
+    border-color: #D93B61 !important;
+}
+
+/* Opcional: versión enlace discreta */
+.btn-link {
+    background: transparent !important;
+    border: none !important;
+    color: var(--color-mar-oscuro) !important;
+    padding: 0;
+    box-shadow: none;
+    text-decoration: underline;
+}
+.btn-link:hover { text-decoration: none; }
+
+/* Opcional: tamaños */
+.btn-sm { padding: calc(var(--spacing-s) - 2px) var(--spacing-m); border-radius: calc(var(--border-radius) - 4px); }
+.btn-lg { padding: var(--spacing-m) calc(var(--spacing-l) * 1.15); }
+
+
 /* Formularios */
 form {
     background-color: var(--color-blanco);
@@ -156,3 +204,53 @@ a:hover {
     margin: 0;
     color: #fff;
 }
+
+/* ===== Paleta Flatpickr a juego ===== */
+.flatpickr-calendar {
+    border-radius: 14px;
+    box-shadow: var(--box-shadow-medium);
+}
+.flatpickr-months .flatpickr-month,
+.flatpickr-weekdays {
+    background: var(--color-blanco);
+    color: var(--text-principal);
+}
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    color: var(--color-mar-oscuro);
+}
+.flatpickr-day.inRange,
+.flatpickr-day.prevMonthDay.inRange,
+.flatpickr-day.nextMonthDay.inRange {
+    background: rgba(128,193,208,.18);
+    border-color: transparent;
+}
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected,
+.flatpickr-day.today.selected {
+    background: var(--color-mar);
+    border-color: var(--color-mar);
+    color: var(--color-blanco);
+}
+.flatpickr-day:hover {
+    background: rgba(128,193,208,.25);
+    border-color: transparent;
+}
+
+/* ===== Footer en blanco sobre fondo oscuro ===== */
+.footer { color: #fff; }
+.footer h4,
+.footer h5,
+.footer p,
+.footer li,
+.footer i { color: #fff; }
+
+.footer a { color: #fff; text-decoration: none; }
+.footer a:hover { color: #e6f1ff; text-decoration: underline; }
+
+/* Línea divisoria del final más suave en oscuro */
+.footer .border-top { border-top-color: rgba(255,255,255,.25) !important; }
+
+/* Si usas clases "text-muted" dentro del footer, que no se vean grises casi invisibles */
+.footer .text-muted { color: rgba(255,255,255,.75) !important; }

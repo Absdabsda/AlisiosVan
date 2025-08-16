@@ -101,47 +101,6 @@ label {
     box-sizing: border-box;
 }
 
-/* --- FLATPICKR --- */
-.flatpickr-calendar {
-    font-family: 'Arial', sans-serif;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow-medium);
-    width: auto !important;
-    padding: 10px 15px;
-}
-
-.flatpickr-months {
-    gap: 1.5rem;
-}
-
-.flatpickr-month {
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--color-mar);
-}
-
-.flatpickr-weekday {
-    color: var(--color-piedra-claro);
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
-.flatpickr-day.today {
-    border-color: var(--color-mar);
-}
-
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange {
-    background: var(--color-mar);
-    color: var(--color-blanco);
-}
-
-.flatpickr-day:hover {
-    background: var(--color-mar-soft);
-    cursor: pointer;
-}
-
 /* --- BOTÓN --- */
 .btn-primary {
     background-color: var(--color-mar);
@@ -291,4 +250,6 @@ label {
     justify-content: space-between;
     align-items: center;
 }
+
+
 

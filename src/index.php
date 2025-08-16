@@ -30,8 +30,10 @@
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/landing.css">
     <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/cookies.css">
     <script src="js/header.js" defer></script>
     <script src="js/landing.js" defer></script>
+    <script src="js/cookies.js" defer></script>
     <style>
         /* Color del mar: #81C1D0 -> rgb(129,193,208) */
         :root{ --header-bg-rgb: 167,176,183; }

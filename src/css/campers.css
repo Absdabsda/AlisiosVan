@@ -5,6 +5,42 @@
     background-position: center 55%;
 }
 
+.page-hero.buscar-hero {
+    background-image: url('../img/skye-interior.jpeg');
+    height: 25vh;
+    background-position: center;
+}
+
+
+.fleet-highlights.text-white {
+    background-color: var(--color-piedra-claro);
+}
+.fleet-highlights .bi {
+    font-size: 1.1rem;
+}
+
+.icon-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.icon-list li {
+    position: relative;
+    padding-left: 1.6rem;
+    margin-bottom: .5rem;
+}
+
+.icon-list li::before {
+    content: "\F26E"; /* check2-circle */
+    font-family: "bootstrap-icons";
+    position: absolute; left: 0; top: .1rem;
+}
+
+.camper-card img {
+    aspect-ratio: 16/10;
+    object-fit: cover;
+}
+
 /* Catálogo */
 .catalogo-campers {
     padding-top: 3rem;
@@ -35,6 +71,7 @@
 
 .camper-info {
     padding: 1rem;
+    background-color: var(--color-blanco);
 }
 
 .camper-info h3 {

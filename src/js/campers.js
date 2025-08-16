@@ -1,19 +1,17 @@
 // src/js/campers.js
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Filtros por modelo (como tenías) ---
     const chips = document.querySelectorAll('.model-chip');
-    const cols  = document.querySelectorAll('.camper-col'); // contenedores de columnas
     const cards = document.querySelectorAll('.camper-card');
 
-    const apply = (series) => {
-        let visible = 0;
+    function apply(series) {
         cards.forEach(card => {
             const s = (card.dataset.series || '').toUpperCase();
             const show = !series || s === series.toUpperCase();
             const col = card.closest('.camper-col');
             if (col) col.classList.toggle('d-none', !show);
-            if (show) visible++;
         });
-    };
+    }
 
     chips.forEach(chip => {
         chip.addEventListener('click', () => {
@@ -23,85 +21,48 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // primera pasada (All)
+    // Primera pasada (All)
     apply('');
-});
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const params = new URLSearchParams(location.search);
-    const start = params.get('start');
-    const end   = params.get('end');
-    const results = document.getElementById('results');
+    // --- Navegación a la ficha ---
+    // Arrastra fechas si las hay
+    const qs = new URLSearchParams(location.search);
+    const start = qs.get('start') || '';
+    const end   = qs.get('end')   || '';
 
-    if (!start || !end) {
-        results.innerHTML = `<p>Please pick your dates on the home page.</p>`;
-        return;
+    function buildDetailsHref(id) {
+        const params = new URLSearchParams({ id: String(id) });
+        if (start && end) { params.set('start', start); params.set('end', end); }
+        // relativo al directorio actual (funciona en /.../campers.php -> /.../camper.php)
+        return `ficha-camper.php?${params.toString()}`;
     }
 
-    try {
-        const url = `../api/availability.php?start=${start}&end=${end}`;
-        const res = await fetch(url);
-        const data = await res.json();
+    // Haz cada card clicable + accesible
+    cards.forEach(card => {
+        const id = Number(card.dataset.id) || 0;
+        if (!id) return; // asegúrate de tener data-id en el HTML
 
-        if (!data.ok) throw new Error(data.error || 'Error');
+        const href = buildDetailsHref(id);
 
-        if (data.count === 0) {
-            results.innerHTML = `<p>No campers available for those dates.</p>`;
-            return;
+        card.style.cursor = 'pointer';
+        card.setAttribute('tabindex', '0');
+        if (card.dataset.name) {
+            card.setAttribute('aria-label', `View ${card.dataset.name} details`);
         }
 
-        // pinta tarjetas
-        results.innerHTML = data.campers.map(c => `
-      <div class="col-md-4">
-        <div class="camper-card">
-          <img src="img/${c.image || 'carousel/t3-azul-mar.webp'}" alt="${c.name}">
-          <div class="camper-info">
-            <h3>${c.name}</h3>
-            <p>${c.series} · ${Number(c.price_per_night).toFixed(2)}€ / night</p>
-            <button class="btn btn-primary btn-reserve" 
-                    data-id="${c.id}" data-name="${c.name}">
-              Reserve
-            </button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-
-        // manejar “Reserve” -> crear checkout
-        results.querySelectorAll('.btn-reserve').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                try {
-                    const payload = {
-                        camper_id: Number(btn.dataset.id),
-                        start, end,
-                        // de momento mete datos dummy; luego los pedimos en un form
-                        name: 'Guest',
-                        email: 'demo@example.com',
-                        phone: ''
-                    };
-
-                    const r = await fetch('../api/create-checkout.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const raw = await r.text();
-                    let d; try { d = JSON.parse(raw) } catch(e){ throw new Error(raw); }
-
-                    if (d.ok && d.url) location.href = d.url;
-                    else alert(d.error || 'No se pudo iniciar el pago.');
-                } catch (err) {
-                    console.error(err);
-                    alert('Error al iniciar el pago');
-                }
-            });
+        // Clic
+        card.addEventListener('click', (e) => {
+            // Evita que algún enlace interno (si lo hubiera) duplique navegación
+            if (e.target.closest('a')) return;
+            location.href = href;
         });
 
-    } catch (err) {
-        console.error(err);
-        results.innerHTML = `<p>Couldn’t load availability.</p>`;
-    }
+        // Teclado
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                location.href = href;
+            }
+        });
+    });
 });
-
-
