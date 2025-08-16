@@ -31,9 +31,14 @@
     <link rel="stylesheet" href="css/sobre-nosotros.css">
     <link rel="stylesheet" href="css/cookies.css">
 
+    <script src="js/header.js" defer></script>
     <script src="js/campers.js" defer></script>
     <script src="js/cookies.js" defer></script>
 
+
+    <style>
+        :root { --header-bg-rgb: 37,50,48; } /* #253230 */
+    </style>
 
 </head>
 <body>

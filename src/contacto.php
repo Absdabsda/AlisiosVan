@@ -25,10 +25,15 @@ if (empty($_SESSION['csrf'])) {
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/contacto.css">
     <link rel="stylesheet" href="css/cookies.css">
+    <script src="js/header.js" defer></script>
+    <script src="js/contacto.js" defer></script>
 
     <script src="js/contacto.js" defer></script>
     <script src="js/cookies.js" defer></script>
 
+    <style>
+        :root { --header-bg-rgb: 84,70,62; } /* #54463E */
+    </style>
 </head>
 <!-- Mini Chat WhatsApp – Alisios Van -->
 <div id="wa-widget" aria-live="polite">
