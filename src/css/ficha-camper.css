@@ -1,168 +1,99 @@
-/* ===== Galería ===== */
-:root { --gallery-h: clamp(320px, 45vw, 560px); }
-/* fallback de color por si var(--color-mar) no existe aún */
-:root { --swiper-theme-color: var(--color-mar, #1e6e8c); }
-
-/* Evita que el HERO tape la galería */
-.pd-hero { z-index: 0; }
-.gallery { position: relative; z-index: 1; }
-
-/* En CSS Grid, asegura que Swiper pueda calcular tamaños */
-.product-grid > div { min-width: 0; min-height: 0; }
-
-/* Contenedores Swiper */
-.gallery .swiper {
-    background: var(--color-blanco, #fff) !important;
-    border-radius: 12px;
-    box-shadow: var(--box-shadow-medium);
-    overflow: hidden;
-}
-
-/* Principal */
-#galleryMain {
-    height: var(--gallery-h);
-    min-height: var(--gallery-h); /* fuerza altura visible */
-    background: var(--color-blanco, #fff) !important;
+/* Hero igual que campers.php */
+.page-hero.camper-detail-hero{
+    background-size: cover;
+    background-position: center 55%;
+    background-repeat: no-repeat;
+    height: 20vh;
+    min-height: 320px;
     position: relative;
 }
-#galleryMain .swiper-wrapper,
-#galleryMain .swiper-slide { height: 100% !important; }
-
-/* A veces temas meten fondos/sombras en los slides; los anulamos */
-#galleryMain .swiper-slide,
-#galleryMain [class*="swiper-slide-shadow"],
-#galleryMain::before,
-#galleryMain::after {
-    background: transparent !important;
-    box-shadow: none !important;
+.page-hero.camper-detail-hero::after{
+    content:""; position:absolute; inset:0;
+    background: linear-gradient(0deg, rgba(0,0,0,.45), rgba(0,0,0,0) 55%);
 }
+.page-hero.camper-detail-hero .page-hero__content{ position:relative; z-index:1; }
 
-/* Botones de navegación solo para este Swiper */
-#galleryMain .swiper-button-next,
-#galleryMain .swiper-button-prev {
-    z-index: 5;
-}
-
-/* Imágenes */
-#galleryMain .swiper-slide img {
-    display: block;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover;
-}
-
-/* Thumbnails */
-#galleryThumbs { height: 96px; margin-top: .75rem; background: var(--color-blanco, #fff) !important; }
-#galleryThumbs .swiper-wrapper, #galleryThumbs .swiper-slide { height: 100%; }
-#galleryThumbs .swiper-slide { border-radius: 10px; overflow: hidden; opacity: .75; cursor: pointer; }
-#galleryThumbs .swiper-slide-thumb-active { opacity: 1; box-shadow: 0 0 0 2px var(--color-mar); }
-#galleryThumbs .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
-
-/* ===== Beauty theme (estiliza como tienda boutique) ===== */
-
-/* Paleta calm: arena + oliva */
-:root{
-    --bg-sand:#f6f4ef;
-    --ink:#2f2f2f;
-    --ink-soft:#6c6c6c;
-    --olive:#8e9572;
-    --olive-strong:#75805a;
-    --olive-ghost:#e9ecdf;
-    --white:#fff;
-    --radius:16px;
-}
-
-/* Fondo y tipografía */
-body{ background:var(--bg-sand); color:var(--ink); }
-.pd-title{ font-size: clamp(2.2rem, 4vw, 3rem); letter-spacing:.2px; }
-.container{ max-width: 1200px; }
-
-/* Breadcrumb minimal */
-.pd-breadcrumb{ padding: 14px 1rem 0; font-size:.95rem; color:var(--ink-soft); }
+/* Breadcrumb */
+.pd-breadcrumb{ padding:14px 1rem 0; font-size:.95rem; color: var(--text-secundario); }
 .pd-breadcrumb a{ color:inherit; text-decoration:none; }
 .pd-breadcrumb span{ opacity:.8; margin:0 .35rem; }
 
-/* Hero más suave */
-.pd-hero{ height:42vh; min-height:360px; border-radius:0 0 var(--radius) var(--radius); overflow:hidden; }
-.pd-hero::after{ background: linear-gradient(0deg, rgba(0,0,0,.45), rgba(0,0,0,0) 55%); }
-.pd-hero .inner{ align-items:end; padding-bottom:2.25rem; }
+/* Layout */
+.camper-detail-wrap{
+    padding: 2rem 0 3rem;
+}
+.container{
 
-/* Grid y galería */
-.product-grid{ gap: 2.25rem; }
+}
+
+/* Galería (Swiper) */
+:root{ --gallery-h: clamp(360px, 48vw, 680px); --swiper-theme-color: var(--color-mar, #1e6e8c); }
+.gallery{ position:relative; }
 .gallery .swiper{
-    border-radius: var(--radius);
-    background: var(--white)!important;
+    background:#fff !important; border-radius:16px; overflow:hidden;
     box-shadow: 0 6px 24px rgba(0,0,0,.06);
 }
-#galleryMain{ height: clamp(420px, 48vw, 700px); }
-#galleryMain .swiper-button-next,
-#galleryMain .swiper-button-prev{
-    width:44px; height:44px; border-radius:999px; background: rgba(255,255,255,.85);
-    box-shadow: 0 6px 18px rgba(0,0,0,.08);
+#galleryMain{ height: var(--gallery-h); }
+#galleryMain .swiper-slide img{ width:100%; height:100%; object-fit:cover; display:block; }
+#galleryMain .swiper-button-next,#galleryMain .swiper-button-prev{
+    width:44px; height:44px; border-radius:999px; background:rgba(255,255,255,.85);
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
 }
-#galleryMain .swiper-button-next:after,
-#galleryMain .swiper-button-prev:after{ font-size:18px; color:var(--ink); }
+#galleryMain .swiper-button-next:after,#galleryMain .swiper-button-prev:after{ font-size:18px; color:#2f2f2f; }
+#galleryPagination{ bottom:10px !important; }
+#galleryMain .swiper-pagination-bullet{ width:7px; height:7px; opacity:.4; background:#2f2f2f; }
+#galleryMain .swiper-pagination-bullet-active{ transform:scale(1.15); opacity:1; background: var(--color-mar); }
 
-#galleryPagination{ bottom: 10px !important; }
-#galleryMain .swiper-pagination-bullet{
-    width:7px;height:7px; opacity:.4; background: var(--ink);
-}
-#galleryMain .swiper-pagination-bullet-active{
-    transform: scale(1.15);
-    opacity:1; background: var(--olive);
-}
+/* Thumbs visibles sobre todo en móvil */
+#galleryThumbs{ height:96px; margin-top:.75rem; background:#fff !important; }
+#galleryThumbs .swiper-slide{ border-radius:10px; overflow:hidden; opacity:.75; cursor:pointer; }
+#galleryThumbs .swiper-slide-thumb-active{ opacity:1; box-shadow:0 0 0 2px var(--color-mar); }
+#galleryThumbs .swiper-slide img{ width:100%; height:100%; object-fit:cover; }
+@media (min-width: 992px){ #galleryThumbs{ display:none !important; } }
 
-/* Thumbs solo en mobile; en desktop ocultas (como la tienda) */
-@media (min-width: 992px){
-    #galleryThumbs{ display:none !important; }
+/* Tarjeta de info */
+.detail-card{
+    background:#fff; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.06);
+    border:1px solid rgba(0,0,0,.05); padding:1.5rem 1.5rem 1.25rem;
 }
+.detail-head{ display:grid; gap:.75rem; margin-bottom:.5rem; }
+.badges{ display:flex; flex-wrap:wrap; gap:.5rem; }
+.badge-soft{ background:rgba(128,193,208,.15); color:var(--text-principal); border-radius:999px; padding:.35rem .75rem; font-weight:600; }
+.section-title{ font-family:'Playfair Display',serif; font-weight:700; font-size:1.6rem; margin-bottom:.75rem; }
 
-/* Card de reserva estilo boutique */
-.pd-card{
-    border-radius: var(--radius);
-    background: var(--white);
-    box-shadow: 0 10px 30px rgba(0,0,0,.06);
-    border: 1px solid rgba(0,0,0,.04);
-}
-.pd-price{ font-size:1.4rem; }
+/* Lista con checks */
+.icon-list{ list-style:none; padding-left:0; margin:0 0 1rem; }
+.icon-list li{ position:relative; padding-left:1.6rem; margin-bottom:.45rem; }
+.icon-list li::before{ content:"\F26E"; font-family:"bootstrap-icons"; position:absolute; left:0; top:.1rem; color:var(--color-mar,#1e6e8c); }
 
-/* Botón principal oliva */
-.btn.btn-primary{
-    background: var(--olive); border-color: var(--olive);
-}
-.btn.btn-primary:hover{ background: var(--olive-strong); border-color: var(--olive-strong); }
+/* CTA */
+.cta-row{ display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.25rem; }
+.btn.btn-primary{ background: var(--color-mar); border-color: var(--color-mar); }
+.btn.btn-primary:hover{ background: var(--color-mar-oscuro); border-color: var(--color-mar-oscuro); }
+.btn.btn-outline-secondary{ border-color: var(--color-mar); color: var(--color-mar); }
+.btn.btn-outline-secondary:hover{ background: var(--color-mar); color:#fff; }
 
-/* Botón fantasma */
-.btn.btn-outline-secondary{
-    border-color: var(--olive); color: var(--olive);
-}
-.btn.btn-outline-secondary:hover{
-    background: var(--olive); color:#fff;
-}
+.mini-note{ margin-top:.75rem; color: var(--text-secundario); font-size:.95rem; }
 
-/* Chips/badges suaves */
-.badge-soft{
-    background: var(--olive-ghost);
-    color: var(--ink);
-    font-weight:600;
+/* ===== Dos columnas: galería izq + info der ===== */
+.detail-grid{
+    display: grid;
+    grid-template-columns: 1.6fr .9fr;   /* izquierda / derecha */
+    gap: 2rem;
+    align-items: start;
 }
 
-/* Date chip más chic */
-.date-chip > input#pdDateRange + input.flatpickr-input{
-    border-color: var(--olive);
-}
-.date-chip > input#pdDateRange + input.flatpickr-input:hover{
-    border-color: var(--olive-strong);
-    background: #f4f6ef !important;
+/* imprescindible para que Swiper mida bien dentro de Grid */
+.detail-media{ min-width: 0; }
+.detail-aside{ min-width: 0; }
+
+/* que la tarjeta quede fija al hacer scroll (opcional) */
+.detail-aside .detail-card{
+    position: sticky;
+    top: 1rem;
 }
 
-/* Acordeones (si usas <details>) */
-details.pd-acc{ background:var(--white); border:1px solid rgba(0,0,0,.05); border-radius:12px; padding:.75rem 1rem; }
-details.pd-acc + details.pd-acc{ margin-top:.5rem; }
-details.pd-acc summary{ cursor:pointer; font-weight:700; color:var(--ink); list-style:none; }
-details.pd-acc[open]{ box-shadow:0 8px 24px rgba(0,0,0,.05); }
-
-/* Ajustes Swiper/Grid ya aplicados antes (no tocar) */
-:root { --swiper-theme-color: var(--olive); }
-.gallery{ position:relative; z-index:1; }
-.product-grid > div { min-width:0; min-height:0; }
+@media (max-width: 992px){
+    .detail-grid{ grid-template-columns: 1fr; }
+    .detail-aside .detail-card{ position: static; }
+}

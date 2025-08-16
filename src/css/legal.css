@@ -1,0 +1,14 @@
+/* Hero para páginas legales */
+.page-hero.legal-hero{
+    background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,0)),
+    url('../img/matcha-surf-vertical.jpeg') center 55% / cover no-repeat;
+    height: 22vh; min-height: 220px;
+}
+
+/* Cuerpo legal */
+.legal-article{ max-width: 900px; margin: 0 auto; }
+.legal-article h2{
+    font-family: 'Playfair Display', serif;
+    font-weight: 700; font-size: 1.6rem; margin-top: 1.2rem;
+}
+.legal-table th{ background: #f7f7f7; }

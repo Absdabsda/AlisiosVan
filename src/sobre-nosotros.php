@@ -29,8 +29,11 @@
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/sobre-nosotros.css">
+    <link rel="stylesheet" href="css/cookies.css">
 
     <script src="js/campers.js" defer></script>
+    <script src="js/cookies.js" defer></script>
+
 
 </head>
 <body>

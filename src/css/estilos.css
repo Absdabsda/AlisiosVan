@@ -237,3 +237,20 @@ a:hover {
     background: rgba(128,193,208,.25);
     border-color: transparent;
 }
+
+/* ===== Footer en blanco sobre fondo oscuro ===== */
+.footer { color: #fff; }
+.footer h4,
+.footer h5,
+.footer p,
+.footer li,
+.footer i { color: #fff; }
+
+.footer a { color: #fff; text-decoration: none; }
+.footer a:hover { color: #e6f1ff; text-decoration: underline; }
+
+/* Línea divisoria del final más suave en oscuro */
+.footer .border-top { border-top-color: rgba(255,255,255,.25) !important; }
+
+/* Si usas clases "text-muted" dentro del footer, que no se vean grises casi invisibles */
+.footer .text-muted { color: rgba(255,255,255,.75) !important; }

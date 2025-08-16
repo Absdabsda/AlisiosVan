@@ -15,8 +15,11 @@
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/faq.css">
+    <link rel="stylesheet" href="css/cookies.css">
 
     <script src="js/faq.js" defer></script>
+    <script src="js/cookies.js" defer></script>
+
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>

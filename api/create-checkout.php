@@ -133,7 +133,7 @@ try {
         'custom_text' => [
             'submit' => ['message' => 'Pagarás ahora el depósito (1ª noche). El resto se abona en persona a la recogida.'],
             'terms_of_service_acceptance' => [
-                'message' => 'Acepto los [Términos del servicio](https://tu-dominio/terminos) y la [Política de privacidad](https://tu-dominio/privacidad).'
+                'message' => 'Acepto los [Términos del servicio](https://alisiosvan/terms) y la [Política de privacidad](https://tu-dominio/privacidad).'
             ],
         ],
 

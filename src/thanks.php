@@ -317,6 +317,9 @@ try {
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
             <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
             <link rel="stylesheet" href="css/estilos.css">
+            <link rel="stylesheet" href="css/cookies.css">
+            <script src="js/cookies.js" defer></script>
+
 
             <style>
                 .page-hero{ background-image:url('img/landing-matcha.02.31.jpeg'); }

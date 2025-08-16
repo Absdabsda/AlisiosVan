@@ -111,29 +111,16 @@
         // Deja que el grid mida antes de iniciar
         requestAnimationFrame(() => {
             main = new Swiper('#galleryMain', {
-                // Look tipo tienda: 1 en móvil, 2 en desktop
-                breakpoints: {
-                    0:   { slidesPerView: 1, spaceBetween: 10 },
-                    992: { slidesPerView: 2, spaceBetween: 16 }
-                },
-                navigation: {
-                    nextEl: '#galleryMain .swiper-button-next',
-                    prevEl: '#galleryMain .swiper-button-prev'
-                },
-                pagination: {
-                    el: '#galleryPagination',
-                    clickable: true
-                },
+                slidesPerView: 1,         // ← siempre 1
+                spaceBetween: 0,          // ← sin “raja” blanca
+                navigation: { nextEl: '#galleryMain .swiper-button-next', prevEl: '#galleryMain .swiper-button-prev' },
+                pagination: { el: '#galleryPagination', clickable: true },
                 thumbs: { swiper: thumbs },
                 preloadImages: false,
                 lazy: { loadPrevNext: true },
                 watchSlidesProgress: true,
                 observer: true,
-                observeParents: true,
-                on: {
-                    init(sw){ sw.update(); },
-                    imagesReady(sw){ sw.update(); }
-                }
+                observeParents: true
             });
 
             setTimeout(() => { main.update(); thumbs.update(); }, 60);

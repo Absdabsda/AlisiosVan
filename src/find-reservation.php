@@ -99,6 +99,9 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/cookies.css">
+    <script src="js/cookies.js" defer></script>
+
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>

@@ -24,8 +24,11 @@ if (empty($_SESSION['csrf'])) {
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/contacto.css">
+    <link rel="stylesheet" href="css/cookies.css">
 
     <script src="js/contacto.js" defer></script>
+    <script src="js/cookies.js" defer></script>
+
 </head>
 <!-- Mini Chat WhatsApp – Alisios Van -->
 <div id="wa-widget" aria-live="polite">

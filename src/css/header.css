@@ -25,3 +25,31 @@ nav.navbar {
     font-size: 2.2rem;
     display: flex;
 }
+
+/* ===== Logo size & centering ===== */
+:root{
+    --nav-logo-h-mobile: 20px;
+    --nav-logo-h-desktop: 80px;
+}
+
+.navbar .navbar-brand{
+    display: flex;
+    align-items: center;
+    padding: .25rem 0; /* quita aire vertical del brand */
+}
+
+.navbar-toggler {
+    color: var(--color-blanco);
+}
+
+@media (min-width: 992px){
+    .brand-logo-box{ height: var(--nav-logo-h-desktop); }
+}
+
+.brand-logo{
+    display: block;
+    height: 100%;
+    width: auto;
+    object-fit: contain;      /* asegura proporción correcta */
+    transform: none;          /* limpia ajustes previos */
+}
