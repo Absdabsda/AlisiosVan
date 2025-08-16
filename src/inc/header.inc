@@ -16,7 +16,7 @@ function navActive(string $file): string {
               <source media="(max-width: 991.98px)" srcset="img/icono.png">
                 <!-- Fallback / desktop -->
               <img
-                      src="img/logo-original.png"
+                      src="img/alisios-logo.png"
                       alt="Alisios Van"
                       class="brand-logo"
                       width="200" height="60"

@@ -27,8 +27,14 @@
     <link rel="stylesheet" href="css/campers.css">
     <link rel="stylesheet" href="css/buscar.css">
     <link rel="stylesheet" href="css/cookies.css">
+
+    <script src="js/header.js" defer></script>
     <script src="js/buscar.js" defer></script>
     <script src="js/cookies.js" defer></script>
+
+    <style>
+        :root { --header-bg-rgb: 131,115,100; } /* #837364 */
+    </style>
 
 </head>
 <!-- Overlay "redirigiendo a Stripe" -->

@@ -16,8 +16,13 @@
     <link rel="stylesheet" href="css/legal.css">
     <link rel="stylesheet" href="css/cookies.css">
 
+    <script src="js/header.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
-    <script src="js/cookies.js" defer></script>
+
+    <style>
+        :root { --header-bg-rgb: 133,126,110; } /* #857E6E */
+    </style>
+
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>

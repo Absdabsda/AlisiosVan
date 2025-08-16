@@ -1,0 +1,6 @@
+/* Hero específico para Terms */
+.page-hero.legal-hero {
+    background-image: url('../img/matcha-surf-vertical.jpeg');
+    height: 25vh;
+    background-position: center 55%;
+}

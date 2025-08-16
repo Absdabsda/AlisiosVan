@@ -266,10 +266,20 @@ label {                 /* refuerza color de labels sobre fondos claros */
 }
 
 /* Desktop >= lg: céntralo verticalmente */
-@media (min-width: 769px){
+@media (min-width: 768px){
     .search-wrapper{
         margin-top: clamp(12px, 5vh, 72px);
         margin-inline: auto;
         margin-bottom: auto;
+    }
+}
+
+/* En móvil, centra el popup del calendario respecto al viewport */
+@media (max-width: 576px){
+    .flatpickr-calendar{
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%);     /* centra horizontalmente */
+        max-width: calc(100svw - 24px);
     }
 }

@@ -1,8 +1,8 @@
-/* Hero para páginas legales */
-.page-hero.legal-hero{
-    background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,0)),
-    url('../img/matcha-surf-vertical.jpeg') center 55% / cover no-repeat;
-    height: 22vh; min-height: 220px;
+/* Hero específico para Legal */
+.page-hero.legal-hero {
+    background-image: url('../img/matcha-surf-vertical.jpeg');
+    height: 25vh;
+    background-position: center 55%;
 }
 
 /* Cuerpo legal */

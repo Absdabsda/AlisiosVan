@@ -90,7 +90,7 @@
                 </ul>
 
                 <!--Iconos redes sociales-->
-                <div class="d-flex gap-3 footer-social">
+                <div class="d-flex justify-content-around gap-3 footer-social">
                     <a href="https://www.instagram.com/alisios_van/" target="_blank" class="text-white" aria-label="Instagram">
                         <i class="fab fa-instagram fa-lg"></i>
                     </a>
