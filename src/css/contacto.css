@@ -110,9 +110,12 @@
 }
 
 #wa-panel{
-    position:absolute; right:0; bottom:72px; width:320px; max-width:calc(100vw - 32px);
-    background:var(--color-blanco); border-radius:16px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,.2);
+    position:absolute; right:0; bottom:72px;
+    width: min(320px, 100vw - 32px);   /* nunca más ancho que la pantalla - 32px */
+    background:#fff; border-radius:16px; overflow:hidden;
+    box-shadow:0 16px 40px rgba(0,0,0,.2);
 }
+
 .wa-header{ background:#25D366;color:var(--color-blanco);padding:10px 12px;display:flex;align-items:center;justify-content:space-between; }
 .wa-identity{ display:flex;align-items:center;gap:.6rem; }
 .wa-identity i{ font-size:1.25rem; line-height:1; display:block; }
@@ -177,3 +180,45 @@
     line-height: 1;
     display: block;
 }
+
+/* Honeypot sin overflow */
+.hp-field{
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    border: 0 !important;
+    white-space: nowrap !important;
+}
+
+/* 1) Grid del formulario: deja encoger las columnas */
+.form-row{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* en vez de 1fr “a secas” */
+    gap: 1rem 1.25rem;
+}
+.form-row > .field{ min-width: 0; }                 /* importantísimo en grid */
+
+/* Por si algún texto largo (email/URL) no rompe línea */
+.contact-ways a{ overflow-wrap:anywhere; word-break:break-word; }
+
+/* 2) Panel WhatsApp: evita el “100vw” que provoca scroll horizontal */
+#wa-panel{
+    position: fixed;               /* fuera del flujo y anclado a la ventana */
+    right: 16px;
+    bottom: 72px;
+    width: min(320px, calc(100svw - 32px));  /* usa svw (small viewport width) */
+    max-width: 100%;
+}
+@supports not (width: 1svw){     /* fallback para navegadores sin svw */
+    #wa-panel{ width: min(320px, calc(100vw - 32px)); }
+}
+
+/* 3) Cinturón de seguridad (por si algo más se escapa) */
+html{ overflow-x: clip; }        /* moderno */
+body{ overflow-x: hidden; }      /* fallback */
+
