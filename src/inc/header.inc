@@ -15,8 +15,6 @@ function navActive(string $file): string {
         </span>
         </a>
 
-
-
         <!-- Hamburguesa -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarMain" aria-controls="navbarMain"

@@ -3,7 +3,7 @@ declare(strict_types=1);
 ini_set('display_errors','1'); error_reporting(E_ALL);
 
 require __DIR__ . '/../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../env'); $dotenv->safeLoad();
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..'); $dotenv->safeLoad();
 require __DIR__ . '/../config/db.php';
 $pdo = get_pdo();
 
