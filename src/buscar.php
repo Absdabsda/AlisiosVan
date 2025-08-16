@@ -31,6 +31,26 @@
     <script src="js/cookies.js" defer></script>
 
 </head>
+<!-- Overlay "redirigiendo a Stripe" -->
+<div id="checkoutOverlay" hidden>
+    <div class="co-box">
+        <div class="spinner-border" role="status" aria-hidden="true"></div>
+        <p class="mt-3 mb-0">Redirecting you to our secure checkout ...</p>
+        <div class="text-muted small">Don't close this window.</div>
+    </div>
+</div>
+<style>
+    #checkoutOverlay{
+        position:fixed; inset:0; display:none; place-items:center;
+        background:rgba(255,255,255,.9); z-index:2000;
+    }
+    #checkoutOverlay.show{ display:grid; }
+    #checkoutOverlay .co-box{
+        background:#fff; border:1px solid rgba(0,0,0,.06); border-radius:12px;
+        padding:18px 22px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.12);
+    }
+</style>
+
 <body>
 <?php include 'inc/header.inc'; ?>
 
@@ -89,45 +109,6 @@
         </div>
     </section>
 </main>
-
-
-
-
-<!-- Modal de reserva (datos del cliente) -->
-<div class="modal fade" id="reserveModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <form id="reserveForm" class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Complete your booking</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="rf_camper_id">
-                <input type="hidden" id="rf_start">
-                <input type="hidden" id="rf_end">
-                <div class="mb-3">
-                    <label class="form-label">Full name</label>
-                    <input type="text" id="rf_name" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="rf_email" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Phone</label>
-                    <input type="tel" id="rf_phone" class="form-control">
-                </div>
-                <div class="small text-muted">
-                    You’ll be redirected to our secure checkout to complete the payment.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-danger" type="button" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary" type="submit">Pay & reserve</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <?php include 'inc/footer.inc'; ?>
 

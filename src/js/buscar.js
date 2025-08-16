@@ -1,10 +1,16 @@
 // src/js/buscar.js
 (function () {
-    // Ajusta si tu app vive en otra ruta
-    const PREFIX = '/CanaryVanGit/AlisiosVan';
+    // Detecta la raíz del proyecto según estés en /src/...
+    // Ej: en local => "/CanaryVanGit/AlisiosVan", en prod => ""
+    const ROOT = location.pathname.includes('/src/')
+        ? location.pathname.split('/src/')[0]
+        : '';
+
+    // Helpers para construir URLs
+    const apiUrl = (file) => new URL(`${ROOT}/api/${file}`, location.origin).toString();
+    const IMG_PREFIX = `${ROOT}/src/`;
 
     // ---------- Helpers de imágenes ----------
-    const IMG_PREFIX = PREFIX + '/src/';
     function resolveImage(path, fallback) {
         const p = (path || '').trim();
         if (!p) return IMG_PREFIX + (fallback || 'img/carousel/t3-azul-mar.webp');
@@ -37,7 +43,21 @@
     const dateInput  = document.getElementById('dateRange');
     const backLink   = document.getElementById('backLink');
 
-    // ---------- Fechas: SIEMPRE local (nada de toISOString) ----------
+    // ---------- Overlay checkout ----------
+    function showCheckoutOverlay(msg){
+        const el = document.getElementById('checkoutOverlay');
+        if (!el) return; // si no existe en el HTML, simplemente no mostramos overlay
+        const p = el.querySelector('p');
+        if (p && msg) p.textContent = msg;
+        el.classList.add('show');
+        el.removeAttribute('hidden');
+    }
+    function hideCheckoutOverlay(){
+        const el = document.getElementById('checkoutOverlay');
+        if (el) el.classList.remove('show');
+    }
+
+    // ---------- Fechas: SIEMPRE local ----------
     const ymdLocal = d => {
         const y = d.getFullYear();
         const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -47,10 +67,10 @@
     function parseYMDToLocalDate(s) {
         if (!s) return null;
         const [y, m, d] = s.split('-').map(Number);
-        return new Date(y, m - 1, d); // medianoche local
+        return new Date(y, m - 1, d);
     }
 
-    // ---------- Locale común para Flatpickr ----------
+    // ---------- Locale común para Flatpickr (arreglado Oct/Nov) ----------
     const localeEN = {
         firstDayOfWeek: 1,
         weekdays: {
@@ -65,6 +85,7 @@
 
     // ---------- UI helpers ----------
     function updateRangeLabel() {
+        if (!rangeLabel) return;
         rangeLabel.textContent = (start && end) ? `From ${start} to ${end}` : '';
     }
     function updateQueryString() {
@@ -109,27 +130,25 @@
             const col = document.createElement('div');
             col.className = 'col-md-4 camper-col';
             col.innerHTML = `
-      <div class="camper-card">
-        <a href="${detailsHref}">
-          <img src="${img}" alt="${c.name}" loading="lazy">
-        </a>
-        <div class="camper-info">
-          <h3>"${c.name}"</h3>
-          <p>${Number(c.price_per_night).toFixed(0)}€ per night.</p>
-          <div class="d-flex align-items-center mt-2">
-            <button class="btn btn-primary btn-sm btn-reserve" data-id="${c.id}">Reserve</button>
-            <a class="btn btn-outline-secondary btn-sm ms-auto" href="${detailsHref}">View camper</a>
+        <div class="camper-card">
+          <a href="${detailsHref}">
+            <img src="${img}" alt="${c.name}" loading="lazy">
+          </a>
+          <div class="camper-info">
+            <h3>"${c.name}"</h3>
+            <p>${Number(c.price_per_night).toFixed(0)}€ per night.</p>
+            <div class="d-flex align-items-center mt-2">
+              <button class="btn btn-primary btn-sm js-reserve" data-id="${c.id}">Reserve</button>
+              <a class="btn btn-outline-secondary btn-sm ms-auto" href="${detailsHref}">View camper</a>
+            </div>
           </div>
         </div>
-      </div>
-    `;
+      `;
             resultsEl.appendChild(col);
         });
 
         hookReserveButtons();
     }
-
-
 
     // ---------- Cargar disponibilidad ----------
     async function loadAvailability() {
@@ -142,7 +161,7 @@
             return;
         }
 
-        const url = new URL(PREFIX + '/api/availability.php', location.origin);
+        const url = new URL(apiUrl('availability.php'));
         url.searchParams.set('start', start);
         url.searchParams.set('end', end);
         if (seriesFilter) url.searchParams.set('series', seriesFilter);
@@ -169,55 +188,48 @@
         });
     });
 
-    // ---------- Modal + checkout ----------
+    // ---------- Checkout directo (SIN modal) ----------
     function hookReserveButtons() {
-        const modal = new bootstrap.Modal(document.getElementById('reserveModal'));
-        const rf_camper_id = document.getElementById('rf_camper_id');
-        const rf_start     = document.getElementById('rf_start');
-        const rf_end       = document.getElementById('rf_end');
-        const rf_name      = document.getElementById('rf_name');
-        const rf_email     = document.getElementById('rf_email');
-        const rf_phone     = document.getElementById('rf_phone');
-        const form         = document.getElementById('reserveForm');
-
-        document.querySelectorAll('.btn-reserve').forEach(b => {
-            b.addEventListener('click', () => {
-                rf_camper_id.value = b.dataset.id;
-                rf_start.value = start;
-                rf_end.value   = end;
-                rf_name.value  = '';
-                rf_email.value = '';
-                rf_phone.value = '';
-                modal.show();
-            });
-        });
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = {
-                camper_id: +rf_camper_id.value,
-                start: rf_start.value,
-                end: rf_end.value,
-                name: rf_name.value.trim(),
-                email: rf_email.value.trim(),
-                phone: rf_phone.value.trim()
-            };
-            try {
-                const res = await fetch(PREFIX + '/api/create-checkout.php', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (data.ok && data.url) {
-                    location.href = data.url;
-                } else {
-                    alert(data.error || 'Could not start checkout.');
+        document.querySelectorAll('.js-reserve').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!start || !end) {
+                    alert('Select the dates before reserving.');
+                    return;
                 }
-            } catch (err) {
-                console.error(err);
-                alert('Network error.');
-            }
+
+                const camperId = Number(btn.dataset.id || 0);
+                if (!camperId) return;
+
+                const old = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = 'Redirecting...';
+
+                // Muestra overlay (si está añadido en el HTML)
+                showCheckoutOverlay('Redirecting you to a safe checkout…');
+
+                try {
+                    const res = await fetch(apiUrl('create-checkout.php'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ camper_id: camperId, start, end })
+                    });
+                    const data = await res.json();
+                    if (data.ok && data.url) {
+                        // dejamos el overlay visible mientras salta a Stripe
+                        window.location.href = data.url;
+                    } else {
+                        hideCheckoutOverlay();
+                        alert(data.error || 'Could not initialize checkout.');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    hideCheckoutOverlay();
+                    alert('Error de red.');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = old;
+                }
+            });
         });
     }
 
@@ -225,29 +237,31 @@
     updateRangeLabel();
     updateBackLinkHref();
 
-    // Calendario (idéntico criterio que en landing)
-    flatpickr(dateInput, {
-        mode: 'range',
-        dateFormat: 'Y-m-d',   // formato máquina
-        altInput: true,
-        altFormat: 'j M Y',    // formato humano
-        defaultDate: (start && end) ? [parseYMDToLocalDate(start), parseYMDToLocalDate(end)] : null,
-        disableMobile: true,
-        allowInput: false,
-        clickOpens: true,
-        showMonths: 2,
-        locale: localeEN,
-        onClose(selectedDates){
-            if (selectedDates.length === 2) {
-                start = ymdLocal(selectedDates[0]);
-                end   = ymdLocal(selectedDates[1]);
-                updateRangeLabel();
-                updateQueryString();
-                updateBackLinkHref();
-                loadAvailability();
+    // Calendario
+    if (window.flatpickr && dateInput) {
+        flatpickr(dateInput, {
+            mode: 'range',
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'j M Y',
+            defaultDate: (start && end) ? [parseYMDToLocalDate(start), parseYMDToLocalDate(end)] : null,
+            disableMobile: true,
+            allowInput: false,
+            clickOpens: true,
+            showMonths: 2,
+            locale: localeEN,
+            onClose(selectedDates){
+                if (selectedDates.length === 2) {
+                    start = ymdLocal(selectedDates[0]);
+                    end   = ymdLocal(selectedDates[1]);
+                    updateRangeLabel();
+                    updateQueryString();
+                    updateBackLinkHref();
+                    loadAvailability();
+                }
             }
-        }
-    });
+        });
+    }
 
     // Primera carga
     loadAvailability();
