@@ -89,11 +89,19 @@
                     <li><a href="#" class="text-white text-decoration-none" onclick="cookieConsent?.openSettings();return false;">Cookie settings</a></li>
                 </ul>
 
-                <div class="d-flex gap-3">
-                    <a href="https://www.instagram.com/alisios_van/" target="_blank" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-facebook fa-lg"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-tiktok fa-lg"></i></a>
+                <!--Iconos redes sociales-->
+                <div class="d-flex gap-3 footer-social">
+                    <a href="https://www.instagram.com/alisios_van/" target="_blank" class="text-white" aria-label="Instagram">
+                        <i class="fab fa-instagram fa-lg"></i>
+                    </a>
+                    <a href="#" class="text-white" aria-label="Facebook">
+                        <i class="fab fa-facebook fa-lg"></i>
+                    </a>
+                    <a href="#" class="text-white" aria-label="TikTok">
+                        <i class="fab fa-tiktok fa-lg"></i>
+                    </a>
                 </div>
+
             </div>
         </div>
     </div>

@@ -57,9 +57,9 @@ function navActive(string $file): string {
                        href="contacto.php">Contact</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= navActive('find-reservation.php') ?>"
-                       <?php if (navActive('find-reservation.php')): ?>aria-current="page"<?php endif; ?>
-                       href="find-reservation.php">Manage Booking</a>
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#manageBookingModal">
+                        Manage Booking
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link instagram-link" href="https://www.instagram.com/alisios_van/"
@@ -71,3 +71,36 @@ function navActive(string $file): string {
         </div>
     </div>
 </nav>
+
+<!-- Manage Booking Modal -->
+<div class="modal fade" id="manageBookingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title">Manage your booking</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="find-reservation.php" method="get" class="needs-validation" novalidate>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Reservation #</label>
+                        <input type="number" name="rid" class="form-control" required min="1" inputmode="numeric" pattern="[0-9]+">
+                        <div class="invalid-feedback">Please enter your reservation number.</div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Email used for the booking</label>
+                        <input type="email" name="email" class="form-control" required>
+                        <div class="invalid-feedback">We need your email to verify it's you.</div>
+                    </div>
+                    <p class="small text-muted mb-0">We’ll verify and take you to your booking.</p>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary w-100">Continue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
