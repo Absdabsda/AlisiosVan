@@ -44,24 +44,10 @@ label {                 /* refuerza color de labels sobre fondos claros */
     z-index: 1;
 }
 
-/* Oscurecido sutil arriba para legibilidad del título */
-.landing-hero::after{
-    content:"";
-    position:absolute; inset:0;
-    background: linear-gradient(
-            to bottom,
-            rgba(0,0,0,.45) 0%,
-            rgba(0,0,0,.30) 40%,
-            rgba(0,0,0,.10) 70%,
-            rgba(0,0,0,0) 100%
-    );
-    z-index: 2;
-}
-
 /* Capa de contenido: ocupa todo el hero y apila títulos + buscador */
 .landing-overlay{
     position: relative;
-    z-index: 3;                                   /* por encima de ::after */
+    z-index: 3;
     width: 100%;
     height: 100%;
     display: flex;
@@ -69,7 +55,8 @@ label {                 /* refuerza color de labels sobre fondos claros */
     align-items: center;
     justify-content: flex-start;
     gap: .5rem;
-    padding: clamp(96px, 18vh, 160px) 1rem 2rem;  /* hueco bajo header fijo */
+    /* Por defecto (móvil/tablet): padding contenido */
+    padding: clamp(96px, 18vh, 160px) 1rem 2rem;
     color: var(--color-blanco);
     text-align: center;
 }
@@ -229,14 +216,60 @@ label {                 /* refuerza color de labels sobre fondos claros */
     margin: .5rem 0 .25rem;
 }
 
+/* === Buscador: centrado y ancho correcto en desktop === */
+.search-wrapper{
+    width: min(1000px, calc(100% - 64px)); /* antes se cayó; lo restauramos */
+    margin-top: auto;
+    margin-bottom: 2vh;
+    margin-inline: auto;                   /* centra horizontalmente */
+    align-self: center;
+}
+
+/* El form llena el wrapper */
+.search-form{
+    width: 100%;
+}
+
+/* Como el <form> es también .row, quitamos los márgenes negativos de BS */
+.search-form.row{
+    --bs-gutter-x: 1rem;   /* separaciones internas */
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Buscador centrado y ancho correcto en todas las vistas */
+.search-wrapper{
+    width: min(1000px, calc(100% - 64px));
+    margin-top: auto;
+    margin-bottom: 2vh;
+    margin-inline: auto;     /* centra horizontalmente */
+    align-self: center;
+}
+.search-form{ width: 100%; }
+.search-form.row{
+    --bs-gutter-x: 1rem;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+
 
 /* ============ RESPONSIVE DEL HERO COMPLETO ============ */
 @media (max-width: 576px){
     .landing-hero{ height: auto; }
     .landing-overlay{
         height: auto;
-        padding-top: 20vh;
+        padding-top: 20vh;      /* bajo el header fijo */
         padding-bottom: 1rem;
     }
     .search-wrapper{ margin-top: 1rem; }
+}
+
+/* Desktop >= lg: céntralo verticalmente */
+@media (min-width: 769px){
+    .search-wrapper{
+        margin-top: clamp(12px, 5vh, 72px);
+        margin-inline: auto;
+        margin-bottom: auto;
+    }
 }
