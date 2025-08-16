@@ -27,12 +27,77 @@
     <link rel="stylesheet" href="css/campers.css">
     <link rel="stylesheet" href="css/buscar.css">
     <link rel="stylesheet" href="css/cookies.css">
+
+    <script src="js/header.js" defer></script>
     <script src="js/buscar.js" defer></script>
     <script src="js/cookies.js" defer></script>
 
+    <style>
+        :root { --header-bg-rgb: 131,115,100; } /* #837364 */
+    </style>
+
 </head>
+<!-- Overlay "redirigiendo a Stripe" -->
+<div id="checkoutOverlay" hidden>
+    <div class="co-box">
+        <div class="spinner-border" role="status" aria-hidden="true"></div>
+        <p class="mt-3 mb-0">Redirecting you to our secure checkout ...</p>
+        <div class="text-muted small">Don't close this window.</div>
+    </div>
+</div>
+<style>
+    #checkoutOverlay{
+        position:fixed; inset:0; display:none; place-items:center;
+        background:rgba(255,255,255,.9); z-index:2000;
+    }
+    #checkoutOverlay.show{ display:grid; }
+    #checkoutOverlay .co-box{
+        background:#fff; border:1px solid rgba(0,0,0,.06); border-radius:12px;
+        padding:18px 22px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.12);
+    }
+</style>
+
 <body>
 <?php include 'inc/header.inc'; ?>
+
+<!-- Mini Chat WhatsApp – Alisios Van -->
+<div id="wa-widget" aria-live="polite">
+    <!-- Lanzador flotante -->
+    <button id="wa-launcher" aria-label="Abrir chat de WhatsApp" title="WhatsApp">
+        <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+    </button>
+
+    <!-- Ventana del chat -->
+    <div id="wa-panel" hidden>
+        <div class="wa-header">
+            <div class="wa-identity">
+                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                <div>
+                    <strong>Alisios Van</strong>
+                    <div class="wa-status">WhatsApp</div>
+                </div>
+            </div>
+            <button id="wa-close" aria-label="Cerrar chat" title="Cerrar">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <div class="wa-messages" id="wa-messages"></div>
+
+        <div class="wa-quick" id="wa-quick" aria-label="Opciones rápidas">
+            <button type="button" data-text="Hola, me gustaría consultar disponibilidad.">Disponibilidad</button>
+            <button type="button" data-text="¿Podríais enviarme precios y condiciones?">Precios</button>
+            <button type="button" data-text="Tengo otra consulta.">Otro</button>
+        </div>
+
+        <div class="wa-input">
+            <input type="text" id="wa-input" placeholder="Escribe y abre WhatsApp…" />
+            <button id="wa-send" aria-label="Abrir WhatsApp">
+                <i class="bi bi-send-fill" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+</div>
 
 <main>
     <!-- HERO idéntico al de campers -->
@@ -89,45 +154,6 @@
         </div>
     </section>
 </main>
-
-
-
-
-<!-- Modal de reserva (datos del cliente) -->
-<div class="modal fade" id="reserveModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <form id="reserveForm" class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Complete your booking</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="rf_camper_id">
-                <input type="hidden" id="rf_start">
-                <input type="hidden" id="rf_end">
-                <div class="mb-3">
-                    <label class="form-label">Full name</label>
-                    <input type="text" id="rf_name" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="rf_email" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Phone</label>
-                    <input type="tel" id="rf_phone" class="form-control">
-                </div>
-                <div class="small text-muted">
-                    You’ll be redirected to our secure checkout to complete the payment.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-danger" type="button" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary" type="submit">Pay & reserve</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <?php include 'inc/footer.inc'; ?>
 

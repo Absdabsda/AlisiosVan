@@ -104,6 +104,7 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
     <link rel="stylesheet" href="css/ficha-camper.css">
     <link rel="stylesheet" href="css/cookies.css">
 
+    <script src="js/header.js" defer></script>
     <script src="js/cookies.js" defer></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
@@ -125,6 +126,16 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
             });
         });
     </script>
+    <?php
+    $headerPalette = [
+        1 => '131,115,100', // Matcha  #837364
+        2 => '82,118,159', // Skye    #737F8F aprox (azulado)
+        3 => '167,176,183',  // Rusty   #907556 aprox (arena/óxido)
+    ];
+    $headerRgb = $headerPalette[$id] ?? '131,115,100';
+    ?>
+    <style>:root{ --header-bg-rgb: <?= htmlspecialchars($headerRgb) ?>; }</style>
+
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>
@@ -206,7 +217,7 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
                     </ul>
 
                     <div class="cta-row">
-                        <a class="btn btn-primary" href="campers.php">Reserve</a>
+                        <a class="btn btn-primary" href="index.php">Reserve</a>
                         <a class="btn btn-outline-secondary" href="campers.php">Back to all campers</a>
                     </div>
 

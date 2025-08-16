@@ -1,3 +1,10 @@
+.page-hero.buscar-hero {
+    background-image: url('../img/skye-interior.jpeg');
+    height: 25vh;
+    background-position: center;
+}
+
+
 /* ===== Date Chip (pill con icono, compatible con altInput) ===== */
 .date-chip {
     position: relative;

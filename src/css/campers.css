@@ -5,13 +5,6 @@
     background-position: center 55%;
 }
 
-.page-hero.buscar-hero {
-    background-image: url('../img/skye-interior.jpeg');
-    height: 25vh;
-    background-position: center;
-}
-
-
 .fleet-highlights.text-white {
     background-color: var(--color-piedra-claro);
 }

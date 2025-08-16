@@ -26,7 +26,6 @@ if (empty($_SESSION['csrf'])) {
     <link rel="stylesheet" href="css/contacto.css">
     <link rel="stylesheet" href="css/cookies.css">
     <script src="js/header.js" defer></script>
-    <script src="js/contacto.js" defer></script>
 
     <script src="js/contacto.js" defer></script>
     <script src="js/cookies.js" defer></script>
@@ -35,6 +34,10 @@ if (empty($_SESSION['csrf'])) {
         :root { --header-bg-rgb: 84,70,62; } /* #54463E */
     </style>
 </head>
+
+<body>
+<?php include 'inc/header.inc'; ?>
+
 <!-- Mini Chat WhatsApp – Alisios Van -->
 <div id="wa-widget" aria-live="polite">
     <!-- Lanzador flotante -->
@@ -74,9 +77,6 @@ if (empty($_SESSION['csrf'])) {
     </div>
 </div>
 
-<body>
-<?php include 'inc/header.inc'; ?>
-
 <main>
     <!-- HERO -->
     <section class="page-hero contact-hero pos-center">
@@ -111,7 +111,8 @@ if (empty($_SESSION['csrf'])) {
 
                     <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf']) ?>">
                         <input type="text" name="website" tabindex="-1" autocomplete="off"
-                               style="position:absolute;left:-9999px;opacity:0" aria-hidden="true">
+                               class="hp-field" aria-hidden="true">
+
 
                         <div class="form-row">
                             <div class="field">

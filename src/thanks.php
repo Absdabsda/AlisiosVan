@@ -3,14 +3,12 @@ declare(strict_types=1);
 ini_set('display_errors','1'); error_reporting(E_ALL);
 
 require __DIR__ . '/../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..'); $dotenv->safeLoad();
+Dotenv\Dotenv::createImmutable(__DIR__ . '/..')->safeLoad();
 require __DIR__ . '/../config/db.php';
 $pdo = get_pdo();
 
 use Stripe\Stripe;
 use Stripe\Checkout\Session as CheckoutSession;
-
-// PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as MailException;
 
@@ -59,24 +57,19 @@ try {
         ");
         $up->execute([':pi' => (string)$session->payment_intent, ':ssid' => $sessionId]);
 
-        // --- Invoice (puede tardar un instante en estar lista) -----------------------
-        $invoiceId = null;
-        $invoicePdf = null;
-        $invoiceUrl = null;
-        $invoiceStatus = null;
-        $invoicePaid = false;
+        // --- Invoice (puede tardar) ----------------------------------------
+        $invoiceId = null; $invoicePdf = null; $invoiceUrl = null;
+        $invoiceStatus = null; $invoicePaid = false;
 
         // 1) session->invoice
         if (!empty($session->invoice)) {
             $invoiceId = is_object($session->invoice) ? $session->invoice->id : (string)$session->invoice;
         }
-
         // 2) payment_intent->invoice
         $pi = $session->payment_intent ?? null;
         if (!$invoiceId && $pi && !empty($pi->invoice)) {
             $invoiceId = is_object($pi->invoice) ? $pi->invoice->id : (string)$pi->invoice;
         }
-
         // 3) buscar por payment_intent
         if (!$invoiceId && $pi && !empty($pi->id)) {
             try {
@@ -84,21 +77,20 @@ try {
                 if (!empty($list->data[0])) { $invoiceId = $list->data[0]->id; }
             } catch (Throwable $e) { /* ignore */ }
         }
-
-        // 4) reintento corto hasta que tenga URL/PDF/estado
+        // 4) reintento hasta que tenga URL/PDF/estado (~15s)
         if ($invoiceId) {
-            for ($i=0; $i<10; $i++) { // ~6s total
+            for ($i=0; $i<30; $i++) { // 30 * 0.5s = 15s
                 $inv = \Stripe\Invoice::retrieve($invoiceId);
                 $invoicePdf    = $inv->invoice_pdf ?? null;
                 $invoiceUrl    = $inv->hosted_invoice_url ?? null;
                 $invoiceStatus = $inv->status ?? null;
                 $invoicePaid   = ($invoiceStatus === 'paid');
                 if ($invoicePdf || $invoiceUrl || $invoicePaid) { break; }
-                usleep(600000); // 0.6s
+                usleep(500000); // 0.5s
             }
         }
 
-        // Guarda en BD solo si existen las columnas
+        // Guarda en BD si existen las columnas
         if ($invoiceId && columnExists($pdo, 'reservations', 'stripe_invoice_id')) {
             $pdo->prepare("UPDATE reservations SET stripe_invoice_id=:iid WHERE stripe_session_id=:ssid LIMIT 1")
                 ->execute([':iid'=>$invoiceId, ':ssid'=>$sessionId]);
@@ -124,7 +116,6 @@ try {
               JOIN campers c ON c.id = r.camper_id
              WHERE r.stripe_session_id = :ssid
              LIMIT 1";
-
         $st = $pdo->prepare($select);
         $st->execute([':ssid' => $sessionId]);
         $res = $st->fetch(PDO::FETCH_ASSOC);
@@ -199,7 +190,7 @@ try {
           <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD;">€'.number_format($price,2).'</td>
         </tr>
         <tr>
-          <td style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">Total paid</td>
+          <td style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">Total price</td>
           <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">€'.number_format($total,2).'</td>
         </tr>
       </table>
@@ -264,7 +255,7 @@ try {
             "Dates: {$startHuman} -> {$endHuman}\n".
             "Nights: {$nights}\n".
             "Price/night: €".number_format($price,2)."\n".
-            "Total paid: €".number_format($total,2)."\n".
+            "Total price: €".number_format($total,2)."\n".
             ($receiptUrl ? "Receipt: $receiptUrl\n" : "") .
             (($invoicePdf || $invoiceUrl) ? "Invoice: ".($invoicePdf ?: $invoiceUrl)."\n" : "") .
             ($manageUrl ? "Manage: $manageUrl\n" : "") .
@@ -297,7 +288,21 @@ try {
             return $ok ? $data : null;
         };
 
-        if ($customerEmail && $host && $user && $pass) {
+        // --------- Lógica de envío: solo si la factura ya está lista --------
+        $invoiceReady = (bool)($invoicePdf || $invoiceUrl || $invoicePaid);
+
+        // ¿Ya se envió?
+        $emailAlreadySent = false;
+        if (columnExists($pdo, 'reservations', 'confirmation_email_sent_at')) {
+            $q = $pdo->prepare("SELECT confirmation_email_sent_at FROM reservations WHERE stripe_session_id = :ssid LIMIT 1");
+            $q->execute([':ssid' => $sessionId]);
+            $emailAlreadySent = (bool)$q->fetchColumn();
+        }
+
+        $shouldSendEmail = (!$emailAlreadySent && $invoiceReady && $customerEmail && $host && $user && $pass);
+
+        if ($shouldSendEmail) {
+            $sentOk = false;
             try {
                 $mail = new PHPMailer(true);
                 $mail->CharSet  = 'UTF-8';
@@ -340,11 +345,28 @@ try {
                 }
 
                 $mail->send();
+                $sentOk = true;
             } catch (MailException $e) {
                 error_log('Mail send error: '.$e->getMessage());
             }
+
+            if ($sentOk && columnExists($pdo, 'reservations', 'confirmation_email_sent_at')) {
+                $pdo->prepare("
+                    UPDATE reservations
+                       SET confirmation_email_sent_at = NOW()
+                     WHERE stripe_session_id = :ssid
+                       AND confirmation_email_sent_at IS NULL
+                     LIMIT 1
+                ")->execute([':ssid' => $sessionId]);
+            }
         } else {
-            error_log('Mail not sent: missing SMTP config or customer email.');
+            if (!$invoiceReady) {
+                error_log("Invoice not ready yet for session $sessionId; email postponed.");
+            } elseif ($emailAlreadySent) {
+                error_log("Email already sent for session $sessionId; skipping.");
+            } else {
+                error_log('Mail not sent: missing SMTP config or customer email.');
+            }
         }
 
         // ------------------ Página (para navegador) --------------------------
@@ -422,12 +444,12 @@ try {
                         </div>
 
                         <?php if (!$invoicePdf && !$invoiceUrl && !$invoiceId): ?>
-                            <p class="text-danger mt-3 small">
-                                No invoice was created for this payment. (Did you enable <code>invoice_creation</code> when creating the Checkout Session?)
+                            <p class="text-muted mt-3 small">
+                                Your invoice is being generated. It can take a little while. We’ll email it to you shortly.
                             </p>
                         <?php elseif (!$invoicePdf && !$invoiceUrl): ?>
                             <p class="text-muted mt-3 small">
-                                The invoice was created but its PDF is not ready yet. It will also be emailed if you enabled “Successful payments” in Stripe’s customer emails.
+                                The invoice was created but the file isn’t ready yet. We’ll email it as soon as it’s available.
                             </p>
                         <?php endif; ?>
                     </div>
@@ -437,7 +459,7 @@ try {
                         <div class="summary">
                             <div class="rowx"><span>Price/night</span><span>€<?= number_format((float)$price, 2) ?></span></div>
                             <div class="rowx"><span>Nights</span><span><?= (int)$nights ?></span></div>
-                            <div class="rowx total"><span>Total paid</span><span>€<?= number_format((float)$total, 2) ?></span></div>
+                            <div class="rowx total"><span>Total price</span><span>€<?= number_format((float)$total, 2) ?></span></div>
                         </div>
                     </div>
                 </div>

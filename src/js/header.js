@@ -6,3 +6,14 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 });
+
+// Validación Bootstrap del modal
+document.querySelectorAll('form.needs-validation').forEach(form => {
+    form.addEventListener('submit', e => {
+        if (!form.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});

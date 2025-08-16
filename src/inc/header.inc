@@ -6,14 +6,25 @@ function navActive(string $file): string {
 }
 ?>
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg" data-bs-theme="light">
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container-fluid px-3 px-lg-3">
         <!-- Logo -->
         <a class="navbar-brand d-flex align-items-center gap-2" href="index.php" aria-label="Alisios Van — Home">
-        <span class="brand-logo-box">
-            <img src="img/Alisios (4).png" alt="Alisios Van" class="brand-logo">
-        </span>
+          <span class="brand-logo-box">
+            <picture class="brand-picture">
+              <!-- Logo para móvil (≤ 991.98px) -->
+              <source media="(max-width: 991.98px)" srcset="img/icono.png">
+                <!-- Fallback / desktop -->
+              <img
+                      src="img/alisios-logo.png"
+                      alt="Alisios Van"
+                      class="brand-logo"
+                      width="200" height="60"
+                loading="eager" decoding="async">
+            </picture>
+          </span>
         </a>
+
 
         <!-- Hamburguesa -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -26,20 +37,28 @@ function navActive(string $file): string {
         <div class="collapse navbar-collapse justify-content-end" id="navbarMain">
             <ul class="navbar-nav mb-2 mb-lg-0 align-items-lg-center gap-lg-2">
                 <li class="nav-item">
-                    <a class="nav-link <?= navActive('campers.php') ?>" href="campers.php">Campers</a>
+                    <a class="nav-link <?= navActive('campers.php') ?>"
+                       <?php if (navActive('campers.php')): ?>aria-current="page"<?php endif; ?>
+                       href="campers.php">Campers</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= navActive('sobre-nosotros.php') ?>" href="sobre-nosotros.php">About Us</a>
+                    <a class="nav-link <?= navActive('sobre-nosotros.php') ?>"
+                       <?php if (navActive('sobre-nosotros.php')): ?>aria-current="page"<?php endif; ?>
+                       href="sobre-nosotros.php">About Us</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= navActive('faq.php') ?>" href="faq.php">FAQ</a>
+                    <a class="nav-link <?= navActive('faq.php') ?>"
+                       <?php if (navActive('faq.php')): ?>aria-current="page"<?php endif; ?>
+                       href="faq.php">FAQ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= navActive('contacto.php') ?>" href="contacto.php">Contact</a>
+                    <a class="nav-link <?= navActive('contacto.php') ?>"
+                       <?php if (navActive('contacto.php')): ?>aria-current="page"<?php endif; ?>
+                       href="contacto.php">Contact</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= navActive('find-reservation.php') ?>" href="find-reservation.php">
-                        Manage booking
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#manageBookingModal">
+                        Manage Booking
                     </a>
                 </li>
                 <li class="nav-item">
@@ -52,3 +71,36 @@ function navActive(string $file): string {
         </div>
     </div>
 </nav>
+
+<!-- Manage Booking Modal -->
+<div class="modal fade" id="manageBookingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title">Manage your booking</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="find-reservation.php" method="get" class="needs-validation" novalidate>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Reservation #</label>
+                        <input type="number" name="rid" class="form-control" required min="1" inputmode="numeric" pattern="[0-9]+">
+                        <div class="invalid-feedback">Please enter your reservation number.</div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Email used for the booking</label>
+                        <input type="email" name="email" class="form-control" required>
+                        <div class="invalid-feedback">We need your email to verify it's you.</div>
+                    </div>
+                    <p class="small text-muted mb-0">We’ll verify and take you to your booking.</p>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary w-100">Continue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

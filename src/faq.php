@@ -8,9 +8,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
 
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
@@ -135,8 +138,14 @@
 
                 <details class="faq-item" id="faq-ferry" data-tags="booking,camping">
                     <summary>Can I take the ferry to other islands?</summary>
-                    <div class="content">Usually allowed with prior notice and approval. Ferry tickets and extra insurance may apply.</div>
+                    <div class="content">Yes — but only after speaking with the administrator and coordinating how to do it, because specific conditions must be followed.
+                        <ul class="mt-2 mb-0">
+                            <li>Prior approval is required (route and dates).</li>
+                            <li>You must follow the operator’s rules and protect the vehicle during boarding.</li>
+                        </ul>
+                    </div>
                 </details>
+
 
                 <details class="faq-item" id="faq-sleep" data-tags="camping,rules">
                     <summary>Where can I sleep/camp?</summary>
