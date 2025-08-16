@@ -254,3 +254,13 @@ a:hover {
 
 /* Si usas clases "text-muted" dentro del footer, que no se vean grises casi invisibles */
 .footer .text-muted { color: rgba(255,255,255,.75) !important; }
+
+.footer-logo-img{
+    height: 100px;           /* controla la altura visual del logo */
+    width: auto;            /* mantiene proporción */
+    display: block;
+    object-fit: contain;
+}
+.footer.bg-dark{
+    background-color: #0f0f10 !important; /* opcional: un negro más profundo */
+}

@@ -54,9 +54,17 @@
         <div class="row">
             <!-- Logo y Descripción -->
             <div class="col-md-4 mb-4">
-                <h4 class="footer-logo" style="font-family: 'Playfair Display', cursive; font-size: 2.5rem;">Alisios Van</h4>
-                <p>Freedom, adventure, and island vibes — one van at a time.</p>
+                <a href="index.php" class="d-inline-flex align-items-center text-decoration-none mb-2">
+                    <img
+                            src="img/logo-blanco.png"
+                    alt="Alisios Van"
+                    class="footer-logo-img"
+                    width="180" height="48"
+                    loading="lazy" decoding="async">
+                </a>
+                <p class="mb-0">Freedom, adventure, and island vibes — one van at a time.</p>
             </div>
+
 
             <!-- Enlaces útiles -->
             <div class="col-md-4 mb-4">

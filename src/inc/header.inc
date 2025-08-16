@@ -11,7 +11,7 @@ function navActive(string $file): string {
         <!-- Logo -->
         <a class="navbar-brand d-flex align-items-center gap-2" href="index.php" aria-label="Alisios Van — Home">
         <span class="brand-logo-box">
-            <img src="img/Alisios (4).png" alt="Alisios Van" class="brand-logo">
+            <img src="img/logo-original.png" alt="Alisios Van" class="brand-logo">
         </span>
         </a>
 
