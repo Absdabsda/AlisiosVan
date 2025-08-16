@@ -15,7 +15,7 @@ $pdo = get_pdo();
 
 $start    = $_GET['start'] ?? null;      // Y-m-d
 $end      = $_GET['end']   ?? null;      // Y-m-d
-$series   = trim($_GET['series'] ?? ''); // T3/T4 (opcional)
+$series   = trim($_GET['series'] ?? ''); // T3/T4
 $maxPrice = isset($_GET['maxPrice']) && $_GET['maxPrice'] !== ''
     ? (float)$_GET['maxPrice']
     : null;
@@ -30,7 +30,7 @@ try {
     if (!$d1 || !$d2) throw new Exception('Formato de fecha inválido (usa Y-m-d).');
     if ($d1 >= $d2) throw new Exception('end debe ser posterior a start.');
 
-    // Construimos el WHERE opcional
+    //WHERE opcional
     $where = [];
     if ($series !== '') {
         $where[] = 'c.series = :series';
@@ -40,7 +40,7 @@ try {
     }
     $whereSql = $where ? ' AND ' . implode(' AND ', $where) : '';
 
-    // IMPORTANTE: c.image existe (lo añadiste) y price_per_night es el nombre real
+    // IMPORTANTE: c.image y price_per_night
     $sql = "
         SELECT c.id, c.name, c.series, c.price_per_night, c.image
         FROM campers c

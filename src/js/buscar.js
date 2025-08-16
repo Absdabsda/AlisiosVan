@@ -1,10 +1,16 @@
 // src/js/buscar.js
 (function () {
-    // Ajusta si tu app vive en otra ruta
-    const PREFIX = '/CanaryVanGit/AlisiosVan';
+    // Detecta la raíz del proyecto según estés en /src/...
+    // Ej: en local => "/CanaryVanGit/AlisiosVan", en prod => ""
+    const ROOT = location.pathname.includes('/src/')
+        ? location.pathname.split('/src/')[0]
+        : '';
+
+    // Helpers para construir URLs
+    const apiUrl = (file) => new URL(`${ROOT}/api/${file}`, location.origin).toString();
+    const IMG_PREFIX = `${ROOT}/src/`;
 
     // ---------- Helpers de imágenes ----------
-    const IMG_PREFIX = PREFIX + '/src/';
     function resolveImage(path, fallback) {
         const p = (path || '').trim();
         if (!p) return IMG_PREFIX + (fallback || 'img/carousel/t3-azul-mar.webp');
@@ -37,7 +43,21 @@
     const dateInput  = document.getElementById('dateRange');
     const backLink   = document.getElementById('backLink');
 
-    // ---------- Fechas: SIEMPRE local (nada de toISOString) ----------
+    // ---------- Overlay checkout ----------
+    function showCheckoutOverlay(msg){
+        const el = document.getElementById('checkoutOverlay');
+        if (!el) return; // si no existe en el HTML, simplemente no mostramos overlay
+        const p = el.querySelector('p');
+        if (p && msg) p.textContent = msg;
+        el.classList.add('show');
+        el.removeAttribute('hidden');
+    }
+    function hideCheckoutOverlay(){
+        const el = document.getElementById('checkoutOverlay');
+        if (el) el.classList.remove('show');
+    }
+
+    // ---------- Fechas: SIEMPRE local ----------
     const ymdLocal = d => {
         const y = d.getFullYear();
         const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -47,10 +67,10 @@
     function parseYMDToLocalDate(s) {
         if (!s) return null;
         const [y, m, d] = s.split('-').map(Number);
-        return new Date(y, m - 1, d); // medianoche local
+        return new Date(y, m - 1, d);
     }
 
-    // ---------- Locale común para Flatpickr ----------
+    // ---------- Locale común para Flatpickr (arreglado Oct/Nov) ----------
     const localeEN = {
         firstDayOfWeek: 1,
         weekdays: {
@@ -65,6 +85,7 @@
 
     // ---------- UI helpers ----------
     function updateRangeLabel() {
+        if (!rangeLabel) return;
         rangeLabel.textContent = (start && end) ? `From ${start} to ${end}` : '';
     }
     function updateQueryString() {
@@ -109,27 +130,25 @@
             const col = document.createElement('div');
             col.className = 'col-md-4 camper-col';
             col.innerHTML = `
-      <div class="camper-card">
-        <a href="${detailsHref}">
-          <img src="${img}" alt="${c.name}" loading="lazy">
-        </a>
-        <div class="camper-info">
-          <h3>"${c.name}"</h3>
-          <p>${Number(c.price_per_night).toFixed(0)}€ per night.</p>
-          <div class="d-flex align-items-center mt-2">
-            <button class="btn btn-primary btn-sm btn-reserve" data-id="${c.id}">Reserve</button>
-            <a class="btn btn-outline-secondary btn-sm ms-auto" href="${detailsHref}">View camper</a>
+        <div class="camper-card">
+          <a href="${detailsHref}">
+            <img src="${img}" alt="${c.name}" loading="lazy">
+          </a>
+          <div class="camper-info">
+            <h3>"${c.name}"</h3>
+            <p>${Number(c.price_per_night).toFixed(0)}€ per night.</p>
+            <div class="d-flex align-items-center mt-2">
+              <button class="btn btn-primary btn-sm js-reserve" data-id="${c.id}">Reserve</button>
+              <a class="btn btn-outline-secondary btn-sm ms-auto" href="${detailsHref}">View camper</a>
+            </div>
           </div>
         </div>
-      </div>
-    `;
+      `;
             resultsEl.appendChild(col);
         });
 
         hookReserveButtons();
     }
-
-
 
     // ---------- Cargar disponibilidad ----------
     async function loadAvailability() {
@@ -142,7 +161,7 @@
             return;
         }
 
-        const url = new URL(PREFIX + '/api/availability.php', location.origin);
+        const url = new URL(apiUrl('availability.php'));
         url.searchParams.set('start', start);
         url.searchParams.set('end', end);
         if (seriesFilter) url.searchParams.set('series', seriesFilter);
@@ -169,55 +188,48 @@
         });
     });
 
-    // ---------- Modal + checkout ----------
+    // ---------- Checkout directo (SIN modal) ----------
     function hookReserveButtons() {
-        const modal = new bootstrap.Modal(document.getElementById('reserveModal'));
-        const rf_camper_id = document.getElementById('rf_camper_id');
-        const rf_start     = document.getElementById('rf_start');
-        const rf_end       = document.getElementById('rf_end');
-        const rf_name      = document.getElementById('rf_name');
-        const rf_email     = document.getElementById('rf_email');
-        const rf_phone     = document.getElementById('rf_phone');
-        const form         = document.getElementById('reserveForm');
-
-        document.querySelectorAll('.btn-reserve').forEach(b => {
-            b.addEventListener('click', () => {
-                rf_camper_id.value = b.dataset.id;
-                rf_start.value = start;
-                rf_end.value   = end;
-                rf_name.value  = '';
-                rf_email.value = '';
-                rf_phone.value = '';
-                modal.show();
-            });
-        });
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = {
-                camper_id: +rf_camper_id.value,
-                start: rf_start.value,
-                end: rf_end.value,
-                name: rf_name.value.trim(),
-                email: rf_email.value.trim(),
-                phone: rf_phone.value.trim()
-            };
-            try {
-                const res = await fetch(PREFIX + '/api/create-checkout.php', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (data.ok && data.url) {
-                    location.href = data.url;
-                } else {
-                    alert(data.error || 'Could not start checkout.');
+        document.querySelectorAll('.js-reserve').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!start || !end) {
+                    alert('Select the dates before reserving.');
+                    return;
                 }
-            } catch (err) {
-                console.error(err);
-                alert('Network error.');
-            }
+
+                const camperId = Number(btn.dataset.id || 0);
+                if (!camperId) return;
+
+                const old = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = 'Redirecting...';
+
+                // Muestra overlay (si está añadido en el HTML)
+                showCheckoutOverlay('Redirecting you to a safe checkout…');
+
+                try {
+                    const res = await fetch(apiUrl('create-checkout.php'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ camper_id: camperId, start, end })
+                    });
+                    const data = await res.json();
+                    if (data.ok && data.url) {
+                        // dejamos el overlay visible mientras salta a Stripe
+                        window.location.href = data.url;
+                    } else {
+                        hideCheckoutOverlay();
+                        alert(data.error || 'Could not initialize checkout.');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    hideCheckoutOverlay();
+                    alert('Error de red.');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = old;
+                }
+            });
         });
     }
 
@@ -225,30 +237,147 @@
     updateRangeLabel();
     updateBackLinkHref();
 
-    // Calendario (idéntico criterio que en landing)
-    flatpickr(dateInput, {
-        mode: 'range',
-        dateFormat: 'Y-m-d',   // formato máquina
-        altInput: true,
-        altFormat: 'j M Y',    // formato humano
-        defaultDate: (start && end) ? [parseYMDToLocalDate(start), parseYMDToLocalDate(end)] : null,
-        disableMobile: true,
-        allowInput: false,
-        clickOpens: true,
-        showMonths: 2,
-        locale: localeEN,
-        onClose(selectedDates){
-            if (selectedDates.length === 2) {
-                start = ymdLocal(selectedDates[0]);
-                end   = ymdLocal(selectedDates[1]);
+    // Calendario
+
+    if (window.flatpickr && dateInput) {
+        const isMobile = () => window.matchMedia('(max-width: 576px)').matches;
+
+        const fp = flatpickr(dateInput, {
+            mode: 'range',
+            minDate: 'today',
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'j M Y',
+            defaultDate: (start && end) ? [parseYMDToLocalDate(start), parseYMDToLocalDate(end)] : null,
+            disableMobile: true,
+            allowInput: false,
+            clickOpens: true,
+
+            showMonths: isMobile() ? 1 : 2,
+            static: isMobile(),
+            appendTo: isMobile() ? undefined : document.body,
+            position: 'auto',
+            locale: localeEN,
+
+            onReady(_, __, inst){
+                // En desktop asegúrate de que flote por encima de todo
+                if (!isMobile()) inst.calendarContainer.style.zIndex = '10010';
                 updateRangeLabel();
-                updateQueryString();
-                updateBackLinkHref();
-                loadAvailability();
+            },
+            onOpen(_, __, inst){
+                if (!isMobile()) inst.calendarContainer.style.zIndex = '10010';
+            },
+            onClose(selectedDates){
+                if (selectedDates.length === 2) {
+                    start = ymdLocal(selectedDates[0]);
+                    end   = ymdLocal(selectedDates[1]);
+                    updateRangeLabel();
+                    updateQueryString();
+                    updateBackLinkHref();
+                    loadAvailability();
+                }
             }
-        }
-    });
+        });
+
+        // Abrir tocando toda la “pill” de fechas
+        dateInput.closest('.date-chip')?.addEventListener('click', () => fp.open());
+
+        // Si cambia el ancho, actualiza meses y anclaje (se aplica al reabrir)
+        window.addEventListener('resize', () => {
+            const m = isMobile();
+            fp.set('showMonths', m ? 1 : 2);
+            fp.set('static', m);
+            fp.set('appendTo', m ? undefined : document.body);
+        });
+    }
+
 
     // Primera carga
     loadAvailability();
+
+    /* ===========================
+      WHATSAPP MINI-CHAT
+      =========================== */
+    const PHONE = '34610136383';           // sin +
+    const REDIRECT_AFTER_SEND_MS = 900;     // tiempo de lectura al pulsar enviar
+    const GREET_DELAY_MS = 150;
+
+    const launcher = document.getElementById('wa-launcher');
+    const panel    = document.getElementById('wa-panel');
+    const closeBtn = document.getElementById('wa-close');
+    const messages = document.getElementById('wa-messages');
+    const input    = document.getElementById('wa-input');
+    const sendBtn  = document.getElementById('wa-send');
+    const quick    = document.getElementById('wa-quick');
+
+    if (!launcher || !panel) return;
+
+    let greeted = false;
+
+    function addMsg(text, who) {
+        const div = document.createElement('div');
+        div.className = 'msg ' + (who || 'bot');
+        div.textContent = text;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function openPanel() {
+        panel.hidden = false;
+        if (!greeted) {
+            greeted = true;
+            setTimeout(() => {
+                addMsg('¡Hola! 👋 Somos Alisios Van.');
+                addMsg('Elige una opción o escribe tu mensaje y luego pulsa “enviar”.');
+            }, GREET_DELAY_MS);
+        }
+    }
+    function closePanel() { panel.hidden = true; }
+
+    function openWhatsApp(text) {
+        const msg = text && text.trim() ? text.trim() : 'Hola, me gustaría más información 🙂';
+        const url = 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(msg + '\n\n(Página: ' + window.location.href + ')');
+        if (typeof gtag === 'function') {
+            gtag('event', 'click', { event_category: 'engagement', event_label: 'whatsapp_mini_chat' });
+        } else if (window.dataLayer) {
+            window.dataLayer.push({ event: 'whatsapp_click', source: 'mini_chat' });
+        }
+        window.open(url, '_blank', 'noopener');
+    }
+
+    launcher.addEventListener('click', () => { panel.hidden ? openPanel() : closePanel(); });
+    closeBtn?.addEventListener('click', closePanel);
+
+    // Enviar → aviso + breve pausa antes de abrir WhatsApp
+    sendBtn.addEventListener('click', () => {
+        const text = input.value;
+        if (!text.trim()) { input.focus(); return; }
+        addMsg(text, 'user');
+        input.value = '';
+        setTimeout(() => {
+            addMsg('Abriendo WhatsApp…', 'bot');
+            setTimeout(() => openWhatsApp(text), REDIRECT_AFTER_SEND_MS);
+        }, 200);
+    });
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); sendBtn.click(); }
+    });
+
+    // Chips → ya no redirigen: dejan el mensaje preparado
+    quick.addEventListener('click', (e) => {
+        if (e.target.matches('button[data-text]')) {
+            const t = e.target.getAttribute('data-text');
+            input.value = t;
+            input.focus();
+            addMsg('Mensaje preparado. Pulsa “enviar” para abrir WhatsApp 👉', 'bot');
+        }
+    });
+
+    // Abrir automáticamente una vez por sesión a los 6s
+    if (!sessionStorage.getItem('waOpenedOnce')) {
+        setTimeout(() => {
+            openPanel();
+            sessionStorage.setItem('waOpenedOnce', '1');
+        }, 6000);
+    }
 })();

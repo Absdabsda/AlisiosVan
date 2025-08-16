@@ -1,0 +1,18 @@
+/* Hero específico para Manage */
+.page-hero.manage-hero {
+    background-image:url('../img/landing-matcha.02.31.jpeg');
+    height: 25vh;
+    background-position: center 55%;
+}
+
+.wrap{ max-width: 1000px; margin-inline:auto; padding: var(--spacing-l); }
+.cardy{ background: var(--color-blanco); border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-medium); border: 1px solid rgba(0,0,0,.04);
+    padding: clamp(1rem, 2vw, 1.5rem); }
+.summary{ background: rgba(255,255,255,.6); border: 1px solid rgba(0,0,0,.06);
+    border-radius: 12px; padding: 12px 14px; }
+.rowx{ display:flex; justify-content:space-between; padding: 8px 0; }
+.rowx + .rowx{ border-top: 1px dashed rgba(0,0,0,.08); }
+.total{ font-weight:700; }
+.badge-soft{ background: rgba(128,193,208,.15); color: var(--text-principal);
+    border-radius: 999px; padding: .35rem .75rem; font-weight: 600; }

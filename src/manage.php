@@ -151,29 +151,31 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/manage.css">
     <link rel="stylesheet" href="css/cookies.css">
+
+    <script src="js/header.js" defer></script>
     <script src="js/cookies.js" defer></script>
 
     <style>
-        .page-hero{ background-image:url('img/landing-matcha.02.31.jpeg'); }
-        .wrap{ max-width: 1000px; margin-inline:auto; padding: var(--spacing-l); }
-        .cardy{ background: var(--color-blanco); border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow-medium); border: 1px solid rgba(0,0,0,.04);
-            padding: clamp(1rem, 2vw, 1.5rem); }
-        .summary{ background: rgba(255,255,255,.6); border: 1px solid rgba(0,0,0,.06);
-            border-radius: 12px; padding: 12px 14px; }
-        .rowx{ display:flex; justify-content:space-between; padding: 8px 0; }
-        .rowx + .rowx{ border-top: 1px dashed rgba(0,0,0,.08); }
-        .total{ font-weight:700; }
-        .badge-soft{ background: rgba(128,193,208,.15); color: var(--text-principal);
-            border-radius: 999px; padding: .35rem .75rem; font-weight: 600; }
+        :root { --header-bg-rgb: 84,70,62; } /* #54463E */
     </style>
 </head>
+
 <body>
-<section class="page-hero">
+<?php include 'inc/header.inc'; ?>
+
+<section class="page-hero manage-hero">
     <div class="page-hero__content">
         <h1 class="page-hero__title">Reservation #<?= (int)$r['id'] ?></h1>
         <p class="mt-2"><?= $admin ? 'Admin' : 'Customer' ?> · Manage or cancel your trip</p>
@@ -233,5 +235,6 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
         Questions? Email us at <a href="mailto:alisios.van@gmail.com">alisios.van@gmail.com</a>.
     </p>
 </main>
+<?php include 'inc/footer.inc'; ?>
 </body>
 </html>

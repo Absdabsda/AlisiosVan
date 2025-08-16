@@ -15,7 +15,12 @@
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/legal.css">
 
+    <script src="js/header.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
+
+    <style>
+        :root { --header-bg-rgb: 133,126,110; } /* #857E6E */
+    </style>
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>
