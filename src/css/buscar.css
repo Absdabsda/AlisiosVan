@@ -1,0 +1,57 @@
+/* ===== Date Chip (pill con icono, compatible con altInput) ===== */
+.date-chip {
+    position: relative;
+    display: inline-block;
+}
+
+/* Icono */
+.date-chip > .bi-calendar3 {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--color-mar-oscuro);
+    opacity: .85;
+    z-index: 2;
+}
+
+/* Oculta el input original cuando Flatpickr usa altInput */
+.date-chip > input#dateRange {
+    /* lo dejamos accesible pero fuera del flujo */
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    clip: rect(0 0 0 0);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+
+.date-chip > input#dateRange + input.flatpickr-input {
+    border-radius: 999px !important;
+    border: 1.5px solid var(--color-mar) !important;
+    background: var(--color-blanco) !important;
+    color: var(--text-principal) !important;
+
+    padding: 6px 14px 6px 38px !important; /* espacio para el icono */
+    min-width: 240px;
+    height: 34px;
+
+    font-weight: 600;
+    box-shadow: none !important;
+}
+
+/* Hover / Focus del ALT INPUT */
+.date-chip > input#dateRange + input.flatpickr-input:hover {
+    background: rgba(128,193,208,.08) !important;
+    border-color: var(--color-mar-oscuro) !important;
+}
+.date-chip > input#dateRange + input.flatpickr-input:focus {
+    outline: none !important;
+    border-color: var(--color-mar-oscuro) !important;
+    box-shadow: 0 0 0 3px rgba(128,193,208,.25) !important;
+}

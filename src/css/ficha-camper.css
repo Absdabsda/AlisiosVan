@@ -1,0 +1,99 @@
+/* Hero igual que campers.php */
+.page-hero.camper-detail-hero{
+    background-size: cover;
+    background-position: center 55%;
+    background-repeat: no-repeat;
+    height: 20vh;
+    min-height: 320px;
+    position: relative;
+}
+.page-hero.camper-detail-hero::after{
+    content:""; position:absolute; inset:0;
+    background: linear-gradient(0deg, rgba(0,0,0,.45), rgba(0,0,0,0) 55%);
+}
+.page-hero.camper-detail-hero .page-hero__content{ position:relative; z-index:1; }
+
+/* Breadcrumb */
+.pd-breadcrumb{ padding:14px 1rem 0; font-size:.95rem; color: var(--text-secundario); }
+.pd-breadcrumb a{ color:inherit; text-decoration:none; }
+.pd-breadcrumb span{ opacity:.8; margin:0 .35rem; }
+
+/* Layout */
+.camper-detail-wrap{
+    padding: 2rem 0 3rem;
+}
+.container{
+
+}
+
+/* Galería (Swiper) */
+:root{ --gallery-h: clamp(360px, 48vw, 680px); --swiper-theme-color: var(--color-mar, #1e6e8c); }
+.gallery{ position:relative; }
+.gallery .swiper{
+    background:#fff !important; border-radius:16px; overflow:hidden;
+    box-shadow: 0 6px 24px rgba(0,0,0,.06);
+}
+#galleryMain{ height: var(--gallery-h); }
+#galleryMain .swiper-slide img{ width:100%; height:100%; object-fit:cover; display:block; }
+#galleryMain .swiper-button-next,#galleryMain .swiper-button-prev{
+    width:44px; height:44px; border-radius:999px; background:rgba(255,255,255,.85);
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+}
+#galleryMain .swiper-button-next:after,#galleryMain .swiper-button-prev:after{ font-size:18px; color:#2f2f2f; }
+#galleryPagination{ bottom:10px !important; }
+#galleryMain .swiper-pagination-bullet{ width:7px; height:7px; opacity:.4; background:#2f2f2f; }
+#galleryMain .swiper-pagination-bullet-active{ transform:scale(1.15); opacity:1; background: var(--color-mar); }
+
+/* Thumbs visibles sobre todo en móvil */
+#galleryThumbs{ height:96px; margin-top:.75rem; background:#fff !important; }
+#galleryThumbs .swiper-slide{ border-radius:10px; overflow:hidden; opacity:.75; cursor:pointer; }
+#galleryThumbs .swiper-slide-thumb-active{ opacity:1; box-shadow:0 0 0 2px var(--color-mar); }
+#galleryThumbs .swiper-slide img{ width:100%; height:100%; object-fit:cover; }
+@media (min-width: 992px){ #galleryThumbs{ display:none !important; } }
+
+/* Tarjeta de info */
+.detail-card{
+    background:#fff; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.06);
+    border:1px solid rgba(0,0,0,.05); padding:1.5rem 1.5rem 1.25rem;
+}
+.detail-head{ display:grid; gap:.75rem; margin-bottom:.5rem; }
+.badges{ display:flex; flex-wrap:wrap; gap:.5rem; }
+.badge-soft{ background:rgba(128,193,208,.15); color:var(--text-principal); border-radius:999px; padding:.35rem .75rem; font-weight:600; }
+.section-title{ font-family:'Playfair Display',serif; font-weight:700; font-size:1.6rem; margin-bottom:.75rem; }
+
+/* Lista con checks */
+.icon-list{ list-style:none; padding-left:0; margin:0 0 1rem; }
+.icon-list li{ position:relative; padding-left:1.6rem; margin-bottom:.45rem; }
+.icon-list li::before{ content:"\F26E"; font-family:"bootstrap-icons"; position:absolute; left:0; top:.1rem; color:var(--color-mar,#1e6e8c); }
+
+/* CTA */
+.cta-row{ display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.25rem; }
+.btn.btn-primary{ background: var(--color-mar); border-color: var(--color-mar); }
+.btn.btn-primary:hover{ background: var(--color-mar-oscuro); border-color: var(--color-mar-oscuro); }
+.btn.btn-outline-secondary{ border-color: var(--color-mar); color: var(--color-mar); }
+.btn.btn-outline-secondary:hover{ background: var(--color-mar); color:#fff; }
+
+.mini-note{ margin-top:.75rem; color: var(--text-secundario); font-size:.95rem; }
+
+/* ===== Dos columnas: galería izq + info der ===== */
+.detail-grid{
+    display: grid;
+    grid-template-columns: 1.6fr .9fr;   /* izquierda / derecha */
+    gap: 2rem;
+    align-items: start;
+}
+
+/* imprescindible para que Swiper mida bien dentro de Grid */
+.detail-media{ min-width: 0; }
+.detail-aside{ min-width: 0; }
+
+/* que la tarjeta quede fija al hacer scroll (opcional) */
+.detail-aside .detail-card{
+    position: sticky;
+    top: 1rem;
+}
+
+@media (max-width: 992px){
+    .detail-grid{ grid-template-columns: 1fr; }
+    .detail-aside .detail-card{ position: static; }
+}

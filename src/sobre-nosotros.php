@@ -29,8 +29,11 @@
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/sobre-nosotros.css">
+    <link rel="stylesheet" href="css/cookies.css">
 
     <script src="js/campers.js" defer></script>
+    <script src="js/cookies.js" defer></script>
+
 
 </head>
 <body>
@@ -44,19 +47,19 @@
 
     <!-- Texto explicativo Sobre Nosotros -->
     <div class="sobre-nosotros container">
-            <div class="contenido">
-                <div class="texto">
-                    <p>
-                        In <strong>Alisios Van</strong>, we believe that travelling is a lifestyle. Our passion for freedom, nature and unique experiences guided us to create a project where each camper is an extension of our philosophy: comfortable, simple and with soul.
-                    </p>
-                    <p>
-                        We're a small business located by the coast, in love with routes enjoyed with leisure, sunsets in front of the sea and improvised getaways. We care about the essentials: offering a close service, transparent and authentic.
-                    </p>
-                    <p>
-                        Our campers are thought for people like you, who long to live intensely, without complications, with style and comfort.
-                    </p>
-                </div>
+        <div class="contenido">
+            <div class="texto">
+                <p>
+                    At <strong>Alisios Van</strong>, we believe travel is a way of life. Our love of freedom, nature, and one-of-a-kind experiences inspired us to create a project where every camper reflects our philosophy: comfort, simplicity, and soulful.
+                </p>
+                <p>
+                    We’re a small, coast-based company in love with unhurried routes, sunsets over the sea, and spontaneous getaways. We focus on what matters: offering a warm, transparent and authentic service.
+                </p>
+                <p>
+                    Our campers are designed for people like you who want to live fully, keep things simple, and travel in comfort and style.
+                </p>
             </div>
+        </div>
     </div>
 
     <!-- Fichas valores corporativos -->
@@ -65,19 +68,19 @@
             <div class="col-md-4">
                 <div class="valor-box">
                     <h3>Our Mission</h3>
-                    <p>To provide unique camper travel experiences, connecting people with nature and the freedom to explore.</p>
+                    <p>To create memorable campervan journeys that connect people with nature and the freedom to explore.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="valor-box">
                     <h3>Our Vision</h3>
-                    <p>To be leaders in camper rentals in the Canary Islands, promoting sustainable, flexible, and conscious tourism.</p>
+                    <p>To be the leading campervan rental in the Canary Islands, championing sustainable, flexible, and mindful travel.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="valor-box">
                     <h3>Our Values</h3>
-                    <p>Passion for adventure, customer commitment, respect for the environment, and a personal touch in every interaction.</p>
+                    <p>Passion for adventure, commitment to our guests, respect for the environment, and a personal touch in every detail.</p>
                 </div>
             </div>
         </div>
@@ -87,18 +90,16 @@
     <section class="about-final-block">
         <div class="container about-final-container">
             <div class="about-final-image">
-                <img src="img/carlos.jpeg" alt="Preparando nuestra camper">
+                <img src="img/carlos.jpeg" alt="Preparing our camper van">
             </div>
             <div class="about-final-text">
                 <h4>Made with care, made for you.</h4>
-                <p>Each Alisios Van camper is lovingly prepared by our team, ensuring every detail is ready for your next adventure.
-                    We believe in slow, conscious travel – enjoying the journey as much as the destination.</p>
-                <p>From maintenance to cleaning, we put our hearts into making sure your camper feels like home on wheels.</p>
-                <a href="contacto.php" class="btn">Start your journey</a>
+                <p>Every Alisios Van is prepared with care by our team so every detail is ready for your next adventure. We believe in slow, mindful travel enjoying the journey as much as the destination.</p>
+                <p>From maintenance to cleaning, we put our hearts into making sure your camper feels like a home on wheels.</p>
+                <a href="contacto.php" class="btn">Tell us about your trip</a>
             </div>
         </div>
     </section>
-
 
 </main>
 

@@ -1,8 +1,57 @@
 <!-- FOOTER -->
-<footer class="footer bg-dark text-white pt-5 pb-4">
+<footer class="footer bg-dark pt-5 pb-4">
+    <!-- Cookie Banner -->
+    <div id="cc-banner" class="cc-banner" role="region" aria-label="Cookie notice" hidden>
+        <div class="cc-text">
+            We use cookies to run the site and to understand how it’s used. You can accept all,
+            reject non-essential, or choose your preferences. <a href="cookies.php" target="_blank" rel="noopener">Cookie Policy</a>.
+        </div>
+        <div class="cc-actions">
+            <button class="cc-btn cc-btn-outline" data-cc="reject">Reject all</button>
+            <button class="cc-btn cc-btn-outline" data-cc="customize">Customize</button>
+            <button class="cc-btn cc-btn-primary" data-cc="accept">Accept all</button>
+        </div>
+    </div>
+
+    <!-- Cookie Settings Modal -->
+    <div id="cc-modal" class="cc-modal" role="dialog" aria-modal="true" aria-labelledby="cc-modal-title" hidden>
+        <div class="cc-dialog">
+            <h3 id="cc-modal-title">Cookie settings</h3>
+            <p class="cc-sub">Choose which cookies to allow. Essential cookies are always on.</p>
+
+            <div class="cc-row">
+                <label class="cc-switch">
+                    <input type="checkbox" checked disabled>
+                    <span>Essential (required)</span>
+                </label>
+                <small>Needed for security and basic site functions.</small>
+            </div>
+
+            <div class="cc-row">
+                <label class="cc-switch">
+                    <input type="checkbox" id="cc-pref">
+                    <span>Preferences</span>
+                </label>
+                <small>Remember choices like language or region.</small>
+            </div>
+
+            <div class="cc-row">
+                <label class="cc-switch">
+                    <input type="checkbox" id="cc-analytics">
+                    <span>Analytics</span>
+                </label>
+                <small>Help us improve the site with anonymous usage stats.</small>
+            </div>
+
+            <div class="cc-actions end">
+                <button class="cc-btn cc-btn-outline" data-cc="modal-cancel">Cancel</button>
+                <button class="cc-btn cc-btn-primary" data-cc="modal-save">Save choices</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container text-center text-md-left">
         <div class="row">
-
             <!-- Logo y Descripción -->
             <div class="col-md-4 mb-4">
                 <h4 class="footer-logo" style="font-family: 'Playfair Display', cursive; font-size: 2.5rem;">Alisios Van</h4>
@@ -21,20 +70,23 @@
                 </ul>
             </div>
 
-            <!-- Redes Sociales -->
+            <!-- Legal & Social -->
             <div class="col-md-4 mb-4">
-                <h5 class="text-uppercase mb-4">Follow us</h5>
-                <a href="https://www.instagram.com/alisios_van/" target="_blank" class="text-white me-3">
-                    <i class="fab fa-instagram fa-lg"></i>
-                </a>
-                <a href="#" class="text-white me-3">
-                    <i class="fab fa-facebook fa-lg"></i>
-                </a>
-                <a href="#" class="text-white">
-                    <i class="fab fa-tiktok fa-lg"></i>
-                </a>
-            </div>
+                <h5 class="text-uppercase mb-4">Legal</h5>
+                <ul class="list-unstyled mb-3">
+                    <li><a href="terms.php" class="text-white text-decoration-none">Terms of Service</a></li>
+                    <li><a href="legal.php" class="text-white text-decoration-none">Legal Notice</a></li>
+                    <li><a href="privacy.php" class="text-white text-decoration-none">Privacy Policy</a></li>
+                    <li><a href="cookies.php" class="text-white text-decoration-none">Cookie Policy</a></li>
+                    <li><a href="#" class="text-white text-decoration-none" onclick="cookieConsent?.openSettings();return false;">Cookie settings</a></li>
+                </ul>
 
+                <div class="d-flex gap-3">
+                    <a href="https://www.instagram.com/alisios_van/" target="_blank" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-facebook fa-lg"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-tiktok fa-lg"></i></a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -43,3 +95,6 @@
         &copy; 2025 Alisios Van. All rights reserved.
     </div>
 </footer>
+
+<!-- Asegúrate de cargar el JS del banner en todas las páginas -->
+<script src="js/cookies.js" defer></script>

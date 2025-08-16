@@ -1,0 +1,52 @@
+/* ===== Cookie Banner ===== */
+.cc-banner{
+    position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 1100;
+    max-width: 740px; margin: 0 auto;
+    background: #fff; border-radius: 14px; box-shadow: 0 16px 40px rgba(0,0,0,.18);
+    padding: 14px 14px 12px; display: grid; gap: 10px; align-items: center;
+    grid-template-columns: 1fr auto;
+    border: 1px solid rgba(0,0,0,.06);
+}
+.cc-banner[hidden]{ display: none !important; }
+@media (max-width: 640px){
+    .cc-banner{ grid-template-columns: 1fr; }
+}
+.cc-text{ font-size: .95rem; line-height: 1.4; }
+.cc-text a{ text-decoration: underline; }
+
+.cc-actions{ display: flex; gap: 8px; flex-wrap: wrap; justify-content: end; }
+.cc-actions.end{ justify-content: end; }
+
+/* Botones */
+.cc-btn{
+    appearance: none; border-radius: 999px; padding: 8px 14px; font: inherit; cursor: pointer;
+    border: 1.5px solid var(--color-mar, #1e6e8c); transition: .15s ease;
+}
+.cc-btn-primary{ background: var(--color-mar, #1e6e8c); color: #fff; }
+.cc-btn-primary:hover{ filter: brightness(1.05); }
+.cc-btn-outline{ background: transparent; color: var(--color-mar, #1e6e8c); }
+.cc-btn-outline:hover{ background: color-mix(in oklab, var(--color-mar, #1e6e8c), #fff 88%); }
+
+/* ===== Modal ===== */
+.cc-modal[hidden]{ display: none !important; }
+.cc-modal{
+    position: fixed; inset: 0; z-index: 1150; display: grid; place-items: center;
+    background: rgba(0,0,0,.4);
+}
+.cc-dialog{
+    width: min(560px, calc(100vw - 32px)); background: #fff; border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25); padding: 18px;
+    border: 1px solid rgba(0,0,0,.06);
+}
+.cc-sub{ color: #666; margin-top: .25rem; }
+
+.cc-row{ padding: 10px 0; border-top: 1px solid #eee; }
+.cc-row:first-of-type{ border-top: 0; }
+.cc-row small{ display: block; color: #6b6b6b; margin-left: 40px; }
+
+/* Switch simple */
+.cc-switch{ display: inline-flex; align-items: center; gap: 10px; font-weight: 600; }
+.cc-switch input[type="checkbox"]{ width: 18px; height: 18px; }
+
+/* Accesibilidad focus */
+.cc-btn:focus-visible{ outline: 3px solid color-mix(in oklab, var(--color-mar, #1e6e8c), transparent 60%); outline-offset: 2px; }

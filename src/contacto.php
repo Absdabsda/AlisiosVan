@@ -1,3 +1,9 @@
+<?php
+session_start();
+if (empty($_SESSION['csrf'])) {
+    $_SESSION['csrf'] = bin2hex(random_bytes(32));
+}
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -18,9 +24,51 @@
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/contacto.css">
+    <link rel="stylesheet" href="css/cookies.css">
 
     <script src="js/contacto.js" defer></script>
+    <script src="js/cookies.js" defer></script>
+
 </head>
+<!-- Mini Chat WhatsApp – Alisios Van -->
+<div id="wa-widget" aria-live="polite">
+    <!-- Lanzador flotante -->
+    <button id="wa-launcher" aria-label="Abrir chat de WhatsApp" title="WhatsApp">
+        <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+    </button>
+
+    <!-- Ventana del chat -->
+    <div id="wa-panel" hidden>
+        <div class="wa-header">
+            <div class="wa-identity">
+                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                <div>
+                    <strong>Alisios Van</strong>
+                    <div class="wa-status">WhatsApp</div>
+                </div>
+            </div>
+            <button id="wa-close" aria-label="Cerrar chat" title="Cerrar">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <div class="wa-messages" id="wa-messages"></div>
+
+        <div class="wa-quick" id="wa-quick" aria-label="Opciones rápidas">
+            <button type="button" data-text="Hola, me gustaría consultar disponibilidad.">Disponibilidad</button>
+            <button type="button" data-text="¿Podríais enviarme precios y condiciones?">Precios</button>
+            <button type="button" data-text="Tengo otra consulta.">Otro</button>
+        </div>
+
+        <div class="wa-input">
+            <input type="text" id="wa-input" placeholder="Escribe y abre WhatsApp…" />
+            <button id="wa-send" aria-label="Abrir WhatsApp">
+                <i class="bi bi-send-fill" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
 <body>
 <?php include 'inc/header.inc'; ?>
 
@@ -42,7 +90,7 @@
                     <p>Tell us your dates and the van you’d like. We’ll get back to you quickly with availability and a simple quote.</p>
 
                     <ul class="contact-ways">
-                        <li><i class="bi bi-envelope"></i> <a href="mailto:hello@alisiosvan.com">hello@alisiosvan.com</a></li>
+                        <li><i class="bi bi-envelope"></i> <a href="mailto:hello@alisiosvan.com">alisios.van@gmail.com</a></li>
                         <li><i class="bi bi-telephone"></i> <a href="tel:+34610136383">+34 610136383</a> <span class="muted">(WhatsApp)</span></li>
                         <li><i class="bi bi-geo-alt"></i> Puerto del Rosario, Fuerteventura</li>
                     </ul>
@@ -54,7 +102,12 @@
 
                 <!-- Columna derecha: formulario -->
                 <section class="contact-card">
-                    <form id="contactForm" action="inc/send-contact.php" method="post" novalidate>
+                    <form id="contactForm" action="../api/contact.php" method="post" novalidate>
+
+                    <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf']) ?>">
+                        <input type="text" name="website" tabindex="-1" autocomplete="off"
+                               style="position:absolute;left:-9999px;opacity:0" aria-hidden="true">
+
                         <div class="form-row">
                             <div class="field">
                                 <label for="name">Name*</label>
@@ -101,7 +154,7 @@
 
                             <div class="field field--full checkbox">
                                 <label>
-                                    <input type="checkbox" id="privacy" required />
+                                    <input type="checkbox" id="privacy" name="privacy" required />
                                     I agree to the privacy policy.
                                 </label>
                                 <div class="invalid">Please accept to continue.</div>
@@ -133,7 +186,6 @@
         </div>
     </section>
 </main>
-
 <?php include 'inc/footer.inc'; ?>
 </body>
 </html>

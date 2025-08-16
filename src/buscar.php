@@ -9,6 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
 
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap JS -->
@@ -21,29 +25,73 @@
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/campers.css">
-
+    <link rel="stylesheet" href="css/buscar.css">
+    <link rel="stylesheet" href="css/cookies.css">
     <script src="js/buscar.js" defer></script>
+    <script src="js/cookies.js" defer></script>
+
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>
 
-<main class="py-4">
-    <div class="container">
-        <h1 class="mb-3">Available campers</h1>
-        <p class="text-muted" id="rangeLabel"></p>
+<main>
+    <!-- HERO idéntico al de campers -->
+    <section class="page-hero buscar-hero">
+        <div class="page-hero__content">
+            <h1 class="page-hero__title">Available campers</h1>
+        </div>
+    </section>
 
-        <!-- Filtro por modelo -->
-        <div class="mb-3">
-            <button class="btn btn-sm btn-outline-secondary me-2 series-chip active" data-series="">All</button>
-            <button class="btn btn-sm btn-outline-secondary me-2 series-chip" data-series="T3">VW T3</button>
-            <button class="btn btn-sm btn-outline-secondary me-2 series-chip" data-series="T4">VW T4</button>
+    <!-- Barra: Volver + selector de fechas -->
+    <section class="py-3 border-top">
+        <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <a id="backLink" class="btn btn-outline-secondary btn-sm" href="index.php">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+
+            <div class="d-flex align-items-center gap-2">
+                <label for="dateRange" class="form-label mb-0">Travel dates</label>
+                <div class="date-chip">
+                    <input
+                            type="text"
+                            id="dateRange"
+                            class="form-control"
+                            placeholder="Change dates"
+                            autocomplete="off"
+                            inputmode="none"
+                            readonly
+                    />
+                </div>
+                <i class="bi bi-calendar3"></i>
         </div>
 
-        <div id="results" class="row g-4"></div>
+        <div class="container mt-2">
+            <p class="text-muted text-center mb-0" id="rangeLabel"></p>
+        </div>
+    </section>
 
-        <p class="mt-4 text-muted" id="emptyMsg" style="display:none">No campers available for these dates.</p>
-    </div>
+    <!-- Filtros (mismo estilo que campers.php) -->
+    <section class="py-3">
+        <div class="container">
+            <div id="modelFilters" class="model-filters">
+                <button type="button" class="model-chip active" data-series="">All</button>
+                <button type="button" class="model-chip" data-series="T3">VW T3</button>
+                <button type="button" class="model-chip" data-series="T4">VW T4</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Catálogo -->
+    <section class="catalogo-campers py-5">
+        <div class="container">
+            <div id="results" class="row g-4"></div>
+            <p class="mt-4 text-muted" id="emptyMsg" style="display:none">No campers available for these dates.</p>
+        </div>
+    </section>
 </main>
+
+
+
 
 <!-- Modal de reserva (datos del cliente) -->
 <div class="modal fade" id="reserveModal" tabindex="-1" aria-hidden="true">
@@ -74,7 +122,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-danger" type="button" data-bs-dismiss="modal">Cancel</button>
                 <button class="btn btn-primary" type="submit">Pay & reserve</button>
             </div>
         </form>

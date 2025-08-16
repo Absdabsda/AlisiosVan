@@ -1,0 +1,82 @@
+<?php
+declare(strict_types=1);
+require __DIR__.'/../vendor/autoload.php';
+Dotenv\Dotenv::createImmutable(__DIR__.'/../env')->safeLoad();
+require __DIR__.'/../config/db.php';
+$pdo = get_pdo();
+
+header('Content-Type: text/calendar; charset=utf-8');
+header('Content-Disposition: inline; filename="alisiosvan-company.ics"');
+
+function admin_key_valid(): ?string {
+    $env = $_ENV['ADMIN_KEY'] ?? '';
+    if (!$env) return null;
+    $k = $_GET['key'] ?? ($_COOKIE['admin_key'] ?? '');
+    return ($k && hash_equals($env, (string)$k)) ? (string)$k : null;
+}
+function public_base(): string {
+    $env = rtrim($_ENV['PUBLIC_BASE_URL'] ?? '', '/');
+    if ($env) return $env;
+    $sch = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $dir  = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+    return rtrim("$sch://$host$dir", '/');
+}
+function ics_line(string $s): string {
+    // plegado simple a ~73 chars por línea según iCal
+    $out = '';
+    for ($i=0; $i<strlen($s); $i+=73) {
+        $chunk = substr($s, $i, 73);
+        $out .= ($i ? "\r\n " : '') . $chunk;
+    }
+    return $out;
+}
+
+$adminKey = admin_key_valid();
+$base = public_base();
+
+$st = $pdo->query("
+  SELECT r.id, r.start_date, r.end_date, r.status, r.manage_token, c.name AS camper
+  FROM reservations r
+  JOIN campers c ON c.id = r.camper_id
+  WHERE r.status IN ('paid')       -- ajusta si quieres más estados
+  ORDER BY r.start_date ASC
+");
+
+$lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Alisios Van//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH'
+];
+
+while($row = $st->fetch(PDO::FETCH_ASSOC)){
+    $start = (new DateTime($row['start_date']))->format('Ymd');
+    $endEx = (new DateTime($row['end_date']))->modify('+1 day')->format('Ymd'); // all-day exclusive
+    $uid   = $row['id'].'@alisiosvan';
+
+    // PRIORIDAD: token de cliente si existe; si no, link de admin si hay key válida
+    $url = null;
+    if (!empty($row['manage_token'])) {
+        $url = $base.'/manage.php?rid='.(int)$row['id'].'&t='.rawurlencode($row['manage_token']);
+    } elseif ($adminKey) {
+        $url = $base.'/manage.php?rid='.(int)$row['id'].'&key='.rawurlencode($adminKey);
+    }
+
+    $summary = '#'.$row['id'].' · '.$row['camper'];  // título corto y útil
+    $desc    = 'Status: '.$row['status'];
+
+    $lines[] = 'BEGIN:VEVENT';
+    $lines[] = 'UID:'.$uid;
+    $lines[] = 'DTSTAMP:'.gmdate('Ymd\THis\Z');
+    $lines[] = 'DTSTART;VALUE=DATE:'.$start;
+    $lines[] = 'DTEND;VALUE=DATE:'.$endEx;
+    $lines[] = ics_line('SUMMARY:'.$summary);
+    $lines[] = ics_line('DESCRIPTION:'.$desc);
+    if ($url) { $lines[] = ics_line('URL:'.$url); }   // << CLAVE
+    $lines[] = 'END:VEVENT';
+}
+
+$lines[] = 'END:VCALENDAR';
+echo implode("\r\n", $lines);
