@@ -60,6 +60,45 @@
 <body>
 <?php include 'inc/header.inc'; ?>
 
+<!-- Mini Chat WhatsApp – Alisios Van -->
+<div id="wa-widget" aria-live="polite">
+    <!-- Lanzador flotante -->
+    <button id="wa-launcher" aria-label="Abrir chat de WhatsApp" title="WhatsApp">
+        <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+    </button>
+
+    <!-- Ventana del chat -->
+    <div id="wa-panel" hidden>
+        <div class="wa-header">
+            <div class="wa-identity">
+                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                <div>
+                    <strong>Alisios Van</strong>
+                    <div class="wa-status">WhatsApp</div>
+                </div>
+            </div>
+            <button id="wa-close" aria-label="Cerrar chat" title="Cerrar">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <div class="wa-messages" id="wa-messages"></div>
+
+        <div class="wa-quick" id="wa-quick" aria-label="Opciones rápidas">
+            <button type="button" data-text="Hola, me gustaría consultar disponibilidad.">Disponibilidad</button>
+            <button type="button" data-text="¿Podríais enviarme precios y condiciones?">Precios</button>
+            <button type="button" data-text="Tengo otra consulta.">Otro</button>
+        </div>
+
+        <div class="wa-input">
+            <input type="text" id="wa-input" placeholder="Escribe y abre WhatsApp…" />
+            <button id="wa-send" aria-label="Abrir WhatsApp">
+                <i class="bi bi-send-fill" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
 <main>
     <!-- HERO idéntico al de campers -->
     <section class="page-hero buscar-hero">

@@ -217,7 +217,7 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
                     </ul>
 
                     <div class="cta-row">
-                        <a class="btn btn-primary" href="campers.php">Reserve</a>
+                        <a class="btn btn-primary" href="index.php">Reserve</a>
                         <a class="btn btn-outline-secondary" href="campers.php">Back to all campers</a>
                     </div>
 

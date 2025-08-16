@@ -238,9 +238,13 @@
     updateBackLinkHref();
 
     // Calendario
+
     if (window.flatpickr && dateInput) {
-        flatpickr(dateInput, {
+        const isMobile = () => window.matchMedia('(max-width: 576px)').matches;
+
+        const fp = flatpickr(dateInput, {
             mode: 'range',
+            minDate: 'today',
             dateFormat: 'Y-m-d',
             altInput: true,
             altFormat: 'j M Y',
@@ -248,8 +252,21 @@
             disableMobile: true,
             allowInput: false,
             clickOpens: true,
-            showMonths: 2,
+
+            showMonths: isMobile() ? 1 : 2,
+            static: isMobile(),
+            appendTo: isMobile() ? undefined : document.body,
+            position: 'auto',
             locale: localeEN,
+
+            onReady(_, __, inst){
+                // En desktop asegúrate de que flote por encima de todo
+                if (!isMobile()) inst.calendarContainer.style.zIndex = '10010';
+                updateRangeLabel();
+            },
+            onOpen(_, __, inst){
+                if (!isMobile()) inst.calendarContainer.style.zIndex = '10010';
+            },
             onClose(selectedDates){
                 if (selectedDates.length === 2) {
                     start = ymdLocal(selectedDates[0]);
@@ -261,8 +278,106 @@
                 }
             }
         });
+
+        // Abrir tocando toda la “pill” de fechas
+        dateInput.closest('.date-chip')?.addEventListener('click', () => fp.open());
+
+        // Si cambia el ancho, actualiza meses y anclaje (se aplica al reabrir)
+        window.addEventListener('resize', () => {
+            const m = isMobile();
+            fp.set('showMonths', m ? 1 : 2);
+            fp.set('static', m);
+            fp.set('appendTo', m ? undefined : document.body);
+        });
     }
+
 
     // Primera carga
     loadAvailability();
+
+    /* ===========================
+      WHATSAPP MINI-CHAT
+      =========================== */
+    const PHONE = '34610136383';           // sin +
+    const REDIRECT_AFTER_SEND_MS = 900;     // tiempo de lectura al pulsar enviar
+    const GREET_DELAY_MS = 150;
+
+    const launcher = document.getElementById('wa-launcher');
+    const panel    = document.getElementById('wa-panel');
+    const closeBtn = document.getElementById('wa-close');
+    const messages = document.getElementById('wa-messages');
+    const input    = document.getElementById('wa-input');
+    const sendBtn  = document.getElementById('wa-send');
+    const quick    = document.getElementById('wa-quick');
+
+    if (!launcher || !panel) return;
+
+    let greeted = false;
+
+    function addMsg(text, who) {
+        const div = document.createElement('div');
+        div.className = 'msg ' + (who || 'bot');
+        div.textContent = text;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function openPanel() {
+        panel.hidden = false;
+        if (!greeted) {
+            greeted = true;
+            setTimeout(() => {
+                addMsg('¡Hola! 👋 Somos Alisios Van.');
+                addMsg('Elige una opción o escribe tu mensaje y luego pulsa “enviar”.');
+            }, GREET_DELAY_MS);
+        }
+    }
+    function closePanel() { panel.hidden = true; }
+
+    function openWhatsApp(text) {
+        const msg = text && text.trim() ? text.trim() : 'Hola, me gustaría más información 🙂';
+        const url = 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(msg + '\n\n(Página: ' + window.location.href + ')');
+        if (typeof gtag === 'function') {
+            gtag('event', 'click', { event_category: 'engagement', event_label: 'whatsapp_mini_chat' });
+        } else if (window.dataLayer) {
+            window.dataLayer.push({ event: 'whatsapp_click', source: 'mini_chat' });
+        }
+        window.open(url, '_blank', 'noopener');
+    }
+
+    launcher.addEventListener('click', () => { panel.hidden ? openPanel() : closePanel(); });
+    closeBtn?.addEventListener('click', closePanel);
+
+    // Enviar → aviso + breve pausa antes de abrir WhatsApp
+    sendBtn.addEventListener('click', () => {
+        const text = input.value;
+        if (!text.trim()) { input.focus(); return; }
+        addMsg(text, 'user');
+        input.value = '';
+        setTimeout(() => {
+            addMsg('Abriendo WhatsApp…', 'bot');
+            setTimeout(() => openWhatsApp(text), REDIRECT_AFTER_SEND_MS);
+        }, 200);
+    });
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); sendBtn.click(); }
+    });
+
+    // Chips → ya no redirigen: dejan el mensaje preparado
+    quick.addEventListener('click', (e) => {
+        if (e.target.matches('button[data-text]')) {
+            const t = e.target.getAttribute('data-text');
+            input.value = t;
+            input.focus();
+            addMsg('Mensaje preparado. Pulsa “enviar” para abrir WhatsApp 👉', 'bot');
+        }
+    });
+
+    // Abrir automáticamente una vez por sesión a los 6s
+    if (!sessionStorage.getItem('waOpenedOnce')) {
+        setTimeout(() => {
+            openPanel();
+            sessionStorage.setItem('waOpenedOnce', '1');
+        }, 6000);
+    }
 })();

@@ -84,6 +84,7 @@ try {
 
     $session = $stripe->checkout->sessions->create([
         'mode'        => 'payment',
+        'client_reference_id' => (string)$reservationId,
         'success_url' => $base . '/thanks.php?session_id={CHECKOUT_SESSION_ID}',
         'cancel_url'  => $base . '/cancel.php?rid=' . $reservationId,
 

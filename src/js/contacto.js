@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     /* ===========================
-       FORMULARIO DE CONTACTO (igual que me pasaste)
+       FORMULARIO DE CONTACTO
        =========================== */
     const form = document.getElementById('contactForm');
     if (form) {
