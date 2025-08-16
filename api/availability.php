@@ -7,7 +7,7 @@ header('Content-Type: application/json');
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../env');
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->safeLoad();
 
 require __DIR__ . '/../config/db.php';

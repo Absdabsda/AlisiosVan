@@ -8,7 +8,7 @@ try {
     if (!file_exists($autoload)) throw new Exception("No autoload");
     require $autoload;
 
-    Dotenv\Dotenv::createImmutable(__DIR__.'/../env')->safeLoad();
+    Dotenv\Dotenv::createImmutable(__DIR__.'/..')->safeLoad();
     if (empty($_ENV['STRIPE_SECRET'])) throw new Exception('STRIPE_SECRET missing');
 
     require __DIR__ . '/../config/db.php';
