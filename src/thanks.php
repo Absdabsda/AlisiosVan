@@ -445,7 +445,7 @@ try {
 
                         <?php if (!$invoicePdf && !$invoiceUrl && !$invoiceId): ?>
                             <p class="text-muted mt-3 small">
-                                Your invoice is being generated. It can take a little while. We’ll email it to you shortly.
+                                Your invoice is being generated. It can take a little while. We’ll email it to you shortly. If you don't receive an email, refresh the page.
                             </p>
                         <?php elseif (!$invoicePdf && !$invoiceUrl): ?>
                             <p class="text-muted mt-3 small">
@@ -478,26 +478,68 @@ try {
         </main>
 
         <script>
-            (function(){
+            (function () {
                 const el = document.getElementById('icsData');
-                if(!el) return;
+                if (!el) return;
+
                 function ymd(s){ return (s||'').replaceAll('-',''); }
-                document.getElementById('btnIcs')?.addEventListener('click', () => {
+
+                function buildIcs() {
                     const title = el.dataset.title || 'Alisios Van';
                     const start = ymd(el.dataset.start);
-                    const endD  = new Date(el.dataset.end); endD.setDate(endD.getDate()+1);
+                    const endD  = new Date(el.dataset.end); endD.setDate(endD.getDate() + 1); // DTEND exclusivo
                     const end   = ymd(endD.toISOString().slice(0,10));
-                    const uid   = (el.dataset.id||'') + '@alisiosvan';
-                    const ics = [
-                        'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Alisios Van//EN','BEGIN:VEVENT',
-                        'UID:'+uid,'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z',
-                        'DTSTART;VALUE=DATE:'+start,'DTEND;VALUE=DATE:'+end,
-                        'SUMMARY:'+title,'DESCRIPTION:Reservation confirmed','END:VEVENT','END:VCALENDAR'
-                    ].join('\\r\\n');
-                    const blob = new Blob([ics], {type:'text/calendar'});
-                    const url  = URL.createObjectURL(blob);
-                    const a = document.createElement('a'); a.href = url; a.download = 'alisiosvan-reservation.ics'; a.click();
-                    URL.revokeObjectURL(url);
+                    const uid   = (el.dataset.id || '') + '@alisiosvan';
+                    const dtstamp = new Date().toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+
+                    return [
+                        'BEGIN:VCALENDAR',
+                        'VERSION:2.0',
+                        'PRODID:-//Alisios Van//EN',
+                        'METHOD:PUBLISH',
+                        'BEGIN:VEVENT',
+                        'UID:' + uid,
+                        'DTSTAMP:' + dtstamp,
+                        'DTSTART;VALUE=DATE:' + start,
+                        'DTEND;VALUE=DATE:' + end,
+                        'SUMMARY:' + title,
+                        'DESCRIPTION:Reservation confirmed',
+                        'END:VEVENT',
+                        'END:VCALENDAR'
+                    ].join('\r\n'); // <— IMPORTANTE: \r\n reales
+                }
+
+                function isIOS() {
+                    return /iP(hone|od|ad)/i.test(navigator.userAgent);
+                }
+
+                document.getElementById('btnIcs')?.addEventListener('click', () => {
+                    const ics = buildIcs();
+
+                    // iOS (y algunos navegadores que no soportan download+blob): usar data: URL
+                    if (isIOS()) {
+                        const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+                        // Abrimos en la misma pestaña para que iOS ofrezca “Abrir en Calendario”
+                        window.location.href = dataUrl;
+                        return;
+                    }
+
+                    // Resto: blob + descarga con filename .ics
+                    try {
+                        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+                        const url  = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'alisiosvan-reservation.ics';
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        URL.revokeObjectURL(url);
+                    } catch (e) {
+                        // Fallback final a data: URL
+                        const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+                        window.open(dataUrl, '_blank', 'noopener');
+                    }
                 });
             })();
         </script>
