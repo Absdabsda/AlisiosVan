@@ -70,7 +70,7 @@
         return new Date(y, m - 1, d);
     }
 
-    // ---------- Locale común para Flatpickr (arreglado Oct/Nov) ----------
+    // ---------- Locale común para Flatpickr ----------
     const localeEN = {
         firstDayOfWeek: 1,
         weekdays: {
@@ -124,8 +124,11 @@
 
         campers.forEach(c => {
             const img = resolveImage(c.image || IMAGE_BY_ID[c.id] || guessImageFromName(c.name));
-            const q = (start && end) ? `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}` : '';
-            const detailsHref = `campers.php?id=${encodeURIComponent(c.id)}${q}`;
+            const q = (start && end)
+                ? `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`
+                : '';
+            // 👇 Aquí cambiamos a la ficha con bandera "from=buscar"
+            const detailsHref = `ficha-camper.php?id=${encodeURIComponent(c.id)}&from=buscar${q}`;
 
             const col = document.createElement('div');
             col.className = 'col-md-4 camper-col';
@@ -224,7 +227,7 @@
                 } catch (err) {
                     console.error(err);
                     hideCheckoutOverlay();
-                    alert('Error de red.');
+                    alert('Network error.');
                 } finally {
                     btn.disabled = false;
                     btn.innerHTML = old;
@@ -238,7 +241,6 @@
     updateBackLinkHref();
 
     // Calendario
-
     if (window.flatpickr && dateInput) {
         const isMobile = () => window.matchMedia('(max-width: 576px)').matches;
 
@@ -291,13 +293,12 @@
         });
     }
 
-
     // Primera carga
     loadAvailability();
 
     /* ===========================
-      WHATSAPP MINI-CHAT
-      =========================== */
+       WHATSAPP MINI-CHAT (desktop) / Deep-link directo (móvil)
+       =========================== */
     const PHONE = '34610136383';           // sin +
     const REDIRECT_AFTER_SEND_MS = 900;     // tiempo de lectura al pulsar enviar
     const GREET_DELAY_MS = 150;
@@ -311,6 +312,17 @@
     const quick    = document.getElementById('wa-quick');
 
     if (!launcher || !panel) return;
+
+    function isMobileDevice() {
+        if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
+            return navigator.userAgentData.mobile;
+        }
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        const mobileUA = /Android|iPhone|iPad|iPod|IEMobile|BlackBerry|Opera Mini/i.test(ua);
+        const touch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const smallSide = Math.min(window.innerWidth, window.innerHeight) <= 820;
+        return (mobileUA && touch) || (touch && smallSide);
+    }
 
     let greeted = false;
 
@@ -334,37 +346,56 @@
     }
     function closePanel() { panel.hidden = true; }
 
-    function openWhatsApp(text) {
+    function openWhatsApp(text, sameTab = false) {
         const msg = text && text.trim() ? text.trim() : 'Hola, me gustaría más información 🙂';
-        const url = 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(msg + '\n\n(Página: ' + window.location.href + ')');
+        const page = '\n\n(Página: ' + window.location.href + ')';
+        const waUrl = 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(msg + page);
+
         if (typeof gtag === 'function') {
             gtag('event', 'click', { event_category: 'engagement', event_label: 'whatsapp_mini_chat' });
         } else if (window.dataLayer) {
             window.dataLayer.push({ event: 'whatsapp_click', source: 'mini_chat' });
         }
-        window.open(url, '_blank', 'noopener');
+
+        if (sameTab) {
+            const deep = 'whatsapp://send?phone=' + PHONE + '&text=' + encodeURIComponent(msg);
+            const fallbackTimer = setTimeout(() => { window.location.href = waUrl; }, 600);
+            window.location.href = deep;
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) clearTimeout(fallbackTimer);
+            }, { once: true });
+        } else {
+            window.open(waUrl, '_blank', 'noopener');
+        }
     }
 
-    launcher.addEventListener('click', () => { panel.hidden ? openPanel() : closePanel(); });
+    launcher.addEventListener('click', () => {
+        if (isMobileDevice()) {
+            const text = (input?.value || '').trim();
+            openWhatsApp(text, true); // en móvil en la misma pestaña / app
+            return;
+        }
+        panel.hidden ? openPanel() : closePanel();
+    });
     closeBtn?.addEventListener('click', closePanel);
 
     // Enviar → aviso + breve pausa antes de abrir WhatsApp
-    sendBtn.addEventListener('click', () => {
+    sendBtn?.addEventListener('click', () => {
         const text = input.value;
         if (!text.trim()) { input.focus(); return; }
         addMsg(text, 'user');
         input.value = '';
         setTimeout(() => {
             addMsg('Abriendo WhatsApp…', 'bot');
-            setTimeout(() => openWhatsApp(text), REDIRECT_AFTER_SEND_MS);
+            setTimeout(() => openWhatsApp(text, isMobileDevice()), REDIRECT_AFTER_SEND_MS);
         }, 200);
     });
-    input.addEventListener('keydown', (e) => {
+    input?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); sendBtn.click(); }
     });
 
-    // Chips → ya no redirigen: dejan el mensaje preparado
-    quick.addEventListener('click', (e) => {
+    // Chips → solo preparan el texto
+    quick?.addEventListener('click', (e) => {
         if (e.target.matches('button[data-text]')) {
             const t = e.target.getAttribute('data-text');
             input.value = t;
@@ -373,8 +404,8 @@
         }
     });
 
-    // Abrir automáticamente una vez por sesión a los 6s
-    if (!sessionStorage.getItem('waOpenedOnce')) {
+    // Auto-abrir solo en escritorio
+    if (!sessionStorage.getItem('waOpenedOnce') && !isMobileDevice()) {
         setTimeout(() => {
             openPanel();
             sessionStorage.setItem('waOpenedOnce', '1');

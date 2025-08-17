@@ -3,34 +3,27 @@
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 $campers = [
-    // 1 = T3 verde (Matcha)
     1 => [
-        'name'     => '“Matcha”',
-        'series'   => 'VW T3',
-        'images'   => [
+        'name'   => '“Matcha”',
+        'series' => 'VW T3',
+        'images' => [
             'img/matcha-fondo-montanya.jpeg',
             'img/matcha-surf-vertical.jpeg',
             'img/carousel/matcha.34.32 (1).jpeg',
             'img/carousel/matcha-surf.34.32.jpeg',
         ],
-        'seats'    => 4,
-        'sleeps'   => 3,
-        'desc'     => 'Spacious green T3—great for friends or a small family. Simple to drive, fully equipped for island adventures.',
+        'seats'  => 4,
+        'sleeps' => 3,
+        'desc'   => 'Spacious green T3—great for friends or a small family. Simple to drive, fully equipped for island adventures.',
         'features' => [
-            '4 travel seats',
-            'Sleeps 3',
-            'Equipped kitchen: hob, sink & fridge',
-            'Cookware & utensils included',
-            'Outdoor shower',
-            'Solar panel',
-            'Camping table & chairs',
+            '4 travel seats','Sleeps 3','Equipped kitchen: hob, sink & fridge',
+            'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs',
         ],
     ],
-    // 2 = T3 azul (Skye)
     2 => [
-        'name'     => '“Skye”',
-        'series'   => 'VW T3',
-        'images'   => [
+        'name'   => '“Skye”',
+        'series' => 'VW T3',
+        'images' => [
             'img/skye-horizontal.JPG',
             'img/carousel/t3-azul-mar.webp',
             'img/carousel/t3-azul-playa.webp',
@@ -39,24 +32,18 @@ $campers = [
             'img/skye/cocina.05.44 (1).jpeg',
             'img/skye/interior-delante.05.44 (2).jpeg',
         ],
-        'seats'    => 2,
-        'sleeps'   => 2,
-        'desc'     => 'Our blue T3 is an easy-going classic for two. Compact, comfy and ready for slow travel days.',
+        'seats'  => 2,
+        'sleeps' => 2,
+        'desc'   => 'Our blue T3 is an easy-going classic for two. Compact, comfy and ready for slow travel days.',
         'features' => [
-            '2 travel seats',
-            'Sleeps 2',
-            'Equipped kitchen: hob, sink & fridge',
-            'Cookware & utensils included',
-            'Outdoor shower',
-            'Solar panel',
-            'Camping table & chairs',
+            '2 travel seats','Sleeps 2','Equipped kitchen: hob, sink & fridge',
+            'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs',
         ],
     ],
-    // 3 = T4 (Rusty)
     3 => [
-        'name'     => '“Rusty”',
-        'series'   => 'VW T4',
-        'images'   => [
+        'name'   => '“Rusty”',
+        'series' => 'VW T4',
+        'images' => [
             'img/carousel/t4-lejos.webp',
             'img/carousel/t4-sol.webp',
             'img/rusty/abierta-chica.58.21.jpeg',
@@ -66,18 +53,12 @@ $campers = [
             'img/rusty/noche-abierta.58.21 (1).jpeg',
             'img/rusty/retrovisor.58.21 (2).jpeg',
         ],
-        'seats'    => 2,
-        'sleeps'   => 2,
-        'desc'     => 'A reliable T4 with a cosy setup for two—compact kitchen, outdoor shower and solar for off-grid stops.',
+        'seats'  => 2,
+        'sleeps' => 2,
+        'desc'   => 'A reliable T4 with a cosy setup for two—compact kitchen, outdoor shower and solar for off-grid stops.',
         'features' => [
-            '2 travel seats',
-            'Sleeps 2',
-            'Equipped kitchen: hob, sink & fridge',
-            'Cookware & utensils included',
-            'Outdoor shower',
-            'Solar panel',
-            'Camping table & chairs',
-            'Projector',
+            '2 travel seats','Sleeps 2','Equipped kitchen: hob, sink & fridge',
+            'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs','Projector',
         ],
     ],
 ];
@@ -95,22 +76,32 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
 
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
 
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Swiper (FALTABA) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+
+    <!-- CSS propio -->
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/ficha-camper.css">
     <link rel="stylesheet" href="css/cookies.css">
 
+    <!-- JS propio -->
     <script src="js/header.js" defer></script>
     <script src="js/cookies.js" defer></script>
+    <!-- Engancha el botón Reserve -->
+    <script src="js/ficha-camper.js" defer></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
-    <script defer>
-        // Swiper init (1 foto por vista, sin “corte” blanco)
+    <!-- Inicialización de Swiper -->
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             const thumbs = new Swiper('#galleryThumbs', {
                 slidesPerView: 4, spaceBetween: 8, freeMode: true, watchSlidesProgress: true,
@@ -126,21 +117,21 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
             });
         });
     </script>
+
     <?php
     $headerPalette = [
-        1 => '131,115,100', // Matcha  #837364
-        2 => '82,118,159', // Skye    #737F8F aprox (azulado)
-        3 => '167,176,183',  // Rusty   #907556 aprox (arena/óxido)
+        1 => '131,115,100',
+        2 => '82,118,159',
+        3 => '167,176,183',
     ];
     $headerRgb = $headerPalette[$id] ?? '131,115,100';
     ?>
     <style>:root{ --header-bg-rgb: <?= htmlspecialchars($headerRgb) ?>; }</style>
-
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>
 
-<!-- HERO (una sola imagen, igual estilo que campers.php) -->
+<!-- HERO -->
 <section class="page-hero camper-detail-hero" style="background-image:url('<?= htmlspecialchars($hero) ?>')">
     <div class="page-hero__content">
         <h1 class="page-hero__title"><?= htmlspecialchars($camper['series'].' '.$camper['name']) ?></h1>
@@ -217,8 +208,9 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
                     </ul>
 
                     <div class="cta-row">
-                        <a class="btn btn-primary" href="index.php">Reserve</a>
-                        <a class="btn btn-outline-secondary" href="campers.php">Back to all campers</a>
+                        <!-- IDs y data-* para el JS -->
+                        <button id="btnReserve" class="btn btn-primary" data-id="<?= (int)$id ?>">Reserve</button>
+                        <a id="btnBack" class="btn btn-outline-secondary" href="campers.php">Back</a>
                     </div>
 
                     <p class="mini-note">150 km/day included · Basic insurance · 24/7 roadside assistance</p>
@@ -227,7 +219,6 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
         </div>
     </div>
 </main>
-
 
 <?php include 'inc/footer.inc'; ?>
 </body>

@@ -10,18 +10,19 @@ $pdo = get_pdo();
 use Stripe\Stripe;
 use Stripe\Refund;
 use Stripe\PaymentIntent;
+use Stripe\Checkout\Session as CheckoutSession;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception as MailException;
 
 Stripe::setApiKey($_ENV['STRIPE_SECRET'] ?? '');
 
-// --- Helpers ---------------------------------------------------------------
+// --- Helpers generales ------------------------------------------------------
 function admin_key(): ?string {
     $envKey = $_ENV['ADMIN_KEY'] ?? '';
     if (!$envKey) return null;
 
-    // lee del GET o de la cookie
     $k = $_GET['key'] ?? ($_COOKIE['admin_key'] ?? '');
     if ($k && hash_equals($envKey, (string)$k)) {
-        // recuerda al admin 30 días (HttpOnly)
         if (empty($_COOKIE['admin_key'])) {
             setcookie('admin_key', $k, time()+60*60*24*30, '/', '', false, true);
         }
@@ -31,10 +32,96 @@ function admin_key(): ?string {
 }
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
+function columnExists(PDO $pdo, string $table, string $column): bool {
+    $sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t AND COLUMN_NAME = :c LIMIT 1";
+    $st = $pdo->prepare($sql);
+    $st->execute([':t'=>$table, ':c'=>$column]);
+    return (bool)$st->fetchColumn();
+}
+
+/**
+ * Intenta obtener email y nombre del cliente:
+ * 1) Tu tabla reservations: customer_email/email, customer_name/name
+ * 2) Stripe PaymentIntent: charges.billing_details.email o receipt_email
+ * 3) Stripe Checkout Session: customer_details.email
+ */
+function getReservationContact(PDO $pdo, array $r): array {
+    try {
+        if (columnExists($pdo, 'reservations', 'customer_email') && !empty($r['customer_email'])) {
+            return ['email' => (string)$r['customer_email'], 'name' => (string)($r['customer_name'] ?? '')];
+        }
+        if (columnExists($pdo, 'reservations', 'email') && !empty($r['email'])) {
+            return ['email' => (string)$r['email'], 'name' => (string)($r['name'] ?? '')];
+        }
+    } catch (Throwable $e) { /* ignore */ }
+
+    try {
+        if (!empty($r['stripe_payment_intent'])) {
+            $pi = PaymentIntent::retrieve($r['stripe_payment_intent']);
+            if ($pi && isset($pi->charges->data[0])) {
+                $ch = $pi->charges->data[0];
+                $email = $ch->billing_details->email ?? $ch->receipt_email ?? null;
+                $name  = $ch->billing_details->name ?? '';
+                if ($email) return ['email'=>(string)$email, 'name'=>(string)$name];
+            }
+        }
+    } catch (Throwable $e) { /* ignore */ }
+
+    try {
+        if (!empty($r['stripe_session_id'])) {
+            $sess = CheckoutSession::retrieve($r['stripe_session_id'], ['expand'=>['customer','customer_details','payment_intent']]);
+            $email = $sess->customer_details->email ?? ($sess->customer->email ?? null);
+            $name  = $sess->customer_details->name  ?? ($sess->customer->name  ?? '');
+            if ($email) return ['email'=>(string)$email, 'name'=>(string)$name];
+            if ($sess->payment_intent && isset($sess->payment_intent->charges->data[0])) {
+                $ch = $sess->payment_intent->charges->data[0];
+                $email = $ch->billing_details->email ?? $ch->receipt_email ?? null;
+                $name  = $ch->billing_details->name ?? '';
+                if ($email) return ['email'=>(string)$email, 'name'=>(string)$name];
+            }
+        }
+    } catch (Throwable $e) { /* ignore */ }
+
+    return ['email'=>'', 'name'=>''];
+}
+
+/** Crea PHPMailer configurado desde variables de entorno o devuelve null si falta config */
+function buildMailerFromEnv(): ?PHPMailer {
+    $host = $_ENV['SMTP_HOST'] ?? $_ENV['MAIL_HOST'] ?? '';
+    $port = (int)($_ENV['SMTP_PORT'] ?? $_ENV['MAIL_PORT'] ?? 587);
+    $user = $_ENV['SMTP_USER'] ?? $_ENV['MAIL_USER'] ?? '';
+    $pass = $_ENV['SMTP_PASS'] ?? $_ENV['MAIL_PASS'] ?? '';
+    $secureRaw = strtolower((string)($_ENV['SMTP_SECURE'] ?? 'tls'));
+    $fromEmail = $_ENV['SMTP_FROM'] ?? $_ENV['MAIL_FROM'] ?? $user;
+    $fromName  = $_ENV['SMTP_FROM_NAME'] ?? $_ENV['MAIL_FROM_NAME'] ?? 'Alisios Van';
+
+    if (!$host || !$user || !$pass) return null;
+
+    $mail = new PHPMailer(true);
+    $mail->CharSet  = 'UTF-8';
+    $mail->Encoding = 'quoted-printable';
+    $mail->isSMTP();
+    $mail->Host       = $host;
+    $mail->SMTPAuth   = true;
+    $mail->Username   = $user;
+    $mail->Password   = $pass;
+    if ($secureRaw === 'ssl' || $port === 465) {
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port       = $port ?: 465;
+    } else {
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = $port ?: 587;
+    }
+    $mail->setFrom($fromEmail ?: $user, $fromName);
+    $mail->addReplyTo('alisios.van@gmail.com', 'Alisios Van');
+    return $mail;
+}
+
 // --- Input -----------------------------------------------------------------
 $rid = (int)($_GET['rid'] ?? 0);
-$t   = $_GET['t'] ?? '';                 // token de cliente (puede venir vacío si es admin)
-$ADMIN_KEY = admin_key();                // clave válida si es admin (puede venir de cookie)
+$t   = $_GET['t'] ?? '';
+$ADMIN_KEY = admin_key();
 $admin = $ADMIN_KEY !== null;
 
 if(!$rid){
@@ -43,7 +130,6 @@ if(!$rid){
 
 // --- Carga reserva ----------------------------------------------------------
 if ($admin) {
-    // admin no necesita token
     $st = $pdo->prepare("
       SELECT r.*, c.name AS camper, c.price_per_night
       FROM reservations r
@@ -52,7 +138,6 @@ if ($admin) {
     ");
     $st->execute([$rid]);
 } else {
-    // cliente necesita token válido
     $st = $pdo->prepare("
       SELECT r.*, c.name AS camper, c.price_per_night
       FROM reservations r
@@ -72,14 +157,14 @@ if(!$r){
 // --- Datos útiles -----------------------------------------------------------
 $nights = (int)((new DateTime($r['start_date']))->diff(new DateTime($r['end_date']))->format('%a'));
 $price  = (float)$r['price_per_night'];
-$deposit = $price; // tu política: depósito = 1 noche
+$deposit = $price; // depósito = 1 noche según tu política
 
 // --- Cancelación ------------------------------------------------------------
 $msgTop = '';
 $refundNote = '';
 
 if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel'){
-    // si ya estaba cancelada, no repitas
+    // si ya estaba cancelada
     if (strpos((string)$r['status'],'cancelled') === 0) {
         $qs = 'rid='.$rid.($admin ? '&key='.urlencode($ADMIN_KEY) : ($t ? '&t='.urlencode($t) : ''));
         header('Location: manage.php?'.$qs.'&m=already'); exit;
@@ -88,7 +173,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
     $newStatus = $admin ? 'cancelled_by_admin' : 'cancelled_by_customer';
 
     if ($admin && !empty($r['stripe_payment_intent'])) {
-        // Admin: reembolsa (intenta evitar doble reembolso)
+        // Admin: intenta reembolso del depósito
         try {
             $pi = PaymentIntent::retrieve($r['stripe_payment_intent']);
             $alreadyRefunded = false;
@@ -101,13 +186,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
                 }
             }
             if (!$alreadyRefunded) {
-                Refund::create(['payment_intent' => $r['stripe_payment_intent']]); // full refund
+                Refund::create(['payment_intent' => $r['stripe_payment_intent']]); // reembolso total del depósito
                 $refundNote = 'Refund issued for the deposit.';
             } else {
                 $refundNote = 'Charge has already been refunded.';
             }
         } catch (Throwable $e) {
-            // No bloquees la cancelación si falla el reembolso; deja nota
             $refundNote = 'Refund error: '.$e->getMessage();
         }
     } else {
@@ -119,11 +203,125 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
     try {
         $up = $pdo->prepare("UPDATE reservations SET status=?, cancelled_at=NOW() WHERE id=? LIMIT 1");
         $up->execute([$newStatus, $rid]);
+        // refleja el nuevo estado en $r para el email
+        $r['status'] = $newStatus;
+        $r['cancelled_at'] = date('Y-m-d H:i:s');
     } catch (Throwable $e) {
         $up = $pdo->prepare("UPDATE reservations SET status='cancelled', cancelled_at=NOW() WHERE id=? LIMIT 1");
         $up->execute([$rid]);
+        $r['status'] = 'cancelled';
+        $r['cancelled_at'] = date('Y-m-d H:i:s');
     }
 
+    // ======= Email de confirmación de cancelación ===========================
+    try {
+        // ¿ya enviado?
+        $emailSentAlready = false;
+        if (columnExists($pdo, 'reservations', 'cancellation_email_sent_at')) {
+            $q = $pdo->prepare("SELECT cancellation_email_sent_at FROM reservations WHERE id=? LIMIT 1");
+            $q->execute([$rid]);
+            $emailSentAlready = (bool)$q->fetchColumn();
+        }
+
+        if (!$emailSentAlready) {
+            $contact = getReservationContact($pdo, $r);
+            $toEmail = $contact['email'] ?? '';
+            $toName  = $contact['name']  ?? '';
+
+            if ($toEmail) {
+                $startHuman = date('j M Y', strtotime($r['start_date']));
+                $endHuman   = date('j M Y', strtotime($r['end_date']));
+                $nightsMail = (int)((new DateTime($r['start_date']))->diff(new DateTime($r['end_date']))->format('%a'));
+
+                $subject = "Reservation #{$r['id']} cancelled";
+                $lead    = $admin
+                    ? "Your reservation has been cancelled by our team. The deposit has been (or will be) refunded."
+                    : "Your reservation has been cancelled as requested. Per our policy, the deposit is non-refundable.";
+
+                $html = '
+<div style="font-family:Arial,sans-serif;line-height:1.55;color:#333;background:#e8e6e4;padding:24px;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+    <tr><td align="center">
+      <table role="presentation" width="640" cellspacing="0" cellpadding="0"
+             style="background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.10);overflow:hidden;border:1px solid rgba(0,0,0,.04);">
+        <tr>
+          <td style="background:#80C1D0;color:#fff;padding:18px 22px;">
+            <div style="font-size:22px;font-weight:700;">Reservation cancelled</div>
+            <div style="opacity:.9;margin-top:4px;">#'.(int)$r['id'].' — Alisios Van</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 22px;">
+            <p style="margin:0 0 10px 0">'.htmlspecialchars($lead, ENT_QUOTES, 'UTF-8').'</p>
+            <p style="margin:0 0 14px 0">Summary:</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                   style="border:1px solid rgba(0,0,0,0.06); border-radius:10px; background:#fbfbfb;">
+              <tr>
+                <td style="padding:10px 14px;">Camper</td>
+                <td align="right" style="padding:10px 14px;"><strong>'.htmlspecialchars($r['camper'] ?? '', ENT_QUOTES, 'UTF-8').'</strong></td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;border-top:1px dashed #DDD;">Dates</td>
+                <td align="right" style="padding:10px 14px;border-top:1px dashed #DDD;">'
+                    .htmlspecialchars($startHuman, ENT_QUOTES, 'UTF-8').' &nbsp;&rarr;&nbsp; '
+                    .htmlspecialchars($endHuman, ENT_QUOTES, 'UTF-8').'</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;border-top:1px dashed #DDD;">Nights</td>
+                <td align="right" style="padding:10px 14px;border-top:1px dashed #DDD;">'.$nightsMail.'</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;border-top:1px dashed #DDD;">Status</td>
+                <td align="right" style="padding:10px 14px;border-top:1px dashed #DDD;">'.htmlspecialchars($r['status'], ENT_QUOTES, 'UTF-8').'</td>
+              </tr>
+            </table>
+            <p style="margin:14px 0 0 0;color:#555">If this was a mistake, reply to this email and we\'ll help.</p>
+          </td>
+        </tr>
+        <tr><td style="padding:12px 22px;background:#f7f7f7;color:#7D7D7D;font-size:12px;">Alisios Van · Canary Islands</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</div>';
+
+                $alt = "Reservation cancelled\n"
+                    . "Reservation #{$r['id']}\n"
+                    . "Camper: ".($r['camper'] ?? '')."\n"
+                    . "Dates: {$startHuman} -> {$endHuman}\n"
+                    . "Status: {$r['status']}\n"
+                    . ($admin ? "Refund: deposit refunded (if applicable)\n" : "Note: deposit non-refundable per policy\n");
+
+                $mail = buildMailerFromEnv();
+                if ($mail) {
+                    try {
+                        $mail->addAddress($toEmail, $toName ?: $toEmail);
+                        $bcc = $_ENV['SMTP_TO'] ?? $_ENV['MAIL_BCC'] ?? '';
+                        if (!empty($bcc)) $mail->addBCC($bcc);
+                        $mail->Subject = $subject;
+                        $mail->isHTML(true);
+                        $mail->Body    = $html;
+                        $mail->AltBody = $alt;
+                        $mail->send();
+
+                        if (columnExists($pdo, 'reservations', 'cancellation_email_sent_at')) {
+                            $pdo->prepare("UPDATE reservations SET cancellation_email_sent_at = NOW() WHERE id=? LIMIT 1")
+                                ->execute([$rid]);
+                        }
+                    } catch (MailException $e) {
+                        error_log('Cancel mail error: '.$e->getMessage());
+                    }
+                } else {
+                    error_log('Cancel mail skipped: missing SMTP config.');
+                }
+            } else {
+                error_log('Cancel mail skipped: no customer email found.');
+            }
+        }
+    } catch (Throwable $e) {
+        error_log('Cancel mail exception: '.$e->getMessage());
+    }
+
+    // Redirección post-cancel
     $qs = 'rid='.$rid.($admin ? '&key='.urlencode($ADMIN_KEY) : ($t ? '&t='.urlencode($t) : ''));
     if ($refundNote) $qs .= '&rn='.urlencode($refundNote);
     header('Location: manage.php?'.$qs.'&m=cancelled');
