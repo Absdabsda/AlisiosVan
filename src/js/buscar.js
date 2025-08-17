@@ -70,7 +70,7 @@
         return new Date(y, m - 1, d);
     }
 
-    // ---------- Locale común para Flatpickr (arreglado Oct/Nov) ----------
+    // ---------- Locale común para Flatpickr ----------
     const localeEN = {
         firstDayOfWeek: 1,
         weekdays: {
@@ -124,8 +124,11 @@
 
         campers.forEach(c => {
             const img = resolveImage(c.image || IMAGE_BY_ID[c.id] || guessImageFromName(c.name));
-            const q = (start && end) ? `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}` : '';
-            const detailsHref = `campers.php?id=${encodeURIComponent(c.id)}${q}`;
+            const q = (start && end)
+                ? `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`
+                : '';
+            // 👇 Aquí cambiamos a la ficha con bandera "from=buscar"
+            const detailsHref = `ficha-camper.php?id=${encodeURIComponent(c.id)}&from=buscar${q}`;
 
             const col = document.createElement('div');
             col.className = 'col-md-4 camper-col';
@@ -224,7 +227,7 @@
                 } catch (err) {
                     console.error(err);
                     hideCheckoutOverlay();
-                    alert('Error de red.');
+                    alert('Network error.');
                 } finally {
                     btn.disabled = false;
                     btn.innerHTML = old;
@@ -238,7 +241,6 @@
     updateBackLinkHref();
 
     // Calendario
-
     if (window.flatpickr && dateInput) {
         const isMobile = () => window.matchMedia('(max-width: 576px)').matches;
 
@@ -291,15 +293,14 @@
         });
     }
 
-
     // Primera carga
     loadAvailability();
 
     /* ===========================
-   WHATSAPP (mini-chat en desktop / WhatsApp directo en móvil)
-   =========================== */
+       WHATSAPP MINI-CHAT (desktop) / Deep-link directo (móvil)
+       =========================== */
     const PHONE = '34610136383';           // sin +
-    const REDIRECT_AFTER_SEND_MS = 900;     // pequeña pausa antes de abrir WA tras "enviar"
+    const REDIRECT_AFTER_SEND_MS = 900;     // tiempo de lectura al pulsar enviar
     const GREET_DELAY_MS = 150;
 
     const launcher = document.getElementById('wa-launcher');
@@ -310,10 +311,8 @@
     const sendBtn  = document.getElementById('wa-send');
     const quick    = document.getElementById('wa-quick');
 
-    // Si la página no tiene el widget, sal del bloque sin romper nada
     if (!launcher || !panel) return;
 
-    // Detector robusto de móvil (UA-CH + heurísticas)
     function isMobileDevice() {
         if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
             return navigator.userAgentData.mobile;
@@ -325,22 +324,8 @@
         return (mobileUA && touch) || (touch && smallSide);
     }
 
-    // Mensaje por defecto: intenta incluir las fechas seleccionadas
-    function buildDefaultMsg() {
-        // 1) Si Flatpickr creó altInput visible, úsalo
-        const visibleAlt = document.querySelector('.date-chip input.flatpickr-input')?.value?.trim();
-        // 2) O usa ?start=YYYY-MM-DD&end=YYYY-MM-DD de la URL
-        let urlDates = '';
-        try {
-            const ps = new URLSearchParams(location.search);
-            const s = ps.get('start'); const e = ps.get('end');
-            if (s && e) urlDates = `\nFechas: ${s} → ${e}`;
-        } catch {}
-        const base = 'Hola, me gustaría consultar disponibilidad 🙂';
-        return visibleAlt ? `${base}\nFechas: ${visibleAlt}` : (urlDates ? `${base}${urlDates}` : base);
-    }
-
     let greeted = false;
+
     function addMsg(text, who) {
         const div = document.createElement('div');
         div.className = 'msg ' + (who || 'bot');
@@ -348,6 +333,7 @@
         messages.appendChild(div);
         messages.scrollTop = messages.scrollHeight;
     }
+
     function openPanel() {
         panel.hidden = false;
         if (!greeted) {
@@ -355,21 +341,16 @@
             setTimeout(() => {
                 addMsg('¡Hola! 👋 Somos Alisios Van.');
                 addMsg('Elige una opción o escribe tu mensaje y luego pulsa “enviar”.');
-                // Prefill con fechas si no hay texto
-                const pre = buildDefaultMsg();
-                if (pre && input && !input.value) input.value = pre;
             }, GREET_DELAY_MS);
         }
     }
     function closePanel() { panel.hidden = true; }
 
-    // Abre WhatsApp (móvil: misma pestaña con deep-link + fallback; desktop: nueva pestaña)
     function openWhatsApp(text, sameTab = false) {
-        const msg  = (text && text.trim()) ? text.trim() : buildDefaultMsg();
+        const msg = text && text.trim() ? text.trim() : 'Hola, me gustaría más información 🙂';
         const page = '\n\n(Página: ' + window.location.href + ')';
         const waUrl = 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(msg + page);
 
-        // Analítica opcional
         if (typeof gtag === 'function') {
             gtag('event', 'click', { event_category: 'engagement', event_label: 'whatsapp_mini_chat' });
         } else if (window.dataLayer) {
@@ -388,54 +369,42 @@
         }
     }
 
-    // Botón flotante: móvil → WhatsApp directo; desktop → mini-chat
     launcher.addEventListener('click', () => {
         if (isMobileDevice()) {
-            const text = (input?.value || '');
-            openWhatsApp(text, /* sameTab */ true);
+            const text = (input?.value || '').trim();
+            openWhatsApp(text, true); // en móvil en la misma pestaña / app
             return;
         }
         panel.hidden ? openPanel() : closePanel();
     });
-
     closeBtn?.addEventListener('click', closePanel);
 
-    // Enviar desde mini-chat
+    // Enviar → aviso + breve pausa antes de abrir WhatsApp
     sendBtn?.addEventListener('click', () => {
-        const text = input?.value || '';
-        if (!text.trim()) { input?.focus(); return; }
-
+        const text = input.value;
+        if (!text.trim()) { input.focus(); return; }
         addMsg(text, 'user');
-        if (input) input.value = '';
-
+        input.value = '';
         setTimeout(() => {
             addMsg('Abriendo WhatsApp…', 'bot');
-            setTimeout(() => openWhatsApp(text, isMobileDevice() /* sameTab on mobile */), REDIRECT_AFTER_SEND_MS);
+            setTimeout(() => openWhatsApp(text, isMobileDevice()), REDIRECT_AFTER_SEND_MS);
         }, 200);
     });
     input?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); sendBtn?.click(); }
+        if (e.key === 'Enter') { e.preventDefault(); sendBtn.click(); }
     });
 
-    // Chips: rellenan input y añaden fechas si existen
+    // Chips → solo preparan el texto
     quick?.addEventListener('click', (e) => {
-        const btn = e.target.closest('button[data-text]');
-        if (!btn) return;
-        const t = btn.getAttribute('data-text') || '';
-        const def = buildDefaultMsg();
-        let datesPart = '';
-        if (def.includes('Fechas:')) {
-            const lines = def.split('\n').slice(1).join('\n'); // todo salvo la línea base
-            datesPart = '\n' + lines;
-        }
-        if (input) {
-            input.value = t + datesPart;
+        if (e.target.matches('button[data-text]')) {
+            const t = e.target.getAttribute('data-text');
+            input.value = t;
             input.focus();
+            addMsg('Mensaje preparado. Pulsa “enviar” para abrir WhatsApp 👉', 'bot');
         }
-        addMsg('Mensaje preparado. Pulsa “enviar” para abrir WhatsApp 👉', 'bot');
     });
 
-    // Auto-abrir solo en escritorio (no en móvil)
+    // Auto-abrir solo en escritorio
     if (!sessionStorage.getItem('waOpenedOnce') && !isMobileDevice()) {
         setTimeout(() => {
             openPanel();
@@ -443,4 +412,3 @@
         }, 6000);
     }
 })();
-
