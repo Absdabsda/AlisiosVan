@@ -58,6 +58,10 @@ $feed = baseUrl()."/company-ical.php?key=".urlencode($_ENV['COMPANY_ICAL_KEY'] ?
     <link rel="stylesheet" href="css/header.css">
 
     <script src="js/header.js" defer></script>
+    <!-- FullCalendar (CSS + JS global) -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js" defer></script>
 
     <style>
         /* Integra con tu estética */
