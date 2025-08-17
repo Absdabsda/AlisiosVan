@@ -125,7 +125,7 @@
         campers.forEach(c => {
             const img = resolveImage(c.image || IMAGE_BY_ID[c.id] || guessImageFromName(c.name));
             const q = (start && end) ? `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}` : '';
-            const detailsHref = `camper.php?id=${encodeURIComponent(c.id)}${q}`;
+            const detailsHref = `campers.php?id=${encodeURIComponent(c.id)}${q}`;
 
             const col = document.createElement('div');
             col.className = 'col-md-4 camper-col';
