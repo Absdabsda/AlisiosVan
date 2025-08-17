@@ -92,23 +92,24 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title><?= htmlspecialchars($camper['series'].' '.$camper['name']) ?> | Alisios Van</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
-
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
 
+    <!-- Swiper CSS (FALTABA) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+    <!-- Tus CSS -->
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/ficha-camper.css">
     <link rel="stylesheet" href="css/cookies.css">
 
-    <script src="js/header.js" defer></script>
-    <script src="js/cookies.js" defer></script>
-
+    <!-- JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+
+    <script src="js/header.js" defer></script>
+    <script src="js/cookies.js" defer></script>
     <script defer>
         // Swiper init (1 foto por vista, sin “corte” blanco)
         document.addEventListener('DOMContentLoaded', () => {
