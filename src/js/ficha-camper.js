@@ -1,263 +1,116 @@
 // src/js/ficha-camper.js
-(function () {
-    'use strict';
+document.addEventListener('DOMContentLoaded', () => {
+    // ===== Rutas base =====
+    // p.ej. /CanaryVanGit/AlisiosVan/src/ficha-camper.php
+    const PATH = location.pathname;
 
-    const PREFIX   = '/CanaryVanGit/AlisiosVan';
-    const IMG_BASE = `${PREFIX}/src/`;
-
-    // Props desde PHP
-    const PROPS = window.__CAMPPER_PAGE_PROPS__ || { id: 0, start: '', end: '' };
-    let { id, start, end } = PROPS;
-
-    // ------- Helpers -------
-    const ymdLocal   = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const parseYMD   = s => s ? new Date(...s.split('-').map((n,i)=> i===1? +n-1:+n)) : null;
-    const nightsBetween = (a,b) => Math.max(0, Math.round((b-a)/86400000));
-
-    function imgUrl(p){
-        if(!p) return '';
-        const s = String(p).trim();
-        if(/^https?:\/\//i.test(s) || s.startsWith('/')) return s;
-        if(s.startsWith('src/')) return `${PREFIX}/${s}`;
-        return `${IMG_BASE}${s.replace(/^\.?\//,'')}`;
+    // ROOT = parte antes de /src (donde viven /api y /src al mismo nivel)
+    // BASE = carpeta /src para enlazar a otras páginas dentro de src
+    let ROOT = '';
+    let BASE = '';
+    if (PATH.includes('/src/')) {
+        ROOT = PATH.split('/src/')[0];  // -> /CanaryVanGit/AlisiosVan
+        BASE = ROOT + '/src';           // -> /CanaryVanGit/AlisiosVan/src
+    } else {
+        // Si en producción sirves sin /src en la URL, ROOT = dominio y BASE = raíz
+        ROOT = '';
+        BASE = '';
     }
 
-    // ------- DOM -------
-    const hero = document.getElementById('pdHero');
-    const titleEl = document.getElementById('pdTitle');
-    const priceEl = document.getElementById('price');
-    const badges = document.getElementById('badges');
-    const amenitiesEl = document.getElementById('amenities');
-    const mainWrap  = document.getElementById('galleryMainWrapper');
-    const thumbWrap = document.getElementById('galleryThumbsWrapper');
-    const nightsText = document.getElementById('nightsText');
-    const btnBack   = document.getElementById('btnBack');
-    const btnReserve= document.getElementById('btnReserve');
-    const rf_camper_id = document.getElementById('rf_camper_id');
-    const rf_start = document.getElementById('rf_start');
-    const rf_end   = document.getElementById('rf_end');
-    const reserveForm = document.getElementById('reserveForm');
+    // URL helper para API correcto (al mismo nivel que /src)
+    const API = (file) => new URL(`${ROOT}/api/${file}`, location.origin).toString();
 
-    // ------- API camper -------
-    async function fetchCamper(){
-        const url = new URL(PREFIX + '/api/camper.php', location.origin);
-        url.searchParams.set('id', id);
-        try {
-            const res = await fetch(url);
-            if (res.ok) {
-                const data = await res.json();
-                if (data && data.ok) return data.camper;
-            }
-        } catch {}
-        // fallback
-        return {
-            id,
-            name: 'Camper',
-            price_per_night: 100,
-            seats: 4,
-            images: [
-                'img/carousel/t3-azul-mar.webp',
-                'img/carousel/t3-azul-playa.webp',
-                'img/carousel/t4-sol.webp'
-            ],
-            badges: ['Manual', 'Diesel', 'Solar', 'Fridge', '2-3 sleeps'],
-            amenities: ['Bed 140cm','Portable shower','Kitchen kit','Camping table & chairs','USB chargers','Bluetooth speaker']
-        };
-    }
+    // ===== Parámetros de la URL =====
+    const qs    = new URLSearchParams(location.search);
+    const from  = qs.get('from')  || '';        // "buscar" si vienes de buscar.php
+    const start = qs.get('start') || '';
+    const end   = qs.get('end')   || '';
 
-    // ------- Galería -------
-    let main = null, thumbs = null;
+    // ===== Elementos =====
+    const btnReserve = document.getElementById('btnReserve');
+    const btnBack    = document.getElementById('btnBack');
+    const camperId   = Number(btnReserve?.dataset.id || 0);
 
-    function svgPlaceholder(text='Image not found'){
-        return `data:image/svg+xml;charset=utf8,${encodeURIComponent(
-            `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900">
-        <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#F4F4F4"/><stop offset="1" stop-color="#E9E9E9"/>
-        </linearGradient></defs>
-        <rect width="100%" height="100%" fill="url(#g)"/>
-        <text x="50%" y="50%" fill="#9aa0a6" font-size="28" text-anchor="middle" dominant-baseline="middle"
-          font-family="Arial, Helvetica, sans-serif">${text}</text>
-      </svg>`
-        )}`;
-    }
-
-    function addSlide(wrap, src, alt){
-        const slide = document.createElement('div');
-        slide.className = 'swiper-slide';
-        const img = new Image();
-        img.alt = alt;
-        img.src = imgUrl(src);
-        img.addEventListener('error', () => { img.src = svgPlaceholder(); main?.update(); thumbs?.update(); });
-        img.addEventListener('load',  () => { main?.update(); thumbs?.update(); });
-        slide.appendChild(img);
-        wrap.appendChild(slide);
-    }
-
-    function initSwipers(){
-        // Destruye instancias previas si recargas datos
-        if (main)  { try{ main.destroy(true, true); }catch{} main = null; }
-        if (thumbs){ try{ thumbs.destroy(true, true);}catch{} thumbs = null; }
-
-        // Thumbs (principalmente para móvil)
-        thumbs = new Swiper('#galleryThumbs', {
-            slidesPerView: 4,
-            spaceBetween: 8,
-            freeMode: true,
-            watchSlidesProgress: true,
-            observer: true, observeParents: true,
-            breakpoints: { 0:{slidesPerView:4}, 576:{slidesPerView:5} }
-        });
-
-        // Deja que el grid mida antes de iniciar
-        requestAnimationFrame(() => {
-            main = new Swiper('#galleryMain', {
-                slidesPerView: 1,         // ← siempre 1
-                spaceBetween: 0,          // ← sin “raja” blanca
-                navigation: { nextEl: '#galleryMain .swiper-button-next', prevEl: '#galleryMain .swiper-button-prev' },
-                pagination: { el: '#galleryPagination', clickable: true },
-                thumbs: { swiper: thumbs },
-                preloadImages: false,
-                lazy: { loadPrevNext: true },
-                watchSlidesProgress: true,
-                observer: true,
-                observeParents: true
-            });
-
-            setTimeout(() => { main.update(); thumbs.update(); }, 60);
-            window.addEventListener('resize', () => { main.update(); thumbs.update(); }, { passive:true });
-        });
-    }
-
-    async function renderCamper(c){
-        // Título / precio / hero
-        titleEl.textContent = `"${c.name}"`;
-        priceEl.textContent = Number(c.price_per_night).toFixed(0);
-        document.getElementById('seatsBadge').innerHTML = `<i class="bi bi-people"></i> ${c.seats || 4} seats`;
-        hero.style.backgroundImage = `url('${imgUrl((c.images && c.images[0]) || "img/carousel/t3-azul-mar.webp")}')`;
-
-        // Badges
-        badges.innerHTML = '';
-        (c.badges || []).forEach(b => {
-            const span = document.createElement('span');
-            span.className = 'badge-soft';
-            span.textContent = b;
-            badges.appendChild(span);
-        });
-
-        // Amenities
-        amenitiesEl.innerHTML = '';
-        (c.amenities || []).forEach(a => {
-            const div = document.createElement('div');
-            div.className = 'item';
-            div.innerHTML = `<i class="bi bi-check-circle"></i><span>${a}</span>`;
-            amenitiesEl.appendChild(div);
-        });
-
-        // Slides
-        mainWrap.innerHTML = '';
-        thumbWrap.innerHTML = '';
-        const imgs = (c.images && c.images.length ? c.images : ['img/carousel/t3-azul-mar.webp']);
-        imgs.forEach(src => { addSlide(mainWrap, src, c.name); addSlide(thumbWrap, src, `${c.name} thumbnail`); });
-
-        // Inicializa Swiper una única vez y después de tener slides
-        initSwipers();
-    }
-
-    // ------- Flatpickr -------
-    const localeEN = {
-        firstDayOfWeek: 1,
-        weekdays: { shorthand:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], longhand:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'] },
-        months: { shorthand:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], longhand:['January','February','March','April','May','June','July','August','September','October','November','December'] }
-    };
-    let fp;
-    function initPicker(){
-        const input = document.getElementById('pdDateRange');
-        fp = flatpickr(input, {
-            mode: 'range',
-            dateFormat: 'Y-m-d',
-            altInput: true,
-            altFormat: 'j M Y',
-            showMonths: 2,
-            disableMobile: true,
-            allowInput: false,
-            locale: localeEN,
-            defaultDate: (start && end) ? [parseYMD(start), parseYMD(end)] : null,
-            onClose(selectedDates){
-                if (selectedDates.length === 2){
-                    start = ymdLocal(selectedDates[0]);
-                    end   = ymdLocal(selectedDates[1]);
-                    rf_start.value = start;
-                    rf_end.value   = end;
-                    updateTotals();
-                    updateBackLink();
-                }
-            }
-        });
-    }
-
-    function updateTotals(){
-        if (start && end){
-            const n = nightsBetween(parseYMD(start), parseYMD(end));
-            const price = Number(priceEl.textContent || 0);
-            const total = n * price;
-            nightsText.innerHTML = n > 0
-                ? `<span class="pd-total">${n} night${n>1?'s':''}</span> · Total: <span class="pd-total">${total}€</span>`
-                : 'Select dates to see total.';
+    // ===== Back inteligente =====
+    if (btnBack) {
+        if (from === 'buscar') {
+            const u = new URL(`${BASE}/buscar.php`, location.origin);
+            if (start && end) { u.searchParams.set('start', start); u.searchParams.set('end', end); }
+            btnBack.href = u.toString();
         } else {
-            nightsText.textContent = 'Select dates to see total.';
+            btnBack.href = `${BASE}/campers.php`;
         }
     }
 
-    function updateBackLink(){
-        const url = new URL(PREFIX + '/buscar.php', location.origin);
-        if (start && end){ url.searchParams.set('start', start); url.searchParams.set('end', end); }
-        btnBack.href = url.toString();
+    // ===== Overlay “redirigiendo” =====
+    function ensureOverlay() {
+        let el = document.getElementById('checkoutOverlay');
+        if (el) return el;
+        el = document.createElement('div');
+        el.id = 'checkoutOverlay';
+        el.style.cssText = 'position:fixed;inset:0;display:none;place-items:center;background:rgba(255,255,255,.9);z-index:2000;';
+        el.innerHTML = `
+      <div style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:12px;padding:18px 22px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.12)">
+        <div class="spinner-border" role="status" aria-hidden="true"></div>
+        <p class="mt-3 mb-0">Redirecting you to a safe checkout…</p>
+        <div class="text-muted small">Don’t close this window.</div>
+      </div>`;
+        document.body.appendChild(el);
+        return el;
+    }
+    function showOverlay(msg) {
+        const el = ensureOverlay();
+        if (msg) el.querySelector('p').textContent = msg;
+        el.style.display = 'grid';
+    }
+    function hideOverlay() {
+        const el = document.getElementById('checkoutOverlay');
+        if (el) el.style.display = 'none';
     }
 
-    // ------- Reserva -------
-    function hookReserve(){
-        const modal = new bootstrap.Modal(document.getElementById('reserveModal'));
-        btnReserve.addEventListener('click', () => {
-            if (!start || !end) { fp.open(); return; }
-            rf_start.value = start;
-            rf_end.value   = end;
-            modal.show();
-        });
+    // ===== Reservar =====
+    btnReserve?.addEventListener('click', async () => {
+        // Si no hay fechas, llévalo a la home con el buscador
+        if (!start || !end) {
+            const u = new URL(`${BASE}/index.php`, location.origin);
+            u.searchParams.set('openDates', '1');  // para que aterrices con el calendario abierto (si lo usas)
+            u.hash = 'searchForm';
+            location.href = u.toString();
+            return;
+        }
 
-        reserveForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = {
-                camper_id: +rf_camper_id.value,
-                start: rf_start.value,
-                end: rf_end.value,
-                name: document.getElementById('rf_name').value.trim(),
-                email: document.getElementById('rf_email').value.trim(),
-                phone: document.getElementById('rf_phone').value.trim()
-            };
-            try{
-                const res = await fetch(PREFIX + '/api/create-checkout.php', {
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (data.ok && data.url) location.href = data.url;
-                else alert(data.error || 'Could not start checkout.');
-            } catch(err){
-                console.error(err);
-                alert('Network error.');
+        if (!camperId) {
+            alert('Missing camper id.');
+            return;
+        }
+
+        const old = btnReserve.innerHTML;
+        btnReserve.disabled = true;
+        btnReserve.innerHTML = 'Redirecting…';
+        showOverlay('Redirecting you to a safe checkout…');
+
+        try {
+            const res = await fetch(API('create-checkout.php'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ camper_id: camperId, start, end })
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (res.ok && data.ok && data.url) {
+                location.href = data.url;   // a Stripe
+                return;
             }
-        });
-    }
 
-    // ------- Init -------
-    (async function(){
-        updateBackLink();
-        const camper = await fetchCamper();
-        await renderCamper(camper);   // ← crea slides y luego initSwipers()
-        initPicker();
-        updateTotals();
-        hookReserve();
-    })();
-
-})();
+            hideOverlay();
+            alert(data.error || 'Could not initialize checkout.');
+        } catch (err) {
+            hideOverlay();
+            alert('Network error. Please try again.');
+        } finally {
+            btnReserve.disabled = false;
+            btnReserve.innerHTML = old;
+        }
+    });
+});
