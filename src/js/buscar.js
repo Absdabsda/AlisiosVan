@@ -296,10 +296,10 @@
     loadAvailability();
 
     /* ===========================
-      WHATSAPP MINI-CHAT
-      =========================== */
+   WHATSAPP (mini-chat en desktop / WhatsApp directo en móvil)
+   =========================== */
     const PHONE = '34610136383';           // sin +
-    const REDIRECT_AFTER_SEND_MS = 900;     // tiempo de lectura al pulsar enviar
+    const REDIRECT_AFTER_SEND_MS = 900;     // pequeña pausa antes de abrir WA tras "enviar"
     const GREET_DELAY_MS = 150;
 
     const launcher = document.getElementById('wa-launcher');
@@ -310,10 +310,37 @@
     const sendBtn  = document.getElementById('wa-send');
     const quick    = document.getElementById('wa-quick');
 
+    // Si la página no tiene el widget, sal del bloque sin romper nada
     if (!launcher || !panel) return;
 
-    let greeted = false;
+    // Detector robusto de móvil (UA-CH + heurísticas)
+    function isMobileDevice() {
+        if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
+            return navigator.userAgentData.mobile;
+        }
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        const mobileUA = /Android|iPhone|iPad|iPod|IEMobile|BlackBerry|Opera Mini/i.test(ua);
+        const touch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const smallSide = Math.min(window.innerWidth, window.innerHeight) <= 820;
+        return (mobileUA && touch) || (touch && smallSide);
+    }
 
+    // Mensaje por defecto: intenta incluir las fechas seleccionadas
+    function buildDefaultMsg() {
+        // 1) Si Flatpickr creó altInput visible, úsalo
+        const visibleAlt = document.querySelector('.date-chip input.flatpickr-input')?.value?.trim();
+        // 2) O usa ?start=YYYY-MM-DD&end=YYYY-MM-DD de la URL
+        let urlDates = '';
+        try {
+            const ps = new URLSearchParams(location.search);
+            const s = ps.get('start'); const e = ps.get('end');
+            if (s && e) urlDates = `\nFechas: ${s} → ${e}`;
+        } catch {}
+        const base = 'Hola, me gustaría consultar disponibilidad 🙂';
+        return visibleAlt ? `${base}\nFechas: ${visibleAlt}` : (urlDates ? `${base}${urlDates}` : base);
+    }
+
+    let greeted = false;
     function addMsg(text, who) {
         const div = document.createElement('div');
         div.className = 'msg ' + (who || 'bot');
@@ -321,7 +348,6 @@
         messages.appendChild(div);
         messages.scrollTop = messages.scrollHeight;
     }
-
     function openPanel() {
         panel.hidden = false;
         if (!greeted) {
@@ -329,55 +355,92 @@
             setTimeout(() => {
                 addMsg('¡Hola! 👋 Somos Alisios Van.');
                 addMsg('Elige una opción o escribe tu mensaje y luego pulsa “enviar”.');
+                // Prefill con fechas si no hay texto
+                const pre = buildDefaultMsg();
+                if (pre && input && !input.value) input.value = pre;
             }, GREET_DELAY_MS);
         }
     }
     function closePanel() { panel.hidden = true; }
 
-    function openWhatsApp(text) {
-        const msg = text && text.trim() ? text.trim() : 'Hola, me gustaría más información 🙂';
-        const url = 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(msg + '\n\n(Página: ' + window.location.href + ')');
+    // Abre WhatsApp (móvil: misma pestaña con deep-link + fallback; desktop: nueva pestaña)
+    function openWhatsApp(text, sameTab = false) {
+        const msg  = (text && text.trim()) ? text.trim() : buildDefaultMsg();
+        const page = '\n\n(Página: ' + window.location.href + ')';
+        const waUrl = 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(msg + page);
+
+        // Analítica opcional
         if (typeof gtag === 'function') {
             gtag('event', 'click', { event_category: 'engagement', event_label: 'whatsapp_mini_chat' });
         } else if (window.dataLayer) {
             window.dataLayer.push({ event: 'whatsapp_click', source: 'mini_chat' });
         }
-        window.open(url, '_blank', 'noopener');
+
+        if (sameTab) {
+            const deep = 'whatsapp://send?phone=' + PHONE + '&text=' + encodeURIComponent(msg);
+            const fallbackTimer = setTimeout(() => { window.location.href = waUrl; }, 600);
+            window.location.href = deep;
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) clearTimeout(fallbackTimer);
+            }, { once: true });
+        } else {
+            window.open(waUrl, '_blank', 'noopener');
+        }
     }
 
-    launcher.addEventListener('click', () => { panel.hidden ? openPanel() : closePanel(); });
+    // Botón flotante: móvil → WhatsApp directo; desktop → mini-chat
+    launcher.addEventListener('click', () => {
+        if (isMobileDevice()) {
+            const text = (input?.value || '');
+            openWhatsApp(text, /* sameTab */ true);
+            return;
+        }
+        panel.hidden ? openPanel() : closePanel();
+    });
+
     closeBtn?.addEventListener('click', closePanel);
 
-    // Enviar → aviso + breve pausa antes de abrir WhatsApp
-    sendBtn.addEventListener('click', () => {
-        const text = input.value;
-        if (!text.trim()) { input.focus(); return; }
+    // Enviar desde mini-chat
+    sendBtn?.addEventListener('click', () => {
+        const text = input?.value || '';
+        if (!text.trim()) { input?.focus(); return; }
+
         addMsg(text, 'user');
-        input.value = '';
+        if (input) input.value = '';
+
         setTimeout(() => {
             addMsg('Abriendo WhatsApp…', 'bot');
-            setTimeout(() => openWhatsApp(text), REDIRECT_AFTER_SEND_MS);
+            setTimeout(() => openWhatsApp(text, isMobileDevice() /* sameTab on mobile */), REDIRECT_AFTER_SEND_MS);
         }, 200);
     });
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); sendBtn.click(); }
+    input?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); sendBtn?.click(); }
     });
 
-    // Chips → ya no redirigen: dejan el mensaje preparado
-    quick.addEventListener('click', (e) => {
-        if (e.target.matches('button[data-text]')) {
-            const t = e.target.getAttribute('data-text');
-            input.value = t;
-            input.focus();
-            addMsg('Mensaje preparado. Pulsa “enviar” para abrir WhatsApp 👉', 'bot');
+    // Chips: rellenan input y añaden fechas si existen
+    quick?.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-text]');
+        if (!btn) return;
+        const t = btn.getAttribute('data-text') || '';
+        const def = buildDefaultMsg();
+        let datesPart = '';
+        if (def.includes('Fechas:')) {
+            const lines = def.split('\n').slice(1).join('\n'); // todo salvo la línea base
+            datesPart = '\n' + lines;
         }
+        if (input) {
+            input.value = t + datesPart;
+            input.focus();
+        }
+        addMsg('Mensaje preparado. Pulsa “enviar” para abrir WhatsApp 👉', 'bot');
     });
 
-    // Abrir automáticamente una vez por sesión a los 6s
-    if (!sessionStorage.getItem('waOpenedOnce')) {
+    // Auto-abrir solo en escritorio (no en móvil)
+    if (!sessionStorage.getItem('waOpenedOnce') && !isMobileDevice()) {
         setTimeout(() => {
             openPanel();
             sessionStorage.setItem('waOpenedOnce', '1');
         }, 6000);
     }
 })();
+

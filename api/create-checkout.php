@@ -78,7 +78,7 @@ try {
         $nights
     );
     $descLine = sprintf(
-        'Reservation #%d · Dates %s → %s · Estimated total €%0.2f. You are paying only the deposit (first night) now; the remaining balance is due at pick-up (cash or PayPal). Cancellation policy: if we cancel → full refund; if you cancel → deposit is non-refundable.',
+        'Reservation #%d · Dates %s → %s · Estimated total €%0.2f • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).',
         $reservationId, $start, $end, $totalCents / 100
     );
 
