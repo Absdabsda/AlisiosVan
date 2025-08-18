@@ -13,3 +13,20 @@ yarn-error.log*
 # SO
 .DS_Store
 Thumbs.db
+
+# === Entornos (NO subir) ===
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Evitar subir carpeta secure si alguna vez existiera
+secure/
+
+# macOS / editores / logs
+.DS_Store
+Thumbs.db
+*.log
+
