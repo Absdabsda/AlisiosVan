@@ -4,13 +4,17 @@ header('Content-Type: application/json');
 ini_set('display_errors','0');
 
 try {
+    require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
     // --- Autoload & env ----------------------------------------------------
-    $autoload = __DIR__ . '/../vendor/autoload.php';
-    if (!file_exists($autoload)) throw new Exception("No autoload");
-    require $autoload;
+    //$autoload = __DIR__ . '/../vendor/autoload.php';
+    //if (!file_exists($autoload)) throw new Exception("No autoload");
+    //require $autoload;
 
-    Dotenv\Dotenv::createImmutable(__DIR__.'/..')->safeLoad();
-    if (empty($_ENV['STRIPE_SECRET'])) throw new Exception('STRIPE_SECRET missing');
+    //Dotenv\Dotenv::createImmutable(__DIR__.'/..')->safeLoad();
+    //if (empty($_ENV['STRIPE_SECRET'])) throw new Exception('STRIPE_SECRET missing');
+
+    $stripeSecret = env('STRIPE_SECRET');
+    if (!$stripeSecret) throw new Exception('STRIPE_SECRET missing');
 
     require __DIR__ . '/../config/db.php';
     $pdo = get_pdo();
@@ -64,11 +68,18 @@ try {
 
     // ---- BASE URL ----------------------------------------------------------
     // Use PUBLIC_BASE_URL in production; fallback to localhost in dev
-    $base = rtrim($_ENV['PUBLIC_BASE_URL'] ?? 'http://localhost/CanaryVanGit/AlisiosVan/src', '/');
+    //$base = rtrim($_ENV['PUBLIC_BASE_URL'] ?? 'http://localhost/CanaryVanGit/AlisiosVan/src', '/');
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $base   = rtrim(env('PUBLIC_BASE_URL', "$scheme://$host/src"), '/');
+
     $manageUrl = $base . '/manage.php?rid=' . $reservationId . '&t=' . $token;
 
     // ---- STRIPE ------------------------------------------------------------
-    $stripe = new \Stripe\StripeClient($_ENV['STRIPE_SECRET']);
+    //$stripe = new \Stripe\StripeClient($_ENV['STRIPE_SECRET']);
+    // ---- STRIPE ------------------------------------------------------------
+    $stripe = new \Stripe\StripeClient($stripeSecret);
+
 
     // Shortened copies for strings
     $nameLine = sprintf(

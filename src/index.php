@@ -1,3 +1,5 @@
+<?php require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php'; ?>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -45,10 +47,10 @@
 
 <div class="landing-hero" style="--header-bg-rgb: 129,193,208;">
     <img src="img/landing-matcha.02.31.jpeg" alt="Landscape Camper Landing Image">
-   <!-- <video autoplay muted loop playsinline class="landing-video">
-        <source src="img/video/video1.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>-->
+    <!-- <video autoplay muted loop playsinline class="landing-video">
+         <source src="img/video/video1.mp4" type="video/mp4">
+         Your browser does not support the video tag.
+     </video>-->
 
     <div class="landing-overlay">
         <h1 class="landing-title">Freedom is not a place</h1>
@@ -104,102 +106,102 @@
 <!-- TESTIMONIOS -->
 <section class="testimonials-section py-5 bg-light">
 
-        <h2 class="section-title text-center">What our travelers say</h2>
+    <h2 class="section-title text-center">What our travelers say</h2>
 
-        <div class="swiper testimonials-swiper mt-4">
-            <div class="swiper-wrapper">
+    <div class="swiper testimonials-swiper mt-4">
+        <div class="swiper-wrapper">
 
-                <div class="swiper-slide">
-                    <p>"I traveled around the Canary Islands, between Fuerteventura and Lanzarote, for 10 days and rented Carlos’ van for this trip. Carlos was very helpful and friendly throughout my stay, always ready to solve any doubts or needs I had. Even though I don’t speak Spanish, we were able to communicate easily in English. I’m grateful for the experience he made possible thanks to his van, which allowed me to enjoy a super pleasant and comfortable holiday. The van was well-equipped with everything I needed and was clean. I would highly recommend it to anyone looking to enjoy a road trip and a van life experience!"</p>
-                    <div class="nombre">
-                        <strong>- Valerio, Italy</strong>
-                        <div class="review-stars">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                        </div>
-                    </div>
-
-
-                </div>
-
-                <div class="swiper-slide">
-                    <p>"Carlos es una persona encantadora y muy resolutiva, muy agradecido por su trato excelente. Repetiremos sin duda"</p>
-                    <div class="nombre">
-                        <strong>- Juan, Spain</strong>
-                        <div class="review-stars">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                        </div>
+            <div class="swiper-slide">
+                <p>"I traveled around the Canary Islands, between Fuerteventura and Lanzarote, for 10 days and rented Carlos’ van for this trip. Carlos was very helpful and friendly throughout my stay, always ready to solve any doubts or needs I had. Even though I don’t speak Spanish, we were able to communicate easily in English. I’m grateful for the experience he made possible thanks to his van, which allowed me to enjoy a super pleasant and comfortable holiday. The van was well-equipped with everything I needed and was clean. I would highly recommend it to anyone looking to enjoy a road trip and a van life experience!"</p>
+                <div class="nombre">
+                    <strong>- Valerio, Italy</strong>
+                    <div class="review-stars">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
                     </div>
                 </div>
 
-                <div class="swiper-slide">
-                    <p>"Abbiamo passato 10 giorni in van tra Fuerteventura e Lanzarote, esplorarle in van ha reso tutto più indimenticabile!"</p>
-                    <div class="nombre">
-                        <strong>- Libe, Italy</strong>
-                        <div class="review-stars">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="swiper-slide">
-                    <p>"Experiencia inolvidable! Carlos súper atento y amable, la camper tiene todo lo necesario para vivir la experiencia completa. Es preciosa y cómoda, se conduce muy bien aunque sea antigua. Repetiria la experiencia sin duda."</p>
-                    <div class="nombre">
-                        <strong>- María, Spain</strong>
-                        <div class="review-stars">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="swiper-slide">
-                    <p>"È andato tutto alla grande, Van pulito ordinato e perfettamente attrezzato, esperienza straordinaria! Carlos il proprietario è una persona eccezionale, disponibile e molto gentile."</p>
-                    <div class="nombre">
-                        <strong>- Omar, Italy</strong>
-                        <div class="review-stars">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="swiper-slide">
-                    <p>"¡Viaje imprescindible!"</p>
-                    <div class="nombre">
-                        <strong>- Julia, Spain</strong>
-                        <div class="review-stars">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                        </div>
-                    </div>
-                </div>
 
             </div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
-            <div class="swiper-pagination"></div>
+
+            <div class="swiper-slide">
+                <p>"Carlos es una persona encantadora y muy resolutiva, muy agradecido por su trato excelente. Repetiremos sin duda"</p>
+                <div class="nombre">
+                    <strong>- Juan, Spain</strong>
+                    <div class="review-stars">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="swiper-slide">
+                <p>"Abbiamo passato 10 giorni in van tra Fuerteventura e Lanzarote, esplorarle in van ha reso tutto più indimenticabile!"</p>
+                <div class="nombre">
+                    <strong>- Libe, Italy</strong>
+                    <div class="review-stars">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="swiper-slide">
+                <p>"Experiencia inolvidable! Carlos súper atento y amable, la camper tiene todo lo necesario para vivir la experiencia completa. Es preciosa y cómoda, se conduce muy bien aunque sea antigua. Repetiria la experiencia sin duda."</p>
+                <div class="nombre">
+                    <strong>- María, Spain</strong>
+                    <div class="review-stars">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="swiper-slide">
+                <p>"È andato tutto alla grande, Van pulito ordinato e perfettamente attrezzato, esperienza straordinaria! Carlos il proprietario è una persona eccezionale, disponibile e molto gentile."</p>
+                <div class="nombre">
+                    <strong>- Omar, Italy</strong>
+                    <div class="review-stars">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="swiper-slide">
+                <p>"¡Viaje imprescindible!"</p>
+                <div class="nombre">
+                    <strong>- Julia, Spain</strong>
+                    <div class="review-stars">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+
         </div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+    </div>
 
 
 </section>
