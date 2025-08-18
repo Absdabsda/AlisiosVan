@@ -2,27 +2,35 @@
 declare(strict_types=1);
 ini_set('display_errors','1'); error_reporting(E_ALL);
 
-// Detecta raíz del proyecto (carpeta que contiene /vendor)
-$ROOT = is_dir(__DIR__.'/vendor') ? __DIR__ : dirname(__DIR__);
+// Carga Composer + .env desde /secure
+require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
 
-// Cargas desde la raíz
-require $ROOT.'/vendor/autoload.php';
-Dotenv\Dotenv::createImmutable($ROOT.'/env')->safeLoad();
-require $ROOT.'/config/db.php';
+require __DIR__ . '/../config/db.php';
 $pdo = get_pdo();
 
 
 // (Opcional) acceso admin con ?key=... como ya tenías
 function admin_key(): ?string {
-    $envKey = $_ENV['ADMIN_KEY'] ?? '';
+    $envKey = env('ADMIN_KEY','');
     if (!$envKey) return null;
+
     $k = $_GET['key'] ?? ($_COOKIE['admin_key'] ?? '');
     if ($k && hash_equals($envKey, (string)$k)) {
-        if (empty($_COOKIE['admin_key'])) setcookie('admin_key',$k,time()+60*60*24*30,'/','',false,true);
+        if (empty($_COOKIE['admin_key'])) {
+            // cookie persistente y segura
+            setcookie('admin_key', (string)$k, [
+                'expires'  => time() + 60*60*24*30,
+                'path'     => '/',
+                'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+        }
         return (string)$k;
     }
     return null;
 }
+
 function norm($s){ return mb_strtolower(trim((string)$s)); }
 
 $rid   = (int)($_GET['rid'] ?? 0);

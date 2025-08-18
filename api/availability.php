@@ -1,14 +1,16 @@
 <?php
 declare(strict_types=1);
 
+require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
+
 ini_set('display_errors', '1');
 error_reporting(E_ALL);
 header('Content-Type: application/json');
 
-require __DIR__ . '/../vendor/autoload.php';
+//require __DIR__ . '/../vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->safeLoad();
+//$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+//$dotenv->safeLoad();
 
 require __DIR__ . '/../config/db.php';
 $pdo = get_pdo();

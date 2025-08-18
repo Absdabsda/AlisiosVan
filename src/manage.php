@@ -2,8 +2,8 @@
 declare(strict_types=1);
 ini_set('display_errors','1'); error_reporting(E_ALL);
 
-require __DIR__.'/../vendor/autoload.php';
-Dotenv\Dotenv::createImmutable(__DIR__.'/../env')->safeLoad();
+// Composer + .env desde /secure
+require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
 require __DIR__.'/../config/db.php';
 $pdo = get_pdo();
 
@@ -14,22 +14,30 @@ use Stripe\Checkout\Session as CheckoutSession;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as MailException;
 
-Stripe::setApiKey($_ENV['STRIPE_SECRET'] ?? '');
+// Clave de Stripe desde /secure/.env
+Stripe::setApiKey(env('STRIPE_SECRET',''));
 
 // --- Helpers generales ------------------------------------------------------
 function admin_key(): ?string {
-    $envKey = $_ENV['ADMIN_KEY'] ?? '';
+    $envKey = env('ADMIN_KEY','');
     if (!$envKey) return null;
 
     $k = $_GET['key'] ?? ($_COOKIE['admin_key'] ?? '');
     if ($k && hash_equals($envKey, (string)$k)) {
         if (empty($_COOKIE['admin_key'])) {
-            setcookie('admin_key', $k, time()+60*60*24*30, '/', '', false, true);
+            setcookie('admin_key', (string)$k, [
+                'expires'  => time() + 60*60*24*30,
+                'path'     => '/',
+                'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
         }
         return (string)$k;
     }
     return null;
 }
+
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
 function columnExists(PDO $pdo, string $table, string $column): bool {
@@ -88,13 +96,13 @@ function getReservationContact(PDO $pdo, array $r): array {
 
 /** Crea PHPMailer configurado desde variables de entorno o devuelve null si falta config */
 function buildMailerFromEnv(): ?PHPMailer {
-    $host = $_ENV['SMTP_HOST'] ?? $_ENV['MAIL_HOST'] ?? '';
-    $port = (int)($_ENV['SMTP_PORT'] ?? $_ENV['MAIL_PORT'] ?? 587);
-    $user = $_ENV['SMTP_USER'] ?? $_ENV['MAIL_USER'] ?? '';
-    $pass = $_ENV['SMTP_PASS'] ?? $_ENV['MAIL_PASS'] ?? '';
-    $secureRaw = strtolower((string)($_ENV['SMTP_SECURE'] ?? 'tls'));
-    $fromEmail = $_ENV['SMTP_FROM'] ?? $_ENV['MAIL_FROM'] ?? $user;
-    $fromName  = $_ENV['SMTP_FROM_NAME'] ?? $_ENV['MAIL_FROM_NAME'] ?? 'Alisios Van';
+    $host = env('SMTP_HOST', env('MAIL_HOST', ''));
+    $port = (int)env('SMTP_PORT', env('MAIL_PORT', 587));
+    $user = env('SMTP_USER', env('MAIL_USER', ''));
+    $pass = env('SMTP_PASS', env('MAIL_PASS', ''));
+    $secureRaw = strtolower((string)env('SMTP_SECURE','tls'));
+    $fromEmail = env('SMTP_FROM', env('MAIL_FROM', $user));
+    $fromName  = env('SMTP_FROM_NAME', env('MAIL_FROM_NAME', 'Alisios Van'));
 
     if (!$host || !$user || !$pass) return null;
 
@@ -117,6 +125,7 @@ function buildMailerFromEnv(): ?PHPMailer {
     $mail->addReplyTo('alisios.van@gmail.com', 'Alisios Van');
     return $mail;
 }
+
 
 // --- Input -----------------------------------------------------------------
 $rid = (int)($_GET['rid'] ?? 0);
@@ -295,7 +304,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
                 if ($mail) {
                     try {
                         $mail->addAddress($toEmail, $toName ?: $toEmail);
-                        $bcc = $_ENV['SMTP_TO'] ?? $_ENV['MAIL_BCC'] ?? '';
+                        $bcc = env('SMTP_TO', env('MAIL_BCC',''));
                         if (!empty($bcc)) $mail->addBCC($bcc);
                         $mail->Subject = $subject;
                         $mail->isHTML(true);

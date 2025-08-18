@@ -2,15 +2,16 @@
 declare(strict_types=1);
 ini_set('display_errors','1'); error_reporting(E_ALL);
 
-require __DIR__.'/../vendor/autoload.php';
-Dotenv\Dotenv::createImmutable(__DIR__.'/..')->safeLoad();
+require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
 require __DIR__.'/../config/db.php';
 $pdo = get_pdo();
 
-$key = $_GET['key'] ?? '';
-if (!$key || $key !== ($_ENV['ADMIN_KEY'] ?? '')) { http_response_code(403); echo "Forbidden"; exit; }
+// Auth por clave de admin (query ?key=...)
+$key      = $_GET['key'] ?? '';
+$adminKey = env('ADMIN_KEY','');
+if (!$key || !hash_equals($adminKey, $key)) { http_response_code(403); echo "Forbidden"; exit; }
 
-$status = $_GET['status'] ?? 'all';
+$status  = $_GET['status'] ?? 'all';
 $allowed = ['all','pending','paid','cancelled_by_customer'];
 if(!in_array($status,$allowed,true)) $status='all';
 
@@ -29,15 +30,16 @@ $st=$pdo->prepare($sql); $st->execute($params);
 $rows=$st->fetchAll(PDO::FETCH_ASSOC);
 
 function baseUrl(): string {
-    $env = rtrim($_ENV['PUBLIC_BASE_URL'] ?? '', '/');
+    $env = rtrim(env('PUBLIC_BASE_URL',''), '/');
     if ($env) return $env;
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $dir    = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
     return rtrim("$scheme://$host$dir", '/');
 }
-$feed = baseUrl()."/company-ical.php?key=".urlencode($_ENV['COMPANY_ICAL_KEY'] ?? '');
+$feed = baseUrl()."/company-ical.php?key=".urlencode(env('COMPANY_ICAL_KEY',''));
 ?>
+
 <!doctype html>
 <html lang="es">
 <head>

@@ -2,15 +2,16 @@
 declare(strict_types=1);
 ini_set('display_errors','1'); error_reporting(E_ALL);
 
-require __DIR__ . '/../vendor/autoload.php';
-Dotenv\Dotenv::createImmutable(__DIR__ . '/..')->safeLoad();
+require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
 require __DIR__ . '/../config/db.php';
 
 use Stripe\StripeClient;
 
 $pdo = get_pdo();
 
-$rid = isset($_GET['rid']) ? (int)$_GET['rid'] : 0;
+$rid   = (int)($_GET['rid'] ?? 0);
+$token = $_GET['t']  ?? ''; // token de gestión (manage_token) que pusiste en manageUrl
+
 if ($rid < 1) {
     http_response_code(400);
     echo 'Missing or invalid reservation id.';
@@ -18,8 +19,8 @@ if ($rid < 1) {
 }
 
 try {
-    // Fetch reservation
-    $st = $pdo->prepare("SELECT id, status, stripe_session_id FROM reservations WHERE id = :id LIMIT 1");
+    // Traer la reserva (incluye manage_token para validar)
+    $st = $pdo->prepare("SELECT id, status, stripe_session_id, manage_token FROM reservations WHERE id = :id LIMIT 1");
     $st->execute([':id' => $rid]);
     $res = $st->fetch(PDO::FETCH_ASSOC);
 
@@ -29,17 +30,26 @@ try {
         exit;
     }
 
+    // Validar token si existe en la reserva
+    if (!empty($res['manage_token'])) {
+        if (!$token || !hash_equals((string)$res['manage_token'], (string)$token)) {
+            http_response_code(403);
+            echo 'Forbidden';
+            exit;
+        }
+    }
+
     $status    = (string)$res['status'];
-    $sessionId = $res['stripe_session_id'] ? (string)$res['stripe_session_id'] : '';
+    $sessionId = (string)($res['stripe_session_id'] ?? '');
 
     $changed = false;
     $message = '';
 
-    // If it's 'pending', cancel it
+    // Si está pendiente, se cancela
     if ($status === 'pending') {
         $up = $pdo->prepare("
             UPDATE reservations
-               SET status='cancelled',
+               SET status='cancelled_by_customer',
                    cancelled_at=NOW()
              WHERE id=:id AND status='pending'
              LIMIT 1
@@ -47,14 +57,13 @@ try {
         $up->execute([':id' => $rid]);
         $changed = $up->rowCount() > 0;
 
-        // Try to expire the Checkout Session on Stripe
-        if ($sessionId && !empty($_ENV['STRIPE_SECRET'])) {
+        // Intentar expirar la Checkout Session en Stripe
+        $stripeSecret = env('STRIPE_SECRET');
+        if ($sessionId && $stripeSecret) {
             try {
-                $stripe = new StripeClient($_ENV['STRIPE_SECRET']);
-                // If the session is already completed/expired, Stripe will throw
+                $stripe = new StripeClient($stripeSecret);
                 $stripe->checkout->sessions->expire($sessionId);
-            } catch (Throwable $e) {
-                // Optional log
+            } catch (\Throwable $e) {
                 error_log("Failed to expire session $sessionId: " . $e->getMessage());
             }
         }
@@ -63,28 +72,30 @@ try {
             ? 'Your reservation has been successfully cancelled.'
             : 'We couldn’t cancel the reservation (its status may have changed).';
     } else {
-        // For other statuses, just inform
+        // Otros estados: solo informar
         $nonCancelable = ['paid', 'confirmed', 'confirmed_deposit', 'paid_deposit'];
         if (in_array($status, $nonCancelable, true)) {
             $message = 'This reservation is already confirmed. To cancel it, please contact us.';
-        } elseif ($status === 'cancelled') {
+        } elseif ($status === 'cancelled' || $status === 'cancelled_by_customer') {
             $message = 'This reservation was already cancelled.';
         } else {
             $message = 'This reservation cannot be cancelled from this page.';
         }
     }
 
-} catch (Throwable $e) {
+} catch (\Throwable $e) {
     http_response_code(500);
     echo "Error: " . htmlspecialchars($e->getMessage());
     exit;
 }
 
-$isCancelled  = ($status === 'cancelled') || (!empty($changed));
+// Mostrar estado en la página
+$isCancelled  = ($status === 'cancelled' || $status === 'cancelled_by_customer' || !empty($changed));
 $title        = $isCancelled ? 'Reservation cancelled' : 'Reservation status';
 $icon         = $isCancelled ? 'check-circle' : 'info-circle';
 $accentClass  = $isCancelled ? 'ok' : 'warn';
 ?>
+
 <!doctype html>
 <html lang="en">
 <head>
