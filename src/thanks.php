@@ -1,16 +1,24 @@
 <?php
 declare(strict_types=1);
-ini_set('display_errors','1'); error_reporting(E_ALL);
 
-require __DIR__ . '/../vendor/autoload.php';
-Dotenv\Dotenv::createImmutable(__DIR__ . '/..')->safeLoad();
+require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
 require __DIR__ . '/../config/db.php';
-$pdo = get_pdo();
 
 use Stripe\Stripe;
 use Stripe\Checkout\Session as CheckoutSession;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as MailException;
+
+$pdo = get_pdo();
+
+// (recomendado en producción)
+ini_set('display_errors','0');
+ini_set('log_errors','1');
+ini_set('error_log','/home/u647357107/domains/alisiosvan.com/secure/php-errors.log');
+
+$sk = env('STRIPE_SECRET','');
+if (!$sk) { http_response_code(500); exit('Stripe not configured'); }
+Stripe::setApiKey($sk);
 
 $sessionId = $_GET['session_id'] ?? '';
 if (!$sessionId) { http_response_code(400); echo 'Missing session_id'; exit; }
@@ -29,7 +37,7 @@ function columnExists(PDO $pdo, string $table, string $column): bool {
 }
 
 function publicBaseUrl(): string {
-    $env = rtrim($_ENV['PUBLIC_BASE_URL'] ?? '', '/');
+    $env = rtrim(env('PUBLIC_BASE_URL',''), '/');
     if ($env) return $env;
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
@@ -37,9 +45,9 @@ function publicBaseUrl(): string {
     return rtrim("$scheme://$host$dir", '/');
 }
 
-try {
-    Stripe::setApiKey($_ENV['STRIPE_SECRET']);
+function norm($s){ return mb_strtolower(trim((string)$s)); }
 
+try {
     // Recupera la sesión e incluimos invoice/customer
     $session = CheckoutSession::retrieve($sessionId, [
         'expand' => ['payment_intent', 'invoice', 'customer']
@@ -56,6 +64,70 @@ try {
              LIMIT 1
         ");
         $up->execute([':pi' => (string)$session->payment_intent, ':ssid' => $sessionId]);
+
+        // === Vincular la reserva con un cliente (fallback al webhook) =======
+        $stripeCustomerId = null;
+        $piLink = $session->payment_intent ?? null;
+
+        // Candidatos de email desde Stripe
+        $emailCands = [];
+        $emailCands[] = $session->customer_details->email ?? null;
+        if (!empty($session->customer)) {
+            if (is_object($session->customer)) {
+                $emailCands[] = $session->customer->email ?? null;
+                $stripeCustomerId = $session->customer->id ?? null;
+            } else {
+                $stripeCustomerId = (string)$session->customer;
+            }
+        }
+        if ($piLink && isset($piLink->charges->data[0])) {
+            $emailCands[] = $piLink->charges->data[0]->billing_details->email ?? null;
+            $emailCands[] = $piLink->receipt_email ?? null;
+        }
+        // Customer ID también puede venir del PaymentIntent
+        if (!$stripeCustomerId && $piLink && !empty($piLink->customer)) {
+            $stripeCustomerId = is_object($piLink->customer) ? ($piLink->customer->id ?? null) : (string)$piLink->customer;
+        }
+
+        // Normaliza y elige el primer email válido
+        $customerEmailNorm = '';
+        foreach ($emailCands as $e) {
+            if ($e && filter_var($e, FILTER_VALIDATE_EMAIL)) {
+                $customerEmailNorm = norm($e);
+                break;
+            }
+        }
+
+        if ($customerEmailNorm) {
+            // UPSERT en customers
+            $sel = $pdo->prepare("SELECT id, stripe_customer_id FROM customers WHERE email_norm=? LIMIT 1");
+            $sel->execute([$customerEmailNorm]);
+
+            if ($c = $sel->fetch(PDO::FETCH_ASSOC)) {
+                $customerId = (int)$c['id'];
+                if (!empty($stripeCustomerId) && empty($c['stripe_customer_id'])) {
+                    $pdo->prepare("UPDATE customers SET stripe_customer_id=? WHERE id=? LIMIT 1")
+                        ->execute([$stripeCustomerId, $customerId]);
+                }
+            } else {
+                // Partimos nombre "First Last"
+                $full  = trim((string)($session->customer_details->name ?? ''));
+                $parts = preg_split('/\s+/u', $full);
+                $first = $parts[0] ?? '';
+                $last  = $parts ? implode(' ', array_slice($parts, 1)) : '';
+
+                $ins = $pdo->prepare("INSERT INTO customers (first_name,last_name,email,email_norm,stripe_customer_id,created_at)
+                                      VALUES (?,?,?,?,?,NOW())");
+                $ins->execute([$first, $last, $customerEmailNorm, $customerEmailNorm, $stripeCustomerId ?? null]);
+                $customerId = (int)$pdo->lastInsertId();
+            }
+
+            // Enlaza la reserva (si no estaba ya enlazada)
+            $pdo->prepare("UPDATE reservations
+                              SET customer_id = COALESCE(?, customer_id)
+                            WHERE stripe_session_id = ? LIMIT 1")
+                ->execute([$customerId, $sessionId]);
+        }
 
         // --- Invoice (puede tardar) ----------------------------------------
         $invoiceId = null; $invoicePdf = null; $invoiceUrl = null;
@@ -262,14 +334,14 @@ try {
             "We attach a .ics file to add the trip to your calendar.\n";
 
         // SMTP config ---------------------------------------------------------
-        $host = $_ENV['SMTP_HOST'] ?? $_ENV['MAIL_HOST'] ?? '';
-        $port = (int)($_ENV['SMTP_PORT'] ?? $_ENV['MAIL_PORT'] ?? 587);
-        $user = $_ENV['SMTP_USER'] ?? $_ENV['MAIL_USER'] ?? '';
-        $pass = $_ENV['SMTP_PASS'] ?? $_ENV['MAIL_PASS'] ?? '';
-        $secureRaw = strtolower((string)($_ENV['SMTP_SECURE'] ?? 'tls')); // ssl|tls
-        $fromEmail = $_ENV['SMTP_FROM'] ?? $_ENV['MAIL_FROM'] ?? $user;
-        $fromName  = $_ENV['SMTP_FROM_NAME'] ?? $_ENV['MAIL_FROM_NAME'] ?? 'Alisios Van';
-        $adminTo   = $_ENV['SMTP_TO'] ?? $_ENV['MAIL_BCC'] ?? '';
+        $host      = env('SMTP_HOST', env('MAIL_HOST',''));
+        $port      = (int) env('SMTP_PORT', env('MAIL_PORT', 587));
+        $user      = env('SMTP_USER', env('MAIL_USER',''));
+        $pass      = env('SMTP_PASS', env('MAIL_PASS',''));
+        $secureRaw = strtolower((string) env('SMTP_SECURE','tls')); // ssl|tls
+        $fromEmail = env('SMTP_FROM', env('MAIL_FROM', $user));
+        $fromName  = env('SMTP_FROM_NAME', env('MAIL_FROM_NAME','Alisios Van'));
+        $adminTo   = env('SMTP_TO', env('MAIL_BCC',''));
 
         // Helper: descargar URL (cURL)
         $fetch = function(string $url): ?string {
