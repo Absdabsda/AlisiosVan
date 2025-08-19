@@ -4,7 +4,7 @@ header('Content-Type: application/json');
 ini_set('display_errors','0');
 
 try {
-    require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
+    require_once __DIR__ . '/../config/bootstrap_env.php';
     // --- Autoload & env ----------------------------------------------------
     //$autoload = __DIR__ . '/../vendor/autoload.php';
     //if (!file_exists($autoload)) throw new Exception("No autoload");

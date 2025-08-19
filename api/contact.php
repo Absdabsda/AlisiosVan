@@ -5,7 +5,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 // Composer + .env desde /secure
-require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
+require_once __DIR__ . '/../config/bootstrap_env.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
+require_once __DIR__ . '/../config/bootstrap_env.php';
 
 ini_set('display_errors', '1');
 error_reporting(E_ALL);

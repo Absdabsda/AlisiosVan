@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
+require_once __DIR__ . '/../config/bootstrap_env.php';
 require __DIR__ . '/../config/db.php';
 
 use Stripe\Stripe;

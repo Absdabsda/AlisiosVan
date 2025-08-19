@@ -4,7 +4,7 @@ ini_set('display_errors','0');
 header('Content-Type: application/json');
 
 // 1) Carga común y DB
-require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
+require_once __DIR__ . '/../config/bootstrap_env.php';
 require __DIR__ . '/../../config/db.php';
 $pdo = get_pdo();
 
