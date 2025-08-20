@@ -4,7 +4,7 @@ header('Content-Type: application/json');
 ini_set('display_errors','0');
 
 try {
-    require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
+    require_once __DIR__ . '/../config/bootstrap_env.php';
     // --- Autoload & env ----------------------------------------------------
     //$autoload = __DIR__ . '/../vendor/autoload.php';
     //if (!file_exists($autoload)) throw new Exception("No autoload");
@@ -97,7 +97,7 @@ try {
         'mode'        => 'payment',
         'client_reference_id' => (string)$reservationId,
         'success_url' => $base . '/thanks.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url'  => $base . '/cancel.php?rid=' . $reservationId,
+        'cancel_url'  => $base . '/cancel.php?rid=' . $reservationId . '&t=' . $token,
 
         // Force Stripe Checkout UI language to English
         'locale'      => 'en',

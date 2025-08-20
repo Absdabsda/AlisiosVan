@@ -2,18 +2,20 @@
 declare(strict_types=1);
 ini_set('display_errors','1'); error_reporting(E_ALL);
 
-require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
-require __DIR__.'/../config/db.php';
+require_once __DIR__ . '/../config/bootstrap_env.php';
+require __DIR__ . '/../config/db.php';
 $pdo = get_pdo();
 
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 
 // Auth admin por ?key=...
 $key = $_GET['key'] ?? '';
 $adminKey = env('ADMIN_KEY','');
 if (!$key || !hash_equals($adminKey, (string)$key)) {
     http_response_code(403);
-    echo json_encode(['error'=>'forbidden']);
+    echo json_encode(['error' => 'forbidden'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -34,7 +36,7 @@ $st = $pdo->query($sql);
 // Base URL (usa PUBLIC_BASE_URL si existe)
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$dir    = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+$dir    = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\');
 $base   = rtrim(env('PUBLIC_BASE_URL', "$scheme://$host$dir"), '/');
 
 $events = [];
@@ -44,8 +46,8 @@ while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
     $endEx = (new DateTime($row['end_date']))->modify('+1 day')->format('Y-m-d');
 
     // Colores según estado
-    $bg = '#80C1D0'; // paid (por defecto)
-    if ($row['status'] === 'pending')                         $bg = '#CBB49E';
+    $bg = '#80C1D0'; // default (paid/confirmed)
+    if ($row['status'] === 'pending') $bg = '#CBB49E';
     if ($row['status'] === 'cancelled_by_customer' || $row['status'] === 'cancelled') $bg = '#EF476F';
 
     // Enlace a manage.php (abre en nueva pestaña)
@@ -56,8 +58,8 @@ while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
 
     $events[] = [
         'id'    => (string)$row['id'],
-        'title' => ($row['status'] === 'cancelled_by_customer' || $row['status'] === 'cancelled'
-                ? 'CANCELLED — ' : '') . ('#'.$row['id'].' · '.$row['camper']),
+        'title' => (in_array($row['status'], ['cancelled','cancelled_by_customer'], true) ? 'CANCELLED — ' : '')
+            . '#' . (int)$row['id'] . ' · ' . (string)$row['camper'],
         'start' => $start,
         'end'   => $endEx,
         'allDay'=> true,
@@ -65,8 +67,9 @@ while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
         'backgroundColor' => $bg,
         'borderColor'     => $bg,
         'textColor'       => '#ffffff',
-        'classNames'      => (in_array($row['status'], ['cancelled_by_customer','cancelled'], true)) ? ['ev-cancelled'] : []
+        'classNames'      => in_array($row['status'], ['cancelled','cancelled_by_customer'], true) ? ['ev-cancelled'] : []
     ];
 }
 
-echo json_encode($events, JSON_UNESCAPED_UNICODE);
+echo json_encode($events, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+exit;

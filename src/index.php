@@ -1,4 +1,4 @@
-<?php require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php'; ?>
+<?php require_once __DIR__ . '/../config/bootstrap_env.php'; ?>
 
 <!doctype html>
 <html lang="en">
@@ -46,7 +46,7 @@
 <?php include 'inc/header.inc'; ?>
 
 <div class="landing-hero" style="--header-bg-rgb: 129,193,208;">
-    <img src="img/landing-matcha.02.31.jpeg" alt="Landscape Camper Landing Image">
+    <img src="img/matcha-landing-page.jpeg" alt="Landscape Camper Landing Image">
     <!-- <video autoplay muted loop playsinline class="landing-video">
          <source src="img/video/video1.mp4" type="video/mp4">
          Your browser does not support the video tag.
