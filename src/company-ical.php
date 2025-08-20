@@ -2,7 +2,7 @@
 declare(strict_types=1);
 ini_set('display_errors','1'); error_reporting(E_ALL);
 
-require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
+require_once __DIR__ . '/../config/bootstrap_env.php';
 require __DIR__.'/../config/db.php';
 $pdo = get_pdo();
 

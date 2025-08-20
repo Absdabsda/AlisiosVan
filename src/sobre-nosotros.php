@@ -95,7 +95,7 @@
     <section class="about-final-block">
         <div class="container about-final-container">
             <div class="about-final-image">
-                <img src="img/carlos.jpeg" alt="Preparing our camper van">
+                <img src="img/carlos-recogiendo-skye.jpeg" alt="Preparing our camper van">
             </div>
             <div class="about-final-text">
                 <h4>Made with care, made for you.</h4>

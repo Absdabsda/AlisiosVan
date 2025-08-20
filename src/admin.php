@@ -2,7 +2,7 @@
 declare(strict_types=1);
 ini_set('display_errors','1'); error_reporting(E_ALL);
 
-require_once '/home/u647357107/domains/alisiosvan.com/secure/bootstrap.php';
+require_once __DIR__ . '/../config/bootstrap_env.php';
 require __DIR__.'/../config/db.php';
 $pdo = get_pdo();
 
@@ -91,18 +91,13 @@ $feed = baseUrl()."/company-ical.php?key=".urlencode(env('COMPANY_ICAL_KEY',''))
 
 <main class="wrap">
     <?php
-    // Construye la URL del feed JSON con la key de admin
-    $adminKey = $_ENV['ADMIN_KEY'] ?? '';
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $dir    = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
-    $base   = rtrim("$scheme://$host$dir", '/');
-    $eventsUrl = $base . '/admin-events.php?key=' . urlencode($adminKey);
+    $eventsUrl = baseUrl() . '/admin-events.php?key=' . urlencode(env('ADMIN_KEY',''));
     ?>
+
     <div class="cardy mb-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h2 class="h5 mb-0">Calendario</h2>
-            <button id="btnRefreshCal" class="btn btn-outline-secondary btn-sm">
+            <button id="btnRefreshCal" type="button" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-clockwise"></i> Actualizar
             </button>
         </div>
@@ -111,26 +106,22 @@ $feed = baseUrl()."/company-ical.php?key=".urlencode(env('COMPANY_ICAL_KEY',''))
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('btnRefreshCal');
             const calendarEl = document.getElementById('adminCalendar');
             if (!calendarEl || typeof FullCalendar === 'undefined') return;
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 height: 'auto',
-                firstDay: 1, // lunes
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,listMonth'
-                },
+                firstDay: 1,
+                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' },
                 events: {
                     url: '<?= htmlspecialchars($eventsUrl, ENT_QUOTES, "UTF-8") ?>',
-                    failure: function() {
-                        alert('No se pudieron cargar los eventos.');
-                    }
+                    // cache-bust en cada petición
+                    extraParams: () => ({ _ts: Date.now() }),
+                    failure: () => alert('No se pudieron cargar los eventos.')
                 },
                 eventClick: function(info) {
-                    // Abrimos manage.php en nueva pestaña (si hay url)
                     if (info.event.url) {
                         info.jsEvent.preventDefault();
                         window.open(info.event.url, '_blank', 'noopener');
@@ -139,10 +130,21 @@ $feed = baseUrl()."/company-ical.php?key=".urlencode(env('COMPANY_ICAL_KEY',''))
                 eventDisplay: 'block'
             });
 
+            // feedback de carga
+            calendar.on('loading', function(isLoading){
+                if (!btn) return;
+                btn.disabled = isLoading;
+                btn.classList.toggle('disabled', isLoading);
+            });
+
             calendar.render();
-            document.getElementById('btnRefreshCal')?.addEventListener('click', () => calendar.refetchEvents());
+
+            btn?.addEventListener('click', () => {
+                calendar.refetchEvents();   // ahora siempre pega al server (por _ts)
+            });
         });
     </script>
+
 
     <div class="cardy mb-3">
         <div class="d-flex flex-wrap justify-content-between align-items-center">
@@ -180,8 +182,8 @@ $feed = baseUrl()."/company-ical.php?key=".urlencode(env('COMPANY_ICAL_KEY',''))
                         <td>
                             <?php if(!empty($r['manage_token'])): ?>
                                 <a class="btn btn-outline-secondary btn-sm" target="_blank"
-                                   href="manage.php?rid=<?= (int)$r['id'] ?>&t=<?= urlencode($r['manage_token']) ?>&by=admin&k=<?= urlencode($_ENV['ADMIN_KEY'] ?? '') ?>">
-                                    Abrir gestión
+                                   href="manage.php?rid=<?= (int)$r['id'] ?>&t=<?= urlencode($r['manage_token']) ?>&by=admin">
+                                   Abrir gestión
                                 </a>
 
                             <?php else: ?>
