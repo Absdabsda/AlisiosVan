@@ -97,7 +97,7 @@ try {
         'mode'        => 'payment',
         'client_reference_id' => (string)$reservationId,
         'success_url' => $base . '/thanks.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url'  => $base . '/cancel.php?rid=' . $reservationId,
+        'cancel_url'  => $base . '/cancel.php?rid=' . $reservationId . '&t=' . $token,
 
         // Force Stripe Checkout UI language to English
         'locale'      => 'en',
