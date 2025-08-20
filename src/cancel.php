@@ -111,7 +111,7 @@ $accentClass  = $isCancelled ? 'ok' : 'warn';
     <script src="js/cookies.js" defer></script>
 
     <style>
-        .page-hero{ background-image:url('img/landing-matcha.02.31.jpeg'); }
+        .page-hero{ background-image:url('img/matcha-landing-page.jpeg'); }
         .wrap{ max-width: 840px; margin-inline:auto; padding: var(--spacing-l); }
         .cardy{
             background: var(--color-blanco);

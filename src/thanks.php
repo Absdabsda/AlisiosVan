@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/bootstrap_env.php';
-require __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/db.php';
 
 use Stripe\Stripe;
 use Stripe\Checkout\Session as CheckoutSession;
@@ -11,7 +11,7 @@ use PHPMailer\PHPMailer\Exception as MailException;
 
 $pdo = get_pdo();
 
-// (recomendado en producción)
+// Producción: log a fichero seguro
 ini_set('display_errors','0');
 ini_set('log_errors','1');
 ini_set('error_log','/home/u647357107/domains/alisiosvan.com/secure/php-errors.log');
@@ -65,11 +65,10 @@ try {
         ");
         $up->execute([':pi' => (string)$session->payment_intent, ':ssid' => $sessionId]);
 
-        // === Vincular la reserva con un cliente (fallback al webhook) =======
+        // === Vincular reserva con customers ================================
         $stripeCustomerId = null;
         $piLink = $session->payment_intent ?? null;
 
-        // Candidatos de email desde Stripe
         $emailCands = [];
         $emailCands[] = $session->customer_details->email ?? null;
         if (!empty($session->customer)) {
@@ -84,12 +83,10 @@ try {
             $emailCands[] = $piLink->charges->data[0]->billing_details->email ?? null;
             $emailCands[] = $piLink->receipt_email ?? null;
         }
-        // Customer ID también puede venir del PaymentIntent
         if (!$stripeCustomerId && $piLink && !empty($piLink->customer)) {
             $stripeCustomerId = is_object($piLink->customer) ? ($piLink->customer->id ?? null) : (string)$piLink->customer;
         }
 
-        // Normaliza y elige el primer email válido
         $customerEmailNorm = '';
         foreach ($emailCands as $e) {
             if ($e && filter_var($e, FILTER_VALIDATE_EMAIL)) {
@@ -99,7 +96,6 @@ try {
         }
 
         if ($customerEmailNorm) {
-            // UPSERT en customers
             $sel = $pdo->prepare("SELECT id, stripe_customer_id FROM customers WHERE email_norm=? LIMIT 1");
             $sel->execute([$customerEmailNorm]);
 
@@ -110,7 +106,6 @@ try {
                         ->execute([$stripeCustomerId, $customerId]);
                 }
             } else {
-                // Partimos nombre "First Last"
                 $full  = trim((string)($session->customer_details->name ?? ''));
                 $parts = preg_split('/\s+/u', $full);
                 $first = $parts[0] ?? '';
@@ -122,47 +117,42 @@ try {
                 $customerId = (int)$pdo->lastInsertId();
             }
 
-            // Enlaza la reserva (si no estaba ya enlazada)
             $pdo->prepare("UPDATE reservations
                               SET customer_id = COALESCE(?, customer_id)
                             WHERE stripe_session_id = ? LIMIT 1")
                 ->execute([$customerId, $sessionId]);
         }
 
-        // --- Invoice (puede tardar) ----------------------------------------
+        // --- Invoice: pequeño intento rápido (máx ~2s) ---------------------
         $invoiceId = null; $invoicePdf = null; $invoiceUrl = null;
         $invoiceStatus = null; $invoicePaid = false;
 
-        // 1) session->invoice
         if (!empty($session->invoice)) {
             $invoiceId = is_object($session->invoice) ? $session->invoice->id : (string)$session->invoice;
         }
-        // 2) payment_intent->invoice
         $pi = $session->payment_intent ?? null;
         if (!$invoiceId && $pi && !empty($pi->invoice)) {
             $invoiceId = is_object($pi->invoice) ? $pi->invoice->id : (string)$pi->invoice;
         }
-        // 3) buscar por payment_intent
         if (!$invoiceId && $pi && !empty($pi->id)) {
             try {
                 $list = \Stripe\Invoice::all(['limit' => 1, 'payment_intent' => $pi->id]);
                 if (!empty($list->data[0])) { $invoiceId = $list->data[0]->id; }
             } catch (Throwable $e) { /* ignore */ }
         }
-        // 4) reintento hasta que tenga URL/PDF/estado (~15s)
         if ($invoiceId) {
-            for ($i=0; $i<30; $i++) { // 30 * 0.5s = 15s
+            for ($i=0; $i<4; $i++) { // 4 * 0.5s = 2s
                 $inv = \Stripe\Invoice::retrieve($invoiceId);
                 $invoicePdf    = $inv->invoice_pdf ?? null;
                 $invoiceUrl    = $inv->hosted_invoice_url ?? null;
                 $invoiceStatus = $inv->status ?? null;
                 $invoicePaid   = ($invoiceStatus === 'paid');
                 if ($invoicePdf || $invoiceUrl || $invoicePaid) { break; }
-                usleep(500000); // 0.5s
+                usleep(500000);
             }
         }
 
-        // Guarda en BD si existen las columnas
+        // Guarda en BD si existen columnas
         if ($invoiceId && columnExists($pdo, 'reservations', 'stripe_invoice_id')) {
             $pdo->prepare("UPDATE reservations SET stripe_invoice_id=:iid WHERE stripe_session_id=:ssid LIMIT 1")
                 ->execute([':iid'=>$invoiceId, ':ssid'=>$sessionId]);
@@ -207,7 +197,6 @@ try {
         $customerEmail = $session->customer_details->email ?? $session->customer_email ?? '';
         $customerName  = $session->customer_details->name  ?? '';
 
-        // Recibo Stripe (opcional)
         $receiptUrl = null;
         try {
             $pi = $session->payment_intent ?? null;
@@ -235,89 +224,73 @@ try {
             'END:VEVENT','END:VCALENDAR'
         ]);
 
-        // --- TABLA RESUMEN (email-safe) ------------------------------------
+        // Plantilla email (resumen) -----------------------------------------
         $summaryTable = '
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
        style="border:1px solid rgba(0,0,0,0.06); border-radius:10px; background:#fbfbfb; margin-bottom:14px;">
-  <tr>
-    <td style="padding:0">
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-             style="font-family:Arial, sans-serif; font-size:14px; line-height:20px; mso-line-height-rule:exactly;">
-        <tr>
-          <td style="padding:10px 14px;">Camper</td>
-          <td align="right" style="padding:10px 14px;"><strong>'.htmlspecialchars($res['camper'],ENT_QUOTES,'UTF-8').'</strong></td>
-        </tr>
-        <tr>
-          <td style="padding:10px 14px; border-top:1px dashed #DDD;">Dates</td>
-          <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD; white-space:nowrap;">'
+  <tr><td style="padding:0">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+           style="font-family:Arial, sans-serif; font-size:14px; line-height:20px; mso-line-height-rule:exactly;">
+      <tr>
+        <td style="padding:10px 14px;">Camper</td>
+        <td align="right" style="padding:10px 14px;"><strong>'.htmlspecialchars($res['camper'],ENT_QUOTES,'UTF-8').'</strong></td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-top:1px dashed #DDD;">Dates</td>
+        <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD; white-space:nowrap;">'
             .htmlspecialchars($startHuman,ENT_QUOTES,'UTF-8').' &nbsp;&rarr;&nbsp; '
             .htmlspecialchars($endHuman,ENT_QUOTES,'UTF-8').'</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 14px; border-top:1px dashed #DDD;">Nights</td>
-          <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD;">'.$nights.'</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 14px; border-top:1px dashed #DDD;">Price/night</td>
-          <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD;">€'.number_format($price,2).'</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">Total price</td>
-          <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">€'.number_format($total,2).'</td>
-        </tr>
-      </table>
-    </td>
-  </tr>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-top:1px dashed #DDD;">Nights</td>
+        <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD;">'.$nights.'</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-top:1px dashed #DDD;">Price/night</td>
+        <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD;">€'.number_format($price,2).'</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">Total price</td>
+        <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">€'.number_format($total,2).'</td>
+      </tr>
+    </table>
+  </td></tr>
 </table>';
 
-        // Plantilla email -----------------------------------------------------
         $html = '
-<div style="font-family:Arial,sans-serif;line-height:1.55;color:#333;background:#e8e6e4;padding:24px;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+<div style="font-family:Arial,sans-serif;line-height:1.55;color:#333;background:#e8e6e4;padding:24px;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="640" cellspacing="0" cellpadding="0"
-               style="background:#FFFFFF;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.10);overflow:hidden;border:1px solid rgba(0,0,0,0.04);">
-          <tr>
-            <td style="background:#80C1D0;color:#fff;padding:18px 22px;">
-              <div style="font-size:22px;font-weight:700;margin:0;">Payment confirmed</div>
-              <div style="opacity:.9;margin-top:4px;">Reservation #'.(int)$res['id'].' — Thank you for choosing Alisios Van</div>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:20px 22px;">
-              <p style="margin:0 0 8px 0">Hi'.($customerName ? ' '.htmlspecialchars($customerName,ENT_QUOTES,'UTF-8') : '').',</p>
-              <p style="margin:0 0 12px 0">Your reservation is <strong>confirmed</strong>. Here are your details:</p>
-
-              '.$summaryTable.'
-
-              '.
-            ($receiptUrl ? '<p style="margin:0 0 12px 0">Receipt: <a href="'.htmlspecialchars($receiptUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">View Stripe receipt</a></p>' : '')
-            .(($invoicePdf || $invoiceUrl) ?
-                '<p style="margin:0 0 12px 0">' .
-                ($invoicePdf ? 'Invoice: <a href="'.htmlspecialchars($invoicePdf,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">Download PDF</a><br>' : '') .
-                ($invoiceUrl ? '<a href="'.htmlspecialchars($invoiceUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">View invoice online</a>' : '') .
-                '</p>' : ''
-            ).'
-              <p style="margin:0 0 12px 0">We\'ve attached a calendar file (.ics) so you can add the trip to your calendar.</p>
-              <p style="margin:0;color:#555">Questions? Write us at <a href="mailto:alisios.van@gmail.com" style="color:#5698A6;">alisios.van@gmail.com</a>.</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:12px 22px;background:#f7f7f7;color:#7D7D7D;font-size:12px;">Alisios Van · Canary Islands</td>
-          </tr>
-        </table>
-
-        '.($manageUrl
+    <tr><td align="center">
+      <table role="presentation" width="640" cellspacing="0" cellpadding="0"
+             style="background:#FFFFFF;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.10);overflow:hidden;border:1px solid rgba(0,0,0,0.04);">
+        <tr>
+          <td style="background:#80C1D0;color:#fff;padding:18px 22px;">
+            <div style="font-size:22px;font-weight:700;margin:0;">Payment confirmed</div>
+            <div style="opacity:.9;margin-top:4px;">Reservation #'.(int)$res['id'].' — Thank you for choosing Alisios Van</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 22px;">
+            <p style="margin:0 0 8px 0">Hi'.($customerName ? ' '.htmlspecialchars($customerName,ENT_QUOTES,'UTF-8') : '').',</p>
+            <p style="margin:0 0 12px 0">Your reservation is <strong>confirmed</strong>. Here are your details:</p>
+            '.$summaryTable.'
+            '.($receiptUrl ? '<p style="margin:0 0 12px 0">Receipt: <a href="'.htmlspecialchars($receiptUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">View Stripe receipt</a></p>' : '').'
+            <p style="margin:0 0 12px 0">We\'ve attached a calendar file (.ics) so you can add the trip to your calendar.</p>
+            <p style="margin:0;color:#555">Questions? Write us at <a href="mailto:alisios.van@gmail.com" style="color:#5698A6;">alisios.van@gmail.com</a>.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:12px 22px;background:#f7f7f7;color:#7D7D7D;font-size:12px;">Alisios Van · Canary Islands</td>
+        </tr>
+      </table>
+      '.(isset($manageUrl) && $manageUrl
                 ? '<div style="max-width:640px;margin:0 auto;padding:12px 0 0 0;font-family:Arial,sans-serif;">
                  <p style="margin:12px 0">Manage your booking:
                    <a href="'.htmlspecialchars($manageUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">Open management page</a>
                  </p>
                </div>'
-                : ''
-            ).'
-      </td>
-    </tr>
+                : '').'
+    </td></tr>
   </table>
 </div>';
 
@@ -328,10 +301,7 @@ try {
             "Nights: {$nights}\n".
             "Price/night: €".number_format($price,2)."\n".
             "Total price: €".number_format($total,2)."\n".
-            ($receiptUrl ? "Receipt: $receiptUrl\n" : "") .
-            (($invoicePdf || $invoiceUrl) ? "Invoice: ".($invoicePdf ?: $invoiceUrl)."\n" : "") .
-            ($manageUrl ? "Manage: $manageUrl\n" : "") .
-            "We attach a .ics file to add the trip to your calendar.\n";
+            ($manageUrl ? "Manage: $manageUrl\n" : "");
 
         // SMTP config ---------------------------------------------------------
         $host      = env('SMTP_HOST', env('MAIL_HOST',''));
@@ -343,7 +313,7 @@ try {
         $fromName  = env('SMTP_FROM_NAME', env('MAIL_FROM_NAME','Alisios Van'));
         $adminTo   = env('SMTP_TO', env('MAIL_BCC',''));
 
-        // Helper: descargar URL (cURL)
+        // Helper cURL para PDF de invoice (si disponible)
         $fetch = function(string $url): ?string {
             if (!$url) return null;
             $ch = curl_init($url);
@@ -360,10 +330,9 @@ try {
             return $ok ? $data : null;
         };
 
-        // --------- Lógica de envío: solo si la factura ya está lista --------
+        // Lógica de envío: solo si la factura ya está lista (o marcada paid)
         $invoiceReady = (bool)($invoicePdf || $invoiceUrl || $invoicePaid);
 
-        // ¿Ya se envió?
         $emailAlreadySent = false;
         if (columnExists($pdo, 'reservations', 'confirmation_email_sent_at')) {
             $q = $pdo->prepare("SELECT confirmation_email_sent_at FROM reservations WHERE stripe_session_id = :ssid LIMIT 1");
@@ -371,9 +340,9 @@ try {
             $emailAlreadySent = (bool)$q->fetchColumn();
         }
 
-        $shouldSendEmail = (!$emailAlreadySent && $invoiceReady && $customerEmail && $host && $user && $pass);
+        $shouldSendEmail = (!$emailAlreadySent && $customerEmail && $host && $user && $pass);
 
-        if ($shouldSendEmail) {
+        if ($shouldSendEmail && $invoiceReady) {
             $sentOk = false;
             try {
                 $mail = new PHPMailer(true);
@@ -411,10 +380,12 @@ try {
                     $pdfData = $fetch($invoicePdf);
                     if ($pdfData) {
                         $mail->addStringAttachment($pdfData, "Invoice-{$res['id']}.pdf", 'base64', 'application/pdf');
-                    } else {
-                        error_log('Invoice PDF not downloaded for attachment.');
                     }
                 }
+
+                // Timeouts para no atascarse
+                $mail->Timeout = 20;
+                $mail->SMTPKeepAlive = false;
 
                 $mail->send();
                 $sentOk = true;
@@ -431,14 +402,9 @@ try {
                      LIMIT 1
                 ")->execute([':ssid' => $sessionId]);
             }
-        } else {
-            if (!$invoiceReady) {
-                error_log("Invoice not ready yet for session $sessionId; email postponed.");
-            } elseif ($emailAlreadySent) {
-                error_log("Email already sent for session $sessionId; skipping.");
-            } else {
-                error_log('Mail not sent: missing SMTP config or customer email.');
-            }
+        } elseif (!$invoiceReady) {
+            // Lo enviará luego el webhook o un reintento por backend
+            error_log("Invoice not ready yet for session $sessionId; email postponed.");
         }
 
         // ------------------ Página (para navegador) --------------------------
@@ -459,7 +425,7 @@ try {
             <script src="js/cookies.js" defer></script>
 
             <style>
-                .page-hero{ background-image:url('img/landing-matcha.02.31.jpeg'); }
+                .page-hero{ background-image:url('img/matcha-landing-page.jpeg'); }
                 .wrap{ max-width: 1000px; margin-inline:auto; padding: var(--spacing-l); }
                 .cardy{ background: var(--color-blanco); border-radius: var(--border-radius);
                     box-shadow: var(--box-shadow-medium); border: 1px solid rgba(0,0,0,.04);
@@ -498,12 +464,12 @@ try {
                             <a class="btn btn-outline-secondary" href="campers.php"><i class="bi bi-truck"></i> Browse campers</a>
                             <button id="btnIcs" class="btn btn-outline-secondary"><i class="bi bi-calendar-event"></i> Add to calendar</button>
                             <?php if ($invoicePdf): ?>
-                                <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($invoicePdf, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">
+                                <a class="btn btn-outline-secondary" id="btnInvPdf" href="<?= htmlspecialchars($invoicePdf, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">
                                     <i class="bi bi-file-earmark-pdf"></i> Download invoice (PDF)
                                 </a>
                             <?php endif; ?>
                             <?php if ($invoiceUrl): ?>
-                                <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($invoiceUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">
+                                <a class="btn btn-outline-secondary" id="btnInvUrl" href="<?= htmlspecialchars($invoiceUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">
                                     <i class="bi bi-receipt"></i> View invoice online
                                 </a>
                             <?php endif; ?>
@@ -517,13 +483,61 @@ try {
 
                         <?php if (!$invoicePdf && !$invoiceUrl && !$invoiceId): ?>
                             <p class="text-muted mt-3 small">
-                                Your invoice is being generated. It can take a little while. We’ll email it to you shortly. If you don't receive an email, refresh the page.
+                                Your invoice is being generated. It can take a little while. We’ll email it to you and this page will update automatically when it’s ready.
                             </p>
                         <?php elseif (!$invoicePdf && !$invoiceUrl): ?>
                             <p class="text-muted mt-3 small">
                                 The invoice was created but the file isn’t ready yet. We’ll email it as soon as it’s available.
                             </p>
                         <?php endif; ?>
+
+                        <p id="invMsg" class="text-muted small" style="display:none;"></p>
+                        <script>
+                            (function(){
+                                const msg = document.getElementById('invMsg');
+                                const params = new URLSearchParams(location.search);
+                                const sid = params.get('session_id');
+                                if (!sid) return;
+
+                                async function check() {
+                                    try {
+                                        // OJO: ruta relativa a thanks.php (está en /src/)
+                                        const r = await fetch('/../api/invoice-status.php?session_id=' + encodeURIComponent(sid) + '&_ts=' + Date.now());
+                                        const j = await r.json();
+                                        if (j.ok && (j.invoice_pdf || j.invoice_url)) {
+                                            const btnWrap = document.querySelector('.d-flex.flex-wrap.gap-2');
+                                            if (!document.querySelector('#btnInvPdf') && j.invoice_pdf) {
+                                                const a = document.createElement('a');
+                                                a.id='btnInvPdf'; a.className='btn btn-outline-secondary';
+                                                a.href=j.invoice_pdf; a.target='_blank'; a.rel='noopener';
+                                                a.innerHTML='<i class="bi bi-file-earmark-pdf"></i> Download invoice (PDF)';
+                                                btnWrap.appendChild(a);
+                                            }
+                                            if (!document.querySelector('#btnInvUrl') && j.invoice_url) {
+                                                const a = document.createElement('a');
+                                                a.id='btnInvUrl'; a.className='btn btn-outline-secondary';
+                                                a.href=j.invoice_url; a.target='_blank'; a.rel='noopener';
+                                                a.innerHTML='<i class="bi bi-receipt"></i> View invoice online';
+                                                btnWrap.appendChild(a);
+                                            }
+                                            msg.style.display='none';
+                                            return true;
+                                        }
+                                    } catch(e){}
+                                    msg.style.display='block';
+                                    msg.textContent = 'Your invoice is being generated. We will email it to you shortly.';
+                                    return false;
+                                }
+
+                                // primer chequeo rápido, luego cada 10 s hasta 2 min
+                                let tries = 0;
+                                (async function loop(){
+                                    const ok = await check();
+                                    if (ok || ++tries > 12) return;
+                                    setTimeout(loop, 10000);
+                                })();
+                            })();
+                        </script>
                     </div>
 
                     <div style="min-width:260px;max-width:320px;" class="ms-auto">
@@ -559,44 +573,29 @@ try {
                 function buildIcs() {
                     const title = el.dataset.title || 'Alisios Van';
                     const start = ymd(el.dataset.start);
-                    const endD  = new Date(el.dataset.end); endD.setDate(endD.getDate() + 1); // DTEND exclusivo
+                    const endD  = new Date(el.dataset.end); endD.setDate(endD.getDate() + 1);
                     const end   = ymd(endD.toISOString().slice(0,10));
                     const uid   = (el.dataset.id || '') + '@alisiosvan';
                     const dtstamp = new Date().toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
 
                     return [
-                        'BEGIN:VCALENDAR',
-                        'VERSION:2.0',
-                        'PRODID:-//Alisios Van//EN',
-                        'METHOD:PUBLISH',
-                        'BEGIN:VEVENT',
-                        'UID:' + uid,
-                        'DTSTAMP:' + dtstamp,
-                        'DTSTART;VALUE=DATE:' + start,
-                        'DTEND;VALUE=DATE:' + end,
-                        'SUMMARY:' + title,
-                        'DESCRIPTION:Reservation confirmed',
-                        'END:VEVENT',
-                        'END:VCALENDAR'
-                    ].join('\r\n'); // <— IMPORTANTE: \r\n reales
+                        'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Alisios Van//EN','METHOD:PUBLISH',
+                        'BEGIN:VEVENT','UID:' + uid,'DTSTAMP:' + dtstamp,
+                        'DTSTART;VALUE=DATE:' + start,'DTEND;VALUE=DATE:' + end,
+                        'SUMMARY:' + title,'DESCRIPTION:Reservation confirmed','END:VEVENT','END:VCALENDAR'
+                    ].join('\r\n');
                 }
 
-                function isIOS() {
-                    return /iP(hone|od|ad)/i.test(navigator.userAgent);
-                }
+                function isIOS() { return /iP(hone|od|ad)/i.test(navigator.userAgent); }
 
                 document.getElementById('btnIcs')?.addEventListener('click', () => {
                     const ics = buildIcs();
 
-                    // iOS (y algunos navegadores que no soportan download+blob): usar data: URL
                     if (isIOS()) {
                         const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
-                        // Abrimos en la misma pestaña para que iOS ofrezca “Abrir en Calendario”
                         window.location.href = dataUrl;
                         return;
                     }
-
-                    // Resto: blob + descarga con filename .ics
                     try {
                         const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
                         const url  = URL.createObjectURL(blob);
@@ -608,7 +607,6 @@ try {
                         a.remove();
                         URL.revokeObjectURL(url);
                     } catch (e) {
-                        // Fallback final a data: URL
                         const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
                         window.open(dataUrl, '_blank', 'noopener');
                     }
