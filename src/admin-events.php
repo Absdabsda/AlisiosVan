@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
-ini_set('display_errors','1'); error_reporting(E_ALL);
+ini_set('display_errors','1');
+error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config/bootstrap_env.php';
 require __DIR__ . '/../config/db.php';
@@ -45,20 +46,29 @@ while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
     // end exclusivo (+1 día para eventos allDay)
     $endEx = (new DateTime($row['end_date']))->modify('+1 day')->format('Y-m-d');
 
+    // Cancelado?
+    $isCancelled = in_array($row['status'], ['cancelled','cancelled_by_customer','cancelled_by_admin'], true);
+
     // Colores según estado
-    $bg = '#80C1D0'; // default (paid/confirmed)
-    if ($row['status'] === 'pending') $bg = '#CBB49E';
-    if ($row['status'] === 'cancelled_by_customer' || $row['status'] === 'cancelled') $bg = '#EF476F';
+    if ($row['status'] === 'pending') {
+        $bg = '#CBB49E';
+    } elseif ($isCancelled) {
+        $bg = '#EF476F';
+    } else {
+        $bg = '#80C1D0'; // default (pagadas/confirmadas)
+    }
 
     // Enlace a manage.php (abre en nueva pestaña)
     $url = null;
     if (!empty($row['manage_token'])) {
-        $url = $base . '/manage.php?rid=' . (int)$row['id'] . '&t=' . urlencode($row['manage_token']);
+        $url = $base . '/manage.php?rid=' . (int)$row['id']
+            . '&t=' . urlencode($row['manage_token'])
+            . '&key=' . urlencode($adminKey); // asegura que admin_key se pase
     }
 
     $events[] = [
         'id'    => (string)$row['id'],
-        'title' => (in_array($row['status'], ['cancelled','cancelled_by_customer'], true) ? 'CANCELLED — ' : '')
+        'title' => ($isCancelled ? 'CANCELLED — ' : '')
             . '#' . (int)$row['id'] . ' · ' . (string)$row['camper'],
         'start' => $start,
         'end'   => $endEx,
@@ -67,7 +77,7 @@ while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
         'backgroundColor' => $bg,
         'borderColor'     => $bg,
         'textColor'       => '#ffffff',
-        'classNames'      => in_array($row['status'], ['cancelled','cancelled_by_customer'], true) ? ['ev-cancelled'] : []
+        'classNames'      => $isCancelled ? ['ev-cancelled'] : []
     ];
 }
 

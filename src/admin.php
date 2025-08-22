@@ -10,9 +10,20 @@ $pdo = get_pdo();
 $key      = $_GET['key'] ?? '';
 $adminKey = env('ADMIN_KEY','');
 if (!$key || !hash_equals($adminKey, $key)) { http_response_code(403); echo "Forbidden"; exit; }
+// tras validar $key contra ADMIN_KEY
+if (!empty($key)) {
+    setcookie('admin_key', (string)$key, [
+        'expires'  => time() + 60*60*24*30,
+        'path'     => '/',
+        'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
 
 $status  = $_GET['status'] ?? 'all';
-$allowed = ['all','pending','paid','cancelled_by_customer'];
+$allowed = ['all','pending','paid','cancelled_by_customer','cancelled_by_admin','cancelled'];
 if(!in_array($status,$allowed,true)) $status='all';
 
 $sql = "
@@ -152,7 +163,8 @@ $feed = baseUrl()."/company-ical.php?key=".urlencode(env('COMPANY_ICAL_KEY',''))
                 <a class="btn btn-outline-secondary btn-sm" href="?key=<?= urlencode($key) ?>&status=all">Todas</a>
                 <a class="btn btn-outline-secondary btn-sm" href="?key=<?= urlencode($key) ?>&status=pending">Pendientes</a>
                 <a class="btn btn-outline-secondary btn-sm" href="?key=<?= urlencode($key) ?>&status=paid">Pagadas</a>
-                <a class="btn btn-outline-secondary btn-sm" href="?key=<?= urlencode($key) ?>&status=cancelled_by_customer">Canceladas</a>
+                <a class="btn btn-outline-secondary btn-sm" href="?key=<?= urlencode($key) ?>&status=cancelled_by_customer">Canceladas (cliente)</a>
+                <a class="btn btn-outline-secondary btn-sm" href="?key=<?= urlencode($key) ?>&status=cancelled_by_admin">Canceladas (admin)</a>
             </div>
             <div>
                 <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($feed) ?>" target="_blank" rel="noopener">
@@ -182,7 +194,7 @@ $feed = baseUrl()."/company-ical.php?key=".urlencode(env('COMPANY_ICAL_KEY',''))
                         <td>
                             <?php if(!empty($r['manage_token'])): ?>
                                 <a class="btn btn-outline-secondary btn-sm" target="_blank"
-                                   href="manage.php?rid=<?= (int)$r['id'] ?>&t=<?= urlencode($r['manage_token']) ?>&by=admin">
+                                   href="manage.php?rid=<?= (int)$r['id'] ?>&t=<?= urlencode($r['manage_token']) ?>">
                                    Abrir gestión
                                 </a>
 

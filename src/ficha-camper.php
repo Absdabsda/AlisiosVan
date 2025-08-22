@@ -8,7 +8,6 @@ $campers = [
         'series' => 'VW T3',
         'images' => [
             'img/matcha-fondo-montanya.jpeg',
-            'img/matcha/matcha-cara.jpeg',
             'img/matcha-surf-vertical.jpeg',
             'img/carousel/matcha.34.32 (1).jpeg',
             'img/carousel/matcha-surf.34.32.jpeg',
