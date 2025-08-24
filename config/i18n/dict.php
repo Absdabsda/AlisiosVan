@@ -291,6 +291,263 @@ return [
         'Privacy Policy' => 'Política de privacidad',
         'All rights reserved.' => 'Todos los derechos reservados.',
         'Home' => 'Inicio',
+
+        // --terms--
+        'Terms of Service' => 'Términos de servicio',
+        'These Terms of Service (“Terms”) govern the booking and rental of camper vans from Alisios Van. By submitting a booking request or using our services, you agree to these Terms.' =>
+            'Estos Términos de servicio (“Términos”) regulan la reserva y el alquiler de campers de Alisios Van. Al enviar una solicitud de reserva o utilizar nuestros servicios, aceptas estos Términos.',
+
+        '1. Who we are' => '1. Quiénes somos',
+        'Owner:' => 'Titular:',
+        'trade name: Alisios Van' => 'nombre comercial: Alisios Van',
+        'Tax ID (NIF):' => 'NIF:',
+        'Address:' => 'Dirección:',
+        'Email:' => 'Email:',
+        'Phone:' => 'Teléfono:',
+
+        '2. Eligibility & drivers' => '2. Requisitos y conductores',
+        'Minimum age:' => 'Edad mínima:',
+        '24+ years. We may accept younger drivers on a case-by-case basis with prior communication and approval.' =>
+            '24+ años. Podemos aceptar conductores más jóvenes caso por caso con comunicación y aprobación previa.',
+        'Experience:' => 'Experiencia:',
+        'at least 2 years of valid driving experience.' => 'al menos 2 años de conducción válida.',
+        'Licence:' => 'Permiso:',
+        'Category B (car). Bring your physical driving licence and ID/passport.' =>
+            'Categoría B (coche). Trae tu permiso de conducir físico y tu DNI/pasaporte.',
+        'Additional drivers are allowed if identified and approved before pickup (bring their documents too).' =>
+            'Se permiten conductores adicionales si se identifican y aprueban antes de la recogida (trae también su documentación).',
+
+        '3. Booking, payment & deposit' => '3. Reserva, pago y fianza',
+        'A booking deposit confirms the reservation; the balance is due before or at pickup (as specified in your confirmation).' =>
+            'Un depósito confirma la reserva; el resto se paga antes o en la recogida (según tu confirmación).',
+        'A refundable security deposit is required at pickup and is returned after inspection if there is no damage, missing items, fuel differences, cleaning charges or fines/tolls pending.' =>
+            'Se requiere una fianza reembolsable en la recogida; se devuelve tras la inspección si no hay daños, faltas, diferencias de combustible, cargos de limpieza ni multas/peajes pendientes.',
+        'Prices include basic insurance and the daily mileage shown below; extras are available on request.' =>
+            'Los precios incluyen seguro básico y el kilometraje diario indicado; hay extras disponibles bajo petición.',
+
+        '4. Mileage, fuel & usage' => '4. Kilometraje, combustible y uso',
+        'Mileage:' => 'Kilometraje:',
+        '150 km per day included. Extra kilometres can be purchased for a small fee — ask us if you plan a long route.' =>
+            '150 km por día incluidos. Puedes comprar kilómetros extra por un pequeño cargo — consúltanos si planeas una ruta larga.',
+        'Fuel policy:' => 'Política de combustible:',
+        'full-to-full. We deliver with a full tank; return it full and keep the receipt if requested.' =>
+            'lleno a lleno. Entregamos con el depósito lleno; devuélvelo lleno y guarda el recibo si te lo pedimos.',
+        'Roads:' => 'Vías:',
+        'light, well-maintained tracks at low speed are fine. Off-road, beaches, dunes or risky terrain are not allowed and may void coverage.' =>
+            'pistas ligeras y en buen estado a baja velocidad están bien. No se permite off-road, playas, dunas ni terrenos de riesgo; puede anular la cobertura.',
+        'Traffic fines, tolls and penalties during the rental are the renter’s responsibility.' =>
+            'Las multas, peajes y sanciones durante el alquiler son responsabilidad del arrendatario.',
+
+        '5. Insurance & roadside assistance' => '5. Seguro y asistencia en carretera',
+        'Basic insurance with third-party liability is included. Optional coverage may reduce the excess/deposit — see your quote.' =>
+            'Se incluye seguro básico con responsabilidad civil. Coberturas opcionales pueden reducir la franquicia/fianza — consulta tu presupuesto.',
+        'Breakdown:' => 'Averías:',
+        '24/7 roadside assistance is included. Please call us first and we will help you and coordinate everything to make it easier for you.' =>
+            'Incluye asistencia en carretera 24/7. Llámanos primero y te ayudaremos coordinándolo todo para facilitarte el proceso.',
+        'Insurance does not cover misuse, off-road driving, overhead/underbody damage, lost keys, contamination of fuel or personal belongings.' =>
+            'El seguro no cubre uso indebido, conducción off-road, daños en techo/bajos, pérdida de llaves, contaminación del combustible ni pertenencias personales.',
+
+        '6. Pickup & return' => '6. Recogida y devolución',
+        'Pickup:' => 'Recogida:',
+        'from 15:00 ·' => 'desde las 15:00 ·',
+        'Return:' => 'Devolución:',
+        'by 11:00 (flexible when possible). Late returns may incur a fee.' =>
+            'antes de las 11:00 (flexible cuando sea posible). Las devoluciones tardías pueden tener recargo.',
+        'Pickup and return are usually in Puerto del Rosario (Fuerteventura). Alternative locations may be available on request.' =>
+            'La recogida y devolución son normalmente en Puerto del Rosario (Fuerteventura). Pueden ofrecerse ubicaciones alternativas bajo petición.',
+
+        '7. Cleaning & care' => '7. Limpieza y cuidado',
+        'Please return dishes clean, interior tidy, and tanks emptied (if applicable). Extra cleaning may be charged otherwise.' =>
+            'Devuelve la vajilla limpia, el interior ordenado y los depósitos vacíos (si aplica). De lo contrario, puede cobrarse limpieza extra.',
+        'No smoking inside the vehicle. Reasonable cleaning fees apply for smoke or strong odours.' =>
+            'Prohibido fumar dentro del vehículo. Puede aplicarse una tasa razonable por humo u olores fuertes.',
+        'Report any incident or damage as soon as it occurs.' =>
+            'Informa de cualquier incidencia o daño en cuanto ocurra.',
+
+        '8. Pets' => '8. Mascotas',
+        'Well-behaved pets are welcome. Please notify us when booking and return the camper clean and in good condition.' =>
+            'Se admiten mascotas educadas. Avísanos al reservar y devuelve la camper limpia y en buen estado.',
+
+        '9. Ferries & inter-island travel' => '9. Ferris y viajes entre islas',
+        'Ferry travel between islands is usually allowed with prior notice and approval. Ferry tickets and extra insurance may apply.' =>
+            'El viaje en ferry entre islas suele permitirse con aviso y aprobación previa. Pueden aplicar billetes de ferry y seguros adicionales.',
+
+        '10. What’s included' => '10. Qué incluye',
+        'Each camper includes, at minimum:' => 'Cada camper incluye, como mínimo:',
+        'Bed set-up, basic kitchen kit (hob, cookware, utensils), fridge, outdoor shower, interior lighting, and cleaning kit.' =>
+            'Cama preparada, kit básico de cocina (hornillo, menaje, utensilios), nevera, ducha exterior, iluminación interior y kit de limpieza.',
+        'Some models include awning, outdoor table/chairs. See the specific camper page for details.' =>
+            'Algunos modelos incluyen toldo, mesa y sillas de exterior. Consulta la ficha de cada camper para detalles.',
+
+        '11. Cancellations & changes' => '11. Cancelaciones y cambios',
+        'Cancellation terms depend on notice/season and are shown in your booking confirmation or quote.' =>
+            'Las condiciones de cancelación dependen del aviso/temporada y figuran en tu confirmación o presupuesto.',
+        'Date or model changes are subject to availability and any price difference in effect at the time of change.' =>
+            'Los cambios de fecha o modelo dependen de la disponibilidad y de la diferencia de precio vigente en el momento del cambio.',
+        'No-show or early return may be charged as per the confirmation terms.' =>
+            'La no presentación o la devolución anticipada pueden cobrarse según las condiciones de la confirmación.',
+
+        '12. Prohibited uses' => '12. Usos prohibidos',
+        'The camper must not be used for illegal activities, races, towing, sub-rental or any purpose not covered by the insurance. Do not carry more passengers than seats or exceed load limits.' =>
+            'La camper no debe usarse para actividades ilegales, carreras, remolque, subarriendo ni fines no cubiertos por el seguro. No transportes más pasajeros que plazas ni excedas los límites de carga.',
+
+        '13. Liability & limitation' => '13. Responsabilidad y limitación',
+        'To the extent permitted by law, Alisios Van is not liable for indirect, incidental or consequential losses. Nothing in these Terms excludes liability that cannot be excluded by law.' =>
+            'En la medida permitida por la ley, Alisios Van no responde de pérdidas indirectas, incidentales o consecuenciales. Nada en estos Términos excluye responsabilidades que no puedan excluirse por ley.',
+
+        '14. Personal data' => '14. Datos personales',
+        'We process personal data in accordance with our' => 'Tratamos los datos personales de acuerdo con nuestra',
+        'You can manage cookie preferences at any time from' => 'Puedes gestionar las preferencias de cookies en cualquier momento desde',
+
+        '15. Governing law & jurisdiction' => '15. Ley aplicable y jurisdicción',
+        'These Terms are governed by Spanish law. For any dispute, the parties submit to the competent Courts and Tribunals in the province of Las Palmas, unless a different jurisdiction is imperatively established by law.' =>
+            'Estos Términos se rigen por la ley española. Para cualquier controversia, las partes se someten a los Juzgados y Tribunales competentes de la provincia de Las Palmas, salvo que la ley establezca imperativamente otra jurisdicción.',
+
+        '16. Changes to these terms' => '16. Cambios en estos términos',
+        'We may update these Terms to reflect changes in our service or legal requirements. The version published on this website is the one in force.' =>
+            'Podemos actualizar estos Términos para reflejar cambios en nuestro servicio o requisitos legales. La versión publicada en este sitio web es la vigente.',
+
+        'Last updated:' => 'Última actualización:',
+
+        // --legal--
+        '1. Website Owner' => '1. Titular del sitio web',
+        'In compliance with Law 34/2002, of 11 July, on Information Society Services and Electronic Commerce (LSSI-CE), the following details are provided:' =>
+            'En cumplimiento de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se facilitan los siguientes datos:',
+
+        '2. Purpose' => '2. Finalidad',
+        'This website aims to present the services of Alisios Van for the rental of camper vans, as well as to provide information and a contact channel for clients and potential customers.' =>
+            'Este sitio web tiene por objeto presentar los servicios de Alisios Van para el alquiler de campers, así como ofrecer información y un canal de contacto para clientes y personas interesadas.',
+
+        '3. Access and use' => '3. Acceso y uso',
+        'Access to the website is free. Users agree to use the site in a lawful manner, in accordance with these terms and applicable regulations, and to refrain from carrying out any activity that may damage the image, interests or rights of the owner or third parties.' =>
+            'El acceso al sitio web es gratuito. La persona usuaria se compromete a utilizarlo de forma lícita, conforme a estos términos y a la normativa aplicable, y a abstenerse de realizar cualquier actividad que pueda dañar la imagen, los intereses o los derechos del titular o de terceros.',
+
+        '4. Intellectual and industrial property' => '4. Propiedad intelectual e industrial',
+        'All contents of this website (texts, images, logos, designs, source code, etc.) are owned by the owner or by third parties who have authorised their use. Reproduction, distribution, public communication or modification without prior written authorisation is prohibited.' =>
+            'Todos los contenidos de este sitio (textos, imágenes, logotipos, diseños, código fuente, etc.) son propiedad del titular o de terceros que han autorizado su uso. Queda prohibida su reproducción, distribución, comunicación pública o modificación sin autorización previa y por escrito.',
+
+        '5. Links policy' => '5. Política de enlaces',
+        'This website may include links to third-party sites. We are not responsible for their contents or the results that may arise from accessing them. The inclusion of links does not imply any association, merger or participation with the linked entities.' =>
+            'Este sitio puede incluir enlaces a sitios de terceros. No nos hacemos responsables de sus contenidos ni de los resultados que puedan derivarse de su acceso. La inclusión de enlaces no implica asociación, fusión ni participación con las entidades enlazadas.',
+
+        '6. Liability' => '6. Responsabilidad',
+        'The owner is not responsible for misuse of the information on the website or for damages arising from such misuse. We do not guarantee the absence of interruptions or errors in access to the website, although we will make our best efforts to avoid them or correct them.' =>
+            'El titular no se hace responsable del uso indebido de la información del sitio ni de los daños derivados de dicho uso. No garantizamos la ausencia de interrupciones o errores en el acceso al sitio web, si bien pondremos los medios razonables para evitarlos o corregirlos.',
+
+        '7. Applicable law and jurisdiction' => '7. Ley aplicable y jurisdicción',
+        'These terms are governed by Spanish law. For any dispute, the parties submit to the Courts and Tribunals legally competent in the province of Las Palmas, unless a different jurisdiction is imperatively established by law.' =>
+            'Estas condiciones se rigen por la ley española. Para cualquier controversia, las partes se someten a los Juzgados y Tribunales legalmente competentes de la provincia de Las Palmas, salvo que la ley establezca imperativamente otra jurisdicción.',
+
+        // --privacy--
+        'Privacy Policy' => 'Política de privacidad',
+        'At Alisios Van, we respect the privacy of our users and are committed to protecting the personal data you share with us.' =>
+            'En Alisios Van respetamos la privacidad de nuestros usuarios y nos comprometemos a proteger los datos personales que compartes con nosotros.',
+
+        '1. Data Controller' => '1. Responsable del tratamiento',
+
+        '2. Personal data we collect' => '2. Datos personales que recopilamos',
+        'Data you provide through our contact or booking forms, such as: name, email, phone, preferred model, travel dates and your message. If you complete a reservation, we may receive booking details necessary to manage the service. Payments are processed by secure payment providers; we do not store full card data on our servers.' =>
+            'Datos que nos facilitas mediante los formularios de contacto o reserva, como: nombre, email, teléfono, modelo preferido, fechas de viaje y tu mensaje. Si completas una reserva, podremos recibir datos necesarios para gestionar el servicio. Los pagos se procesan a través de proveedores seguros; no almacenamos los datos completos de tarjeta en nuestros servidores.',
+
+        '3. Purpose of data processing' => '3. Finalidad del tratamiento',
+        'To manage inquiries and requests.' => 'Gestionar consultas y solicitudes.',
+        'To process camper van rental bookings and provide customer support.' => 'Tramitar reservas de campers y ofrecer atención al cliente.',
+        'To maintain necessary business communications and administrative messages.' => 'Mantener comunicaciones necesarias del negocio y mensajes administrativos.',
+
+        '4. Legal basis' => '4. Base jurídica',
+        'The processing is based on the consent you give us when submitting a form, and, where applicable, on the execution of a contract (booking and rental). We may also rely on legitimate interest for security, fraud prevention and basic analytics of site performance (only if you consent to analytics cookies).' =>
+            'El tratamiento se basa en el consentimiento que nos otorgas al enviar un formulario y, cuando proceda, en la ejecución de un contrato (reserva y alquiler). También podemos basarnos en el interés legítimo para seguridad, prevención del fraude y analítica básica del rendimiento del sitio (solo si consientes las cookies de analítica).',
+
+        '5. Data retention' => '5. Conservación de los datos',
+        'We keep your data while there is a contractual or business relationship and for the periods required by applicable law (e.g., tax and accounting obligations). Afterwards, data may be securely blocked only for legal liabilities.' =>
+            'Conservamos tus datos mientras exista una relación contractual o comercial y durante los plazos exigidos por la ley aplicable (p. ej., obligaciones fiscales y contables). Después, los datos podrán quedar bloqueados de forma segura únicamente para responsabilidades legales.',
+
+        '6. Disclosure to third parties' => '6. Cesión a terceros',
+        'We do not share your data with third parties, except when legally required or when necessary to provide the contracted service (for example, vehicle insurance or roadside assistance companies), as well as technology providers that host our website, email or customer communications, under the appropriate data processing agreements.' =>
+            'No compartimos tus datos con terceros salvo obligación legal o cuando sea necesario para prestar el servicio contratado (por ejemplo, aseguradoras del vehículo o asistencia en carretera), así como con proveedores tecnológicos que alojan nuestra web, correo o comunicaciones con clientes, bajo los correspondientes acuerdos de encargo de tratamiento.',
+
+        '7. International transfers' => '7. Transferencias internacionales',
+        'Some providers may be located outside the European Economic Area. Where this happens, we ensure adequate safeguards such as Standard Contractual Clauses or equivalent legal mechanisms.' =>
+            'Algunos proveedores pueden estar ubicados fuera del Espacio Económico Europeo. En esos casos, garantizamos salvaguardas adecuadas como las Cláusulas Contractuales Tipo u otros mecanismos legales equivalentes.',
+
+        '8. User rights' => '8. Derechos de las personas usuarias',
+        'You may exercise your rights of access, rectification, deletion, objection, restriction and portability by emailing' =>
+            'Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a',
+        'Please include sufficient information to verify your identity.' =>
+            'Incluye la información necesaria para verificar tu identidad.',
+        'If you believe your data is being processed in violation of current regulations, you have the right to lodge a complaint with the' =>
+            'Si consideras que tus datos se tratan en incumplimiento de la normativa vigente, tienes derecho a presentar una reclamación ante la',
+        'Spanish Data Protection Agency (AEPD)' => 'Agencia Española de Protección de Datos (AEPD)',
+
+        '9. Cookies and tracking' => '9. Cookies y seguimiento',
+        'We use technical cookies and, with your consent, preference and analytics cookies. For details and to manage your choices, see our' =>
+            'Utilizamos cookies técnicas y, con tu consentimiento, cookies de preferencias y de analítica. Para más detalles y gestionar tus opciones, consulta nuestra',
+        'You can change your consent at any time from' => 'Puedes cambiar tu consentimiento en cualquier momento desde',
+
+        '10. Security' => '10. Seguridad',
+        'We apply appropriate technical and organisational measures to protect your data against unauthorised access, alteration, disclosure or destruction.' =>
+            'Aplicamos medidas técnicas y organizativas apropiadas para proteger tus datos frente a accesos no autorizados, alteración, divulgación o destrucción.',
+
+        '11. Updates to this policy' => '11. Actualizaciones de esta política',
+        'We may update this policy to reflect changes in our practices or legal requirements. We encourage you to review it periodically.' =>
+            'Podemos actualizar esta política para reflejar cambios en nuestras prácticas o requisitos legales. Te animamos a revisarla periódicamente.',
+
+        // --cookies--
+        'This policy explains what cookies are, which ones we use on this website and how you can manage them.' =>
+            'Esta política explica qué son las cookies, cuáles usamos en este sitio web y cómo puedes gestionarlas.',
+        'Contact us' => 'Contáctanos',
+        '1. What are cookies' => '1. Qué son las cookies',
+        'Cookies are small files downloaded to your device when you access certain web pages, allowing, among other things, the storage and retrieval of information about your browsing habits.' =>
+            'Las cookies son pequeños archivos que se descargan en tu dispositivo al acceder a determinadas páginas web y permiten, entre otras cosas, almacenar y recuperar información sobre tus hábitos de navegación.',
+        '2. Types of cookies we use' => '2. Tipos de cookies que utilizamos',
+        'At Alisios Van, we use:' => 'En Alisios Van utilizamos:',
+        '<strong>Technical cookies</strong>: necessary for the proper functioning of the website.' =>
+            '<strong>Cookies técnicas</strong>: necesarias para el correcto funcionamiento del sitio web.',
+        '<strong>Personalization cookies</strong>: remember preferences such as language or region.' =>
+            '<strong>Cookies de personalización</strong>: recuerdan preferencias como el idioma o la región.',
+        '<strong>Analytics cookies (statistics)</strong>: allow us to count users and analyse how the website is used (only activated if accepted by the user).' =>
+            '<strong>Cookies de analítica (estadística)</strong>: permiten contabilizar usuarios y analizar el uso del sitio (solo se activan si el usuario las acepta).',
+        'We currently do not use cookies for personalized advertising.' =>
+            'Actualmente no utilizamos cookies de publicidad personalizada.',
+        '3. Consent' => '3. Consentimiento',
+        'The installation of non-essential cookies is carried out only with the prior consent of the user, requested via a pop-up notice upon accessing the website. This notice allows the user to:' =>
+            'La instalación de cookies no esenciales se realiza únicamente con el consentimiento previo del usuario, solicitado mediante un aviso emergente al acceder al sitio. Este aviso permite:',
+        'Accept all cookies.' => 'Aceptar todas las cookies.',
+        'Reject all cookies.' => 'Rechazar todas las cookies.',
+        'Configure cookies to choose which ones to accept.' => 'Configurar las cookies para elegir cuáles aceptar.',
+        '4. Disabling cookies' => '4. Desactivación de cookies',
+        'You can allow, block or delete cookies installed on your device through your browser settings. The steps vary by browser and device.' =>
+            'Puedes permitir, bloquear o eliminar las cookies instaladas en tu dispositivo desde la configuración de tu navegador. Los pasos varían según el navegador y el dispositivo.',
+        '5. Cookies used on this site' => '5. Cookies utilizadas en este sitio',
+        'The following list is indicative and may change as we improve the website. Analytics cookies are only set if you accept them in the banner.' =>
+            'La lista siguiente es orientativa y puede cambiar conforme mejoremos el sitio. Las cookies de analítica solo se establecen si las aceptas en el banner.',
+        'Name' => 'Nombre',
+        'Provider' => 'Proveedor',
+        'Purpose' => 'Finalidad',
+        'Type' => 'Tipo',
+        'Duration' => 'Duración',
+        'Alisios Van (first-party)' => 'Alisios Van (propias)',
+        'Maintains the user’s session and basic site functionality.' =>
+            'Mantiene la sesión del usuario y el funcionamiento básico del sitio.',
+        'Essential' => 'Esencial',
+        'Session' => 'Sesión',
+        'cookie consent (localStorage: <code>cc_v1</code>)' =>
+            'consentimiento de cookies (localStorage: <code>cc_v1</code>)',
+        'Stores your cookie choices so we don’t show the banner again.' =>
+            'Guarda tus elecciones de cookies para no mostrar el banner de nuevo.',
+        'Preference' => 'Preferencia',
+        'Google Analytics (first-party)' => 'Google Analytics (propias)',
+        'Analytics — helps us understand how visitors use the site.' =>
+            'Analítica — nos ayuda a entender cómo se usa el sitio.',
+        'Analytics (opt-in)' => 'Analítica (con consentimiento)',
+        'Up to 2 years' => 'Hasta 2 años',
+        'Up to 12 months' => 'Hasta 12 meses',
+        '24 hours' => '24 horas',
+        '6. More information' => '6. Más información',
+        'For more information about the use of cookies on this website, you can contact us at' =>
+            'Para más información sobre el uso de cookies en este sitio web, puedes escribirnos a',
+
+
     ],
     'en' => [
         // por si algún día envuelves textos en español:
@@ -593,6 +850,264 @@ return [
         'Privacy Policy' => 'Datenschutzerklärung',
         'All rights reserved.' => 'Alle Rechte vorbehalten.',
         'Home' => 'Start',
+
+        // --terms--
+        'Terms of Service' => 'Nutzungsbedingungen',
+        'These Terms of Service (“Terms”) govern the booking and rental of camper vans from Alisios Van. By submitting a booking request or using our services, you agree to these Terms.' =>
+            'Diese Nutzungsbedingungen („Bedingungen“) regeln die Buchung und Vermietung von Campervans bei Alisios Van. Durch das Absenden einer Buchungsanfrage oder die Nutzung unserer Dienste stimmst du diesen Bedingungen zu.',
+
+        '1. Who we are' => '1. Wer wir sind',
+        'Owner:' => 'Inhaber:',
+        'trade name: Alisios Van' => 'Handelsname: Alisios Van',
+        'Tax ID (NIF):' => 'Steuernummer (NIF):',
+        'Address:' => 'Adresse:',
+        'Email:' => 'E-Mail:',
+        'Phone:' => 'Telefon:',
+
+        '2. Eligibility & drivers' => '2. Voraussetzungen & Fahrer',
+        'Minimum age:' => 'Mindestalter:',
+        '24+ years. We may accept younger drivers on a case-by-case basis with prior communication and approval.' =>
+            '24+ Jahre. Jüngere Fahrer können nach Einzelfallprüfung und vorheriger Abstimmung zugelassen werden.',
+        'Experience:' => 'Erfahrung:',
+        'at least 2 years of valid driving experience.' => 'mindestens 2 Jahre gültige Fahrpraxis.',
+        'Licence:' => 'Führerschein:',
+        'Category B (car). Bring your physical driving licence and ID/passport.' =>
+            'Klasse B (Pkw). Bringe deinen physischen Führerschein und Ausweis/Reisepass mit.',
+        'Additional drivers are allowed if identified and approved before pickup (bring their documents too).' =>
+            'Zusätzliche Fahrer sind erlaubt, wenn sie vor der Abholung angegeben und genehmigt werden (Dokumente ebenfalls mitbringen).',
+
+        '3. Booking, payment & deposit' => '3. Buchung, Zahlung & Kaution',
+        'A booking deposit confirms the reservation; the balance is due before or at pickup (as specified in your confirmation).' =>
+            'Eine Anzahlung bestätigt die Reservierung; der Restbetrag ist vor oder bei der Abholung fällig (gemäß deiner Bestätigung).',
+        'A refundable security deposit is required at pickup and is returned after inspection if there is no damage, missing items, fuel differences, cleaning charges or fines/tolls pending.' =>
+            'Bei Abholung ist eine rückzahlbare Kaution erforderlich; sie wird nach Prüfung erstattet, sofern keine Schäden, fehlende Gegenstände, Kraftstoffdifferenzen, Reinigungskosten oder offene Strafzettel/Mautgebühren bestehen.',
+        'Prices include basic insurance and the daily mileage shown below; extras are available on request.' =>
+            'Preise beinhalten eine Basisversicherung und das unten angegebene Tageskilometerkontingent; Extras sind auf Anfrage verfügbar.',
+
+        '4. Mileage, fuel & usage' => '4. Kilometer, Kraftstoff & Nutzung',
+        'Mileage:' => 'Kilometer:',
+        '150 km per day included. Extra kilometres can be purchased for a small fee — ask us if you plan a long route.' =>
+            '150 km pro Tag inklusive. Zusätzliche Kilometer können gegen eine geringe Gebühr erworben werden — sag uns Bescheid, wenn du eine lange Strecke planst.',
+        'Fuel policy:' => 'Tankregelung:',
+        'full-to-full. We deliver with a full tank; return it full and keep the receipt if requested.' =>
+            'Voll/Voll. Wir übergeben mit vollem Tank; gib vollgetankt zurück und bewahre den Beleg auf, falls angefordert.',
+        'Roads:' => 'Straßen:',
+        'light, well-maintained tracks at low speed are fine. Off-road, beaches, dunes or risky terrain are not allowed and may void coverage.' =>
+            'Leichte, gut gepflegte Wege bei niedriger Geschwindigkeit sind in Ordnung. Offroad, Strände, Dünen oder riskantes Gelände sind nicht erlaubt und können den Versicherungsschutz aufheben.',
+        'Traffic fines, tolls and penalties during the rental are the renter’s responsibility.' =>
+            'Verkehrsstrafen, Maut- und Bußgelder während der Miete gehen zu Lasten des Mieters.',
+
+        '5. Insurance & roadside assistance' => '5. Versicherung & Pannenhilfe',
+        'Basic insurance with third-party liability is included. Optional coverage may reduce the excess/deposit — see your quote.' =>
+            'Basisversicherung mit Haftpflicht ist enthalten. Optionale Deckungen können Selbstbehalt/Kaution reduzieren — siehe dein Angebot.',
+        'Breakdown:' => 'Panne:',
+        '24/7 roadside assistance is included. Please call us first and we will help you and coordinate everything to make it easier for you.' =>
+            'Pannenhilfe 24/7 ist enthalten. Bitte rufe zuerst uns an — wir helfen dir und koordinieren alles, damit es für dich einfacher ist.',
+        'Insurance does not cover misuse, off-road driving, overhead/underbody damage, lost keys, contamination of fuel or personal belongings.' =>
+            'Die Versicherung deckt keinen Missbrauch, Offroad-Fahrten, Schäden an Dach/Unterboden, verlorene Schlüssel, Kraftstoffverunreinigung oder persönliche Gegenstände.',
+
+        '6. Pickup & return' => '6. Abholung & Rückgabe',
+        'Pickup:' => 'Abholung:',
+        'from 15:00 ·' => 'ab 15:00 ·',
+        'Return:' => 'Rückgabe:',
+        'by 11:00 (flexible when possible). Late returns may incur a fee.' =>
+            'bis 11:00 (wenn möglich flexibel). Verspätete Rückgaben können berechnet werden.',
+        'Pickup and return are usually in Puerto del Rosario (Fuerteventura). Alternative locations may be available on request.' =>
+            'Abholung und Rückgabe erfolgen in der Regel in Puerto del Rosario (Fuerteventura). Alternative Orte sind auf Anfrage möglich.',
+
+        '7. Cleaning & care' => '7. Reinigung & Pflege',
+        'Please return dishes clean, interior tidy, and tanks emptied (if applicable). Extra cleaning may be charged otherwise.' =>
+            'Bitte Geschirr sauber, Innenraum ordentlich und ggf. Tanks geleert zurückgeben. Andernfalls kann eine Zusatzreinigung berechnet werden.',
+        'No smoking inside the vehicle. Reasonable cleaning fees apply for smoke or strong odours.' =>
+            'Nicht im Fahrzeug rauchen. Bei Rauch oder starken Gerüchen können angemessene Reinigungskosten anfallen.',
+        'Report any incident or damage as soon as it occurs.' =>
+            'Melde jeden Vorfall oder Schaden unverzüglich.',
+
+        '8. Pets' => '8. Haustiere',
+        'Well-behaved pets are welcome. Please notify us when booking and return the camper clean and in good condition.' =>
+            'Gut erzogene Haustiere sind willkommen. Bitte bei der Buchung angeben und den Camper sauber und in gutem Zustand zurückgeben.',
+
+        '9. Ferries & inter-island travel' => '9. Fähren & Inselhopping',
+        'Ferry travel between islands is usually allowed with prior notice and approval. Ferry tickets and extra insurance may apply.' =>
+            'Fährfahrten zwischen Inseln sind in der Regel mit vorheriger Ankündigung und Genehmigung erlaubt. Fährtickets und zusätzliche Versicherungen können anfallen.',
+
+        '10. What’s included' => '10. Was ist inklusive',
+        'Each camper includes, at minimum:' => 'Jeder Camper umfasst mindestens:',
+        'Bed set-up, basic kitchen kit (hob, cookware, utensils), fridge, outdoor shower, interior lighting, and cleaning kit.' =>
+            'Bett vorbereitet, Basisküchenset (Kochfeld, Kochgeschirr, Utensilien), Kühlschrank, Außendusche, Innenbeleuchtung und Reinigungsset.',
+        'Some models include awning, outdoor table/chairs. See the specific camper page for details.' =>
+            'Einige Modelle haben Markise, Außentisch/-stühle. Details auf der jeweiligen Camper-Seite.',
+
+        '11. Cancellations & changes' => '11. Stornierungen & Änderungen',
+        'Cancellation terms depend on notice/season and are shown in your booking confirmation or quote.' =>
+            'Stornobedingungen hängen von Vorlauf/Saison ab und sind in deiner Bestätigung bzw. deinem Angebot angegeben.',
+        'Date or model changes are subject to availability and any price difference in effect at the time of change.' =>
+            'Änderungen von Datum oder Modell unterliegen der Verfügbarkeit und ggf. Preisunterschieden zum Änderungszeitpunkt.',
+        'No-show or early return may be charged as per the confirmation terms.' =>
+            'No-Show oder frühere Rückgabe können gemäß den Bestätigungsbedingungen berechnet werden.',
+
+        '12. Prohibited uses' => '12. Verbotene Nutzungen',
+        'The camper must not be used for illegal activities, races, towing, sub-rental or any purpose not covered by the insurance. Do not carry more passengers than seats or exceed load limits.' =>
+            'Der Camper darf nicht für illegale Aktivitäten, Rennen, Abschleppen, Untervermietung oder sonstige nicht versicherte Zwecke genutzt werden. Keine mehr Passagiere als Sitzplätze und keine Überschreitung der Lastgrenzen.',
+
+        '13. Liability & limitation' => '13. Haftung & Haftungsbeschränkung',
+        'To the extent permitted by law, Alisios Van is not liable for indirect, incidental or consequential losses. Nothing in these Terms excludes liability that cannot be excluded by law.' =>
+            'Soweit gesetzlich zulässig, haftet Alisios Van nicht für indirekte, zufällige oder Folgeschäden. Nichts in diesen Bedingungen schließt eine Haftung aus, die gesetzlich nicht ausgeschlossen werden kann.',
+
+        '14. Personal data' => '14. Personenbezogene Daten',
+        'We process personal data in accordance with our' => 'Wir verarbeiten personenbezogene Daten gemäß unserer',
+        'You can manage cookie preferences at any time from' => 'Du kannst deine Cookie-Einstellungen jederzeit über',
+
+        '15. Governing law & jurisdiction' => '15. Anwendbares Recht & Gerichtsstand',
+        'These Terms are governed by Spanish law. For any dispute, the parties submit to the competent Courts and Tribunals in the province of Las Palmas, unless a different jurisdiction is imperatively established by law.' =>
+            'Diese Bedingungen unterliegen spanischem Recht. Für Streitigkeiten vereinbaren die Parteien die zuständigen Gerichte in der Provinz Las Palmas, sofern nicht zwingend ein anderer Gerichtsstand gesetzlich festgelegt ist.',
+
+        '16. Changes to these terms' => '16. Änderungen dieser Bedingungen',
+        'We may update these Terms to reflect changes in our service or legal requirements. The version published on this website is the one in force.' =>
+            'Wir können diese Bedingungen aktualisieren, um Änderungen unseres Dienstes oder gesetzliche Anforderungen widerzuspiegeln. Maßgeblich ist die auf dieser Website veröffentlichte Fassung.',
+
+        'Last updated:' => 'Zuletzt aktualisiert:',
+
+        // --legal--
+        '1. Website Owner' => '1. Website-Inhaber',
+        'In compliance with Law 34/2002, of 11 July, on Information Society Services and Electronic Commerce (LSSI-CE), the following details are provided:' =>
+            'Gemäß dem Gesetz 34/2002 vom 11. Juli über Dienste der Informationsgesellschaft und den elektronischen Geschäftsverkehr (LSSI-CE) werden folgende Angaben gemacht:',
+
+        '2. Purpose' => '2. Zweck',
+        'This website aims to present the services of Alisios Van for the rental of camper vans, as well as to provide information and a contact channel for clients and potential customers.' =>
+            'Diese Website dient der Vorstellung der Leistungen von Alisios Van zur Vermietung von Campervans sowie der Bereitstellung von Informationen und eines Kontaktkanals für Kundinnen/Kunden und Interessenten.',
+
+        '3. Access and use' => '3. Zugang und Nutzung',
+        'Access to the website is free. Users agree to use the site in a lawful manner, in accordance with these terms and applicable regulations, and to refrain from carrying out any activity that may damage the image, interests or rights of the owner or third parties.' =>
+            'Der Zugriff auf die Website ist kostenlos. Die Nutzer verpflichten sich zu einer rechtmäßigen Nutzung im Einklang mit diesen Bedingungen und den geltenden Vorschriften und unterlassen Handlungen, die das Ansehen, die Interessen oder Rechte des Inhabers oder Dritter beeinträchtigen könnten.',
+
+        '4. Intellectual and industrial property' => '4. Geistiges und gewerbliches Eigentum',
+        'All contents of this website (texts, images, logos, designs, source code, etc.) are owned by the owner or by third parties who have authorised their use. Reproduction, distribution, public communication or modification without prior written authorisation is prohibited.' =>
+            'Alle Inhalte dieser Website (Texte, Bilder, Logos, Designs, Quellcode usw.) gehören dem Inhaber oder Dritten, die deren Nutzung genehmigt haben. Eine Vervielfältigung, Verbreitung, öffentliche Wiedergabe oder Änderung ohne vorherige schriftliche Genehmigung ist untersagt.',
+
+        '5. Links policy' => '5. Link-Richtlinie',
+        'This website may include links to third-party sites. We are not responsible for their contents or the results that may arise from accessing them. The inclusion of links does not imply any association, merger or participation with the linked entities.' =>
+            'Diese Website kann Links zu Websites Dritter enthalten. Für deren Inhalte oder Folgen des Zugriffs übernehmen wir keine Verantwortung. Die Aufnahme von Links impliziert keine Verbindung, Fusion oder Beteiligung mit den verlinkten Unternehmen.',
+
+        '6. Liability' => '6. Haftung',
+        'The owner is not responsible for misuse of the information on the website or for damages arising from such misuse. We do not guarantee the absence of interruptions or errors in access to the website, although we will make our best efforts to avoid them or correct them.' =>
+            'Der Inhaber haftet nicht für eine missbräuchliche Nutzung der Informationen auf der Website oder für daraus entstehende Schäden. Wir garantieren nicht die Abwesenheit von Unterbrechungen oder Fehlern beim Zugriff auf die Website, bemühen uns jedoch, diese zu vermeiden bzw. zu beheben.',
+
+        '7. Applicable law and jurisdiction' => '7. Anwendbares Recht und Gerichtsstand',
+        'These terms are governed by Spanish law. For any dispute, the parties submit to the Courts and Tribunals legally competent in the province of Las Palmas, unless a different jurisdiction is imperatively established by law.' =>
+            'Diese Bedingungen unterliegen spanischem Recht. Für Streitigkeiten vereinbaren die Parteien die gesetzlich zuständigen Gerichte der Provinz Las Palmas, sofern nicht zwingend ein anderer Gerichtsstand gesetzlich vorgesehen ist.',
+
+        // --privacy--
+        'Privacy Policy' => 'Datenschutzerklärung',
+        'At Alisios Van, we respect the privacy of our users and are committed to protecting the personal data you share with us.' =>
+            'Bei Alisios Van respektieren wir die Privatsphäre unserer Nutzer und verpflichten uns, die von dir mitgeteilten personenbezogenen Daten zu schützen.',
+
+        '1. Data Controller' => '1. Verantwortlicher',
+
+        '2. Personal data we collect' => '2. Welche personenbezogenen Daten wir erheben',
+        'Data you provide through our contact or booking forms, such as: name, email, phone, preferred model, travel dates and your message. If you complete a reservation, we may receive booking details necessary to manage the service. Payments are processed by secure payment providers; we do not store full card data on our servers.' =>
+            'Daten, die du über unsere Kontakt- oder Buchungsformulare angibst, z. B.: Name, E-Mail, Telefon, bevorzugtes Modell, Reisedaten und deine Nachricht. Bei einer abgeschlossenen Buchung erhalten wir die für die Leistungserbringung nötigen Angaben. Zahlungen werden von sicheren Zahlungsanbietern verarbeitet; vollständige Kartendaten speichern wir nicht auf unseren Servern.',
+
+        '3. Purpose of data processing' => '3. Zwecke der Verarbeitung',
+        'To manage inquiries and requests.' => 'Anfragen und Anliegen bearbeiten.',
+        'To process camper van rental bookings and provide customer support.' => 'Buchungen für Camper-Miete verarbeiten und Support leisten.',
+        'To maintain necessary business communications and administrative messages.' => 'Erforderliche geschäftliche Kommunikation und administrative Nachrichten versenden.',
+
+        '4. Legal basis' => '4. Rechtsgrundlage',
+        'The processing is based on the consent you give us when submitting a form, and, where applicable, on the execution of a contract (booking and rental). We may also rely on legitimate interest for security, fraud prevention and basic analytics of site performance (only if you consent to analytics cookies).' =>
+            'Die Verarbeitung beruht auf deiner Einwilligung beim Absenden eines Formulars und ggf. auf der Vertragserfüllung (Buchung und Miete). Zudem können wir uns auf berechtigtes Interesse für Sicherheit, Betrugsprävention und grundlegende Leistungsanalyse der Website stützen (nur, wenn du Analyse-Cookies zustimmst).',
+
+        '5. Data retention' => '5. Aufbewahrung der Daten',
+        'We keep your data while there is a contractual or business relationship and for the periods required by applicable law (e.g., tax and accounting obligations). Afterwards, data may be securely blocked only for legal liabilities.' =>
+            'Wir bewahren deine Daten für die Dauer der vertraglichen/geschäftlichen Beziehung und für gesetzlich vorgeschriebene Zeiträume auf (z. B. steuerliche/abrechnungstechnische Pflichten). Danach werden sie nur noch gesperrt, soweit rechtliche Ansprüche dies erfordern.',
+
+        '6. Disclosure to third parties' => '6. Weitergabe an Dritte',
+        'We do not share your data with third parties, except when legally required or when necessary to provide the contracted service (for example, vehicle insurance or roadside assistance companies), as well as technology providers that host our website, email or customer communications, under the appropriate data processing agreements.' =>
+            'Wir geben deine Daten nicht an Dritte weiter, außer wenn gesetzlich vorgeschrieben oder zur Erbringung der beauftragten Leistung erforderlich (z. B. Fahrzeugversicherung oder Pannenhilfe) sowie an Technologieanbieter für Hosting, E-Mail oder Kundenkommunikation, jeweils auf Basis geeigneter Auftragsverarbeitungsverträge.',
+
+        '7. International transfers' => '7. Internationale Übermittlungen',
+        'Some providers may be located outside the European Economic Area. Where this happens, we ensure adequate safeguards such as Standard Contractual Clauses or equivalent legal mechanisms.' =>
+            'Einige Anbieter können außerhalb des Europäischen Wirtschaftsraums sitzen. In diesen Fällen stellen wir geeignete Garantien sicher, etwa Standardvertragsklauseln oder gleichwertige Rechtsmechanismen.',
+
+        '8. User rights' => '8. Rechte der betroffenen Personen',
+        'You may exercise your rights of access, rectification, deletion, objection, restriction and portability by emailing' =>
+            'Du kannst deine Rechte auf Auskunft, Berichtigung, Löschung, Widerspruch, Einschränkung und Datenübertragbarkeit per E-Mail an',
+        'Please include sufficient information to verify your identity.' =>
+            'Bitte gib ausreichend Informationen an, um deine Identität zu verifizieren.',
+        'If you believe your data is being processed in violation of current regulations, you have the right to lodge a complaint with the' =>
+            'Wenn du meinst, dass deine Daten rechtswidrig verarbeitet werden, kannst du Beschwerde einlegen bei der',
+        'Spanish Data Protection Agency (AEPD)' => 'Spanischen Datenschutzbehörde (AEPD)',
+
+        '9. Cookies and tracking' => '9. Cookies und Tracking',
+        'We use technical cookies and, with your consent, preference and analytics cookies. For details and to manage your choices, see our' =>
+            'Wir verwenden technische Cookies und – mit deiner Einwilligung – Präferenz- und Analyse-Cookies. Details und Einstellungen findest du in unserer',
+        'You can change your consent at any time from' => 'Du kannst deine Einwilligung jederzeit ändern unter',
+
+        '10. Security' => '10. Sicherheit',
+        'We apply appropriate technical and organisational measures to protect your data against unauthorised access, alteration, disclosure or destruction.' =>
+            'Wir setzen geeignete technische und organisatorische Maßnahmen ein, um deine Daten vor unbefugtem Zugriff, Veränderung, Offenlegung oder Zerstörung zu schützen.',
+
+        '11. Updates to this policy' => '11. Aktualisierungen dieser Richtlinie',
+        'We may update this policy to reflect changes in our practices or legal requirements. We encourage you to review it periodically.' =>
+            'Wir können diese Richtlinie anpassen, um Änderungen unserer Praxis oder gesetzlicher Vorgaben abzubilden. Bitte prüfe sie regelmäßig.',
+
+        // --cookies--
+        'Cookie Policy' => 'Cookie-Richtlinie',
+        'Contact us' => 'Kontaktiere uns',
+        '1. What are cookies' => '1. Was sind Cookies',
+        'This policy explains what cookies are, which ones we use on this website and how you can manage them.' =>
+            'Diese Richtlinie erklärt, was Cookies sind, welche wir auf dieser Website verwenden und wie du sie verwalten kannst.',
+        'Cookies are small files downloaded to your device when you access certain web pages, allowing, among other things, the storage and retrieval of information about your browsing habits.' =>
+            'Cookies sind kleine Dateien, die beim Aufruf bestimmter Webseiten auf dein Gerät heruntergeladen werden und u. a. die Speicherung und den Abruf von Informationen über dein Surfverhalten ermöglichen.',
+        '2. Types of cookies we use' => '2. Welche Cookies wir verwenden',
+        'At Alisios Van, we use:' => 'Bei Alisios Van verwenden wir:',
+        '<strong>Technical cookies</strong>: necessary for the proper functioning of the website.' =>
+            '<strong>Technische Cookies</strong>: für den ordnungsgemäßen Betrieb der Website erforderlich.',
+        '<strong>Personalization cookies</strong>: remember preferences such as language or region.' =>
+            '<strong>Personalisierungs-Cookies</strong>: merken sich Präferenzen wie Sprache oder Region.',
+        '<strong>Analytics cookies (statistics)</strong>: allow us to count users and analyse how the website is used (only activated if accepted by the user).' =>
+            '<strong>Analyse-Cookies (Statistik)</strong>: ermöglichen es, Nutzer zu zählen und die Nutzung der Website auszuwerten (nur aktiviert, wenn du zustimmst).',
+        'We currently do not use cookies for personalized advertising.' =>
+            'Derzeit verwenden wir keine Cookies für personalisierte Werbung.',
+        '3. Consent' => '3. Einwilligung',
+        'The installation of non-essential cookies is carried out only with the prior consent of the user, requested via a pop-up notice upon accessing the website. This notice allows the user to:' =>
+            'Nicht essenzielle Cookies werden nur mit vorheriger Einwilligung gesetzt, die beim Aufruf der Website über einen Hinweis abgefragt wird. Dieser Hinweis ermöglicht:',
+        'Accept all cookies.' => 'Alle Cookies akzeptieren.',
+        'Reject all cookies.' => 'Alle Cookies ablehnen.',
+        'Configure cookies to choose which ones to accept.' => 'Cookies konfigurieren, um auszuwählen, welche akzeptiert werden.',
+        '4. Disabling cookies' => '4. Deaktivieren von Cookies',
+        'You can allow, block or delete cookies installed on your device through your browser settings. The steps vary by browser and device.' =>
+            'Du kannst Cookies über die Einstellungen deines Browsers zulassen, blockieren oder löschen. Die Schritte variieren je nach Browser und Gerät.',
+        '5. Cookies used on this site' => '5. Auf dieser Seite verwendete Cookies',
+        'The following list is indicative and may change as we improve the website. Analytics cookies are only set if you accept them in the banner.' =>
+            'Die folgende Liste ist indikativ und kann sich ändern, wenn wir die Website verbessern. Analyse-Cookies werden nur gesetzt, wenn du ihnen im Banner zustimmst.',
+        'Name' => 'Name',
+        'Provider' => 'Anbieter',
+        'Purpose' => 'Zweck',
+        'Type' => 'Typ',
+        'Duration' => 'Dauer',
+        'Alisios Van (first-party)' => 'Alisios Van (Erstanbieter)',
+        'Maintains the user’s session and basic site functionality.' =>
+            'Erhält die Sitzung des Nutzers aufrecht und sorgt für grundlegende Funktionen der Website.',
+        'Essential' => 'Essenziell',
+        'Session' => 'Sitzung',
+        'cookie consent (localStorage: <code>cc_v1</code>)' =>
+            'Cookie-Einwilligung (localStorage: <code>cc_v1</code>)',
+        'Stores your cookie choices so we don’t show the banner again.' =>
+            'Speichert deine Cookie-Auswahl, damit das Banner nicht erneut angezeigt wird.',
+        'Preference' => 'Präferenz',
+        'Google Analytics (first-party)' => 'Google Analytics (Erstanbieter)',
+        'Analytics — helps us understand how visitors use the site.' =>
+            'Analyse — hilft uns zu verstehen, wie Besucher die Seite nutzen.',
+        'Analytics (opt-in)' => 'Analyse (Opt-in)',
+        'Up to 2 years' => 'Bis zu 2 Jahre',
+        'Up to 12 months' => 'Bis zu 12 Monate',
+        '24 hours' => '24 Stunden',
+        '6. More information' => '6. Weitere Informationen',
+        'For more information about the use of cookies on this website, you can contact us at' =>
+            'Für weitere Informationen zur Verwendung von Cookies auf dieser Website kontaktiere uns unter',
+
+
     ],
 
     'fr' => [
@@ -887,6 +1402,265 @@ return [
         'Privacy Policy' => 'Politique de confidentialité',
         'All rights reserved.' => 'Tous droits réservés.',
         'Home' => 'Accueil',
+
+        // --terms--
+        'Terms of Service' => 'Conditions d’utilisation',
+        'These Terms of Service (“Terms”) govern the booking and rental of camper vans from Alisios Van. By submitting a booking request or using our services, you agree to these Terms.' =>
+            'Ces Conditions d’utilisation (« Conditions ») régissent la réservation et la location de vans chez Alisios Van. En envoyant une demande de réservation ou en utilisant nos services, vous acceptez ces Conditions.',
+
+        '1. Who we are' => '1. Qui nous sommes',
+        'Owner:' => 'Titulaire :',
+        'trade name: Alisios Van' => 'nom commercial : Alisios Van',
+        'Tax ID (NIF):' => 'NIF :',
+        'Address:' => 'Adresse :',
+        'Email:' => 'E-mail :',
+        'Phone:' => 'Téléphone :',
+
+        '2. Eligibility & drivers' => '2. Conditions & conducteurs',
+        'Minimum age:' => 'Âge minimum :',
+        '24+ years. We may accept younger drivers on a case-by-case basis with prior communication and approval.' =>
+            '24 ans et plus. Nous pouvons accepter des conducteurs plus jeunes au cas par cas, sur demande et approbation préalables.',
+        'Experience:' => 'Expérience :',
+        'at least 2 years of valid driving experience.' => 'au moins 2 ans de conduite valide.',
+        'Licence:' => 'Permis :',
+        'Category B (car). Bring your physical driving licence and ID/passport.' =>
+            'Catégorie B (voiture). Apportez votre permis physique et votre pièce d’identité/passeport.',
+        'Additional drivers are allowed if identified and approved before pickup (bring their documents too).' =>
+            'Des conducteurs supplémentaires sont autorisés s’ils sont identifiés et approuvés avant le retrait (apportez aussi leurs documents).',
+
+        '3. Booking, payment & deposit' => '3. Réservation, paiement & caution',
+        'A booking deposit confirms the reservation; the balance is due before or at pickup (as specified in your confirmation).' =>
+            'Un acompte confirme la réservation ; le solde est dû avant ou lors du retrait (selon votre confirmation).',
+        'A refundable security deposit is required at pickup and is returned after inspection if there is no damage, missing items, fuel differences, cleaning charges or fines/tolls pending.' =>
+            'Une caution remboursable est exigée lors du retrait ; elle est restituée après inspection s’il n’y a ni dommages, ni objets manquants, ni différence de carburant, ni frais de nettoyage, ni amendes/péages en attente.',
+        'Prices include basic insurance and the daily mileage shown below; extras are available on request.' =>
+            'Les prix incluent l’assurance de base et le kilométrage quotidien indiqué ci-dessous ; des extras sont disponibles sur demande.',
+
+        '4. Mileage, fuel & usage' => '4. Kilométrage, carburant & usage',
+        'Mileage:' => 'Kilométrage :',
+        '150 km per day included. Extra kilometres can be purchased for a small fee — ask us if you plan a long route.' =>
+            '150 km par jour inclus. Des kilomètres supplémentaires peuvent être achetés moyennant un petit supplément — prévenez-nous si vous prévoyez une longue route.',
+        'Fuel policy:' => 'Carburant :',
+        'full-to-full. We deliver with a full tank; return it full and keep the receipt if requested.' =>
+            'Plein/plein. Nous livrons avec le plein ; rendez le plein et conservez le reçu en cas de demande.',
+        'Roads:' => 'Routes :',
+        'light, well-maintained tracks at low speed are fine. Off-road, beaches, dunes or risky terrain are not allowed and may void coverage.' =>
+            'Des pistes légères et bien entretenues à faible vitesse sont acceptées. Le tout-terrain, les plages, dunes ou terrains risqués sont interdits et peuvent annuler la couverture.',
+        'Traffic fines, tolls and penalties during the rental are the renter’s responsibility.' =>
+            'Les amendes, péages et pénalités pendant la location sont à la charge du locataire.',
+
+        '5. Insurance & roadside assistance' => '5. Assurance & assistance routière',
+        'Basic insurance with third-party liability is included. Optional coverage may reduce the excess/deposit — see your quote.' =>
+            'L’assurance de base avec responsabilité civile est incluse. Des options peuvent réduire la franchise/caution — voir votre devis.',
+        'Breakdown:' => 'Panne :',
+        '24/7 roadside assistance is included. Please call us first and we will help you and coordinate everything to make it easier for you.' =>
+            'Assistance routière 24h/24 incluse. Veuillez nous appeler d’abord : nous vous aiderons et coordonnerons tout pour vous simplifier la vie.',
+        'Insurance does not cover misuse, off-road driving, overhead/underbody damage, lost keys, contamination of fuel or personal belongings.' =>
+            'L’assurance ne couvre pas l’usage inapproprié, la conduite tout-terrain, les dommages au toit/sous-bassement, la perte de clés, la contamination du carburant ou les effets personnels.',
+
+        '6. Pickup & return' => '6. Retrait & retour',
+        'Pickup:' => 'Retrait :',
+        'from 15:00 ·' => 'à partir de 15h00 ·',
+        'Return:' => 'Retour :',
+        'by 11:00 (flexible when possible). Late returns may incur a fee.' =>
+            'avant 11h00 (flexible si possible). Les retards peuvent entraîner des frais.',
+        'Pickup and return are usually in Puerto del Rosario (Fuerteventura). Alternative locations may be available on request.' =>
+            'Le retrait et le retour se font généralement à Puerto del Rosario (Fuerteventura). Des lieux alternatifs peuvent être proposés sur demande.',
+
+        '7. Cleaning & care' => '7. Propreté & soin',
+        'Please return dishes clean, interior tidy, and tanks emptied (if applicable). Extra cleaning may be charged otherwise.' =>
+            'Merci de rendre la vaisselle propre, l’intérieur rangé et les réservoirs vidés (le cas échéant). À défaut, des frais de nettoyage peuvent s’appliquer.',
+        'No smoking inside the vehicle. Reasonable cleaning fees apply for smoke or strong odours.' =>
+            'Interdit de fumer à l’intérieur du véhicule. Des frais raisonnables peuvent s’appliquer en cas d’odeurs de fumée ou fortes.',
+        'Report any incident or damage as soon as it occurs.' =>
+            'Signalez tout incident ou dommage dès qu’il survient.',
+
+        '8. Pets' => '8. Animaux',
+        'Well-behaved pets are welcome. Please notify us when booking and return the camper clean and in good condition.' =>
+            'Les animaux bien éduqués sont les bienvenus. Merci de nous en informer lors de la réservation et de rendre le van propre et en bon état.',
+
+        '9. Ferries & inter-island travel' => '9. Ferries & voyages inter-îles',
+        'Ferry travel between islands is usually allowed with prior notice and approval. Ferry tickets and extra insurance may apply.' =>
+            'Les traversées en ferry entre îles sont généralement autorisées avec préavis et approbation. Des billets de ferry et assurances supplémentaires peuvent s’appliquer.',
+
+        '10. What’s included' => '10. Ce qui est inclus',
+        'Each camper includes, at minimum:' => 'Chaque van comprend au minimum :',
+        'Bed set-up, basic kitchen kit (hob, cookware, utensils), fridge, outdoor shower, interior lighting, and cleaning kit.' =>
+            'Lit prêt, kit cuisine de base (plaque, batterie, ustensiles), réfrigérateur, douche extérieure, éclairage intérieur et kit de nettoyage.',
+        'Some models include awning, outdoor table/chairs. See the specific camper page for details.' =>
+            'Certains modèles incluent auvent, table/chaises d’extérieur. Voir la page du van pour les détails.',
+
+        '11. Cancellations & changes' => '11. Annulations & modifications',
+        'Cancellation terms depend on notice/season and are shown in your booking confirmation or quote.' =>
+            'Les conditions d’annulation dépendent du préavis/saison et figurent sur votre confirmation ou devis.',
+        'Date or model changes are subject to availability and any price difference in effect at the time of change.' =>
+            'Les changements de dates ou de modèle dépendent de la disponibilité et de toute différence de prix en vigueur au moment du changement.',
+        'No-show or early return may be charged as per the confirmation terms.' =>
+            'Le non-présentation ou un retour anticipé peuvent être facturés selon les conditions de confirmation.',
+
+        '12. Prohibited uses' => '12. Usages interdits',
+        'The camper must not be used for illegal activities, races, towing, sub-rental or any purpose not covered by the insurance. Do not carry more passengers than seats or exceed load limits.' =>
+            'Le van ne doit pas être utilisé pour des activités illégales, des courses, du remorquage, de la sous-location ou tout usage non couvert par l’assurance. Ne transportez pas plus de passagers que de sièges et n’excédez pas les charges autorisées.',
+
+        '13. Liability & limitation' => '13. Responsabilité & limitation',
+        'To the extent permitted by law, Alisios Van is not liable for indirect, incidental or consequential losses. Nothing in these Terms excludes liability that cannot be excluded by law.' =>
+            'Dans la mesure permise par la loi, Alisios Van n’est pas responsable des pertes indirectes, accessoires ou consécutives. Rien dans ces Conditions n’exclut une responsabilité qui ne peut l’être légalement.',
+
+        '14. Personal data' => '14. Données personnelles',
+        'We process personal data in accordance with our' => 'Nous traitons les données personnelles conformément à notre',
+        'You can manage cookie preferences at any time from' => 'Vous pouvez gérer vos préférences de cookies à tout moment depuis',
+
+        '15. Governing law & jurisdiction' => '15. Droit applicable & juridiction',
+        'These Terms are governed by Spanish law. For any dispute, the parties submit to the competent Courts and Tribunals in the province of Las Palmas, unless a different jurisdiction is imperatively established by law.' =>
+            'Ces Conditions sont régies par le droit espagnol. Pour tout litige, les parties se soumettent aux tribunaux compétents de la province de Las Palmas, sauf juridiction différente impérativement prévue par la loi.',
+
+        '16. Changes to these terms' => '16. Modifications des présentes conditions',
+        'We may update these Terms to reflect changes in our service or legal requirements. The version published on this website is the one in force.' =>
+            'Nous pouvons mettre à jour ces Conditions pour refléter des changements de service ou des exigences légales. La version publiée sur ce site est la version en vigueur.',
+
+        'Last updated:' => 'Dernière mise à jour :',
+
+        // --legal--
+        '1. Website Owner' => '1. Propriétaire du site',
+        'In compliance with Law 34/2002, of 11 July, on Information Society Services and Electronic Commerce (LSSI-CE), the following details are provided:' =>
+            'Conformément à la Loi 34/2002 du 11 juillet sur les services de la société de l’information et le commerce électronique (LSSI-CE), les informations suivantes sont fournies :',
+
+        '2. Purpose' => '2. Objet',
+        'This website aims to present the services of Alisios Van for the rental of camper vans, as well as to provide information and a contact channel for clients and potential customers.' =>
+            'Ce site a pour objet de présenter les services d’Alisios Van de location de vans aménagés, ainsi que de fournir des informations et un canal de contact pour clients et personnes intéressées.',
+
+        '3. Access and use' => '3. Accès et utilisation',
+        'Access to the website is free. Users agree to use the site in a lawful manner, in accordance with these terms and applicable regulations, and to refrain from carrying out any activity that may damage the image, interests or rights of the owner or third parties.' =>
+            'L’accès au site est gratuit. L’utilisateur s’engage à l’utiliser de manière licite, conformément aux présentes conditions et à la réglementation applicable, et à s’abstenir de toute activité susceptible de porter atteinte à l’image, aux intérêts ou aux droits du titulaire ou de tiers.',
+
+        '4. Intellectual and industrial property' => '4. Propriété intellectuelle et industrielle',
+        'All contents of this website (texts, images, logos, designs, source code, etc.) are owned by the owner or by third parties who have authorised their use. Reproduction, distribution, public communication or modification without prior written authorisation is prohibited.' =>
+            'L’ensemble des contenus de ce site (textes, images, logos, designs, code source, etc.) appartient au titulaire ou à des tiers ayant autorisé leur utilisation. Toute reproduction, distribution, communication publique ou modification sans autorisation écrite préalable est interdite.',
+
+        '5. Links policy' => '5. Politique de liens',
+        'This website may include links to third-party sites. We are not responsible for their contents or the results that may arise from accessing them. The inclusion of links does not imply any association, merger or participation with the linked entities.' =>
+            'Ce site peut inclure des liens vers des sites tiers. Nous ne sommes pas responsables de leur contenu ni des conséquences de leur accès. L’inclusion de liens n’implique aucune association, fusion ou participation avec les entités liées.',
+
+        '6. Liability' => '6. Responsabilité',
+        'The owner is not responsible for misuse of the information on the website or for damages arising from such misuse. We do not guarantee the absence of interruptions or errors in access to the website, although we will make our best efforts to avoid them or correct them.' =>
+            'Le titulaire n’est pas responsable d’une mauvaise utilisation des informations du site ni des dommages en résultant. Nous ne garantissons pas l’absence d’interruptions ou d’erreurs d’accès au site, bien que nous mettions tout en œuvre pour les éviter ou les corriger.',
+
+        '7. Applicable law and jurisdiction' => '7. Droit applicable et juridiction',
+        'These terms are governed by Spanish law. For any dispute, the parties submit to the Courts and Tribunals legally competent in the province of Las Palmas, unless a different jurisdiction is imperatively established by law.' =>
+            'Ces conditions sont régies par le droit espagnol. Pour tout litige, les parties se soumettent aux tribunaux légalement compétents de la province de Las Palmas, sauf juridiction différente impérativement prévue par la loi.',
+
+        // --privacy--
+        'Privacy Policy' => 'Politique de confidentialité',
+        'At Alisios Van, we respect the privacy of our users and are committed to protecting the personal data you share with us.' =>
+            'Chez Alisios Van, nous respectons la vie privée de nos utilisateurs et nous engageons à protéger les données personnelles que vous nous confiez.',
+
+        '1. Data Controller' => '1. Responsable du traitement',
+
+        '2. Personal data we collect' => '2. Données personnelles que nous collectons',
+        'Data you provide through our contact or booking forms, such as: name, email, phone, preferred model, travel dates and your message. If you complete a reservation, we may receive booking details necessary to manage the service. Payments are processed by secure payment providers; we do not store full card data on our servers.' =>
+            'Données fournies via nos formulaires de contact ou de réservation : nom, e-mail, téléphone, modèle souhaité, dates de voyage et votre message. En cas de réservation, nous recevons les informations nécessaires à la prestation. Les paiements sont traités par des prestataires sécurisés ; nous ne conservons pas les données complètes de carte sur nos serveurs.',
+
+        '3. Purpose of data processing' => '3. Finalité du traitement',
+        'To manage inquiries and requests.' => 'Gérer les demandes et sollicitations.',
+        'To process camper van rental bookings and provide customer support.' => 'Traiter les réservations de vans et assurer le support client.',
+        'To maintain necessary business communications and administrative messages.' => 'Maintenir les communications professionnelles nécessaires et les messages administratifs.',
+
+        '4. Legal basis' => '4. Base juridique',
+        'The processing is based on the consent you give us when submitting a form, and, where applicable, on the execution of a contract (booking and rental). We may also rely on legitimate interest for security, fraud prevention and basic analytics of site performance (only if you consent to analytics cookies).' =>
+            'Le traitement repose sur votre consentement lors de l’envoi d’un formulaire et, le cas échéant, sur l’exécution d’un contrat (réservation et location). Nous pouvons aussi invoquer l’intérêt légitime pour la sécurité, la prévention de la fraude et l’analyse basique des performances du site (uniquement si vous acceptez les cookies d’analyse).',
+
+        '5. Data retention' => '5. Conservation des données',
+        'We keep your data while there is a contractual or business relationship and for the periods required by applicable law (e.g., tax and accounting obligations). Afterwards, data may be securely blocked only for legal liabilities.' =>
+            'Nous conservons vos données pendant la relation contractuelle/commerciale et pour les durées prévues par la loi (p. ex., obligations fiscales et comptables). Ensuite, elles peuvent être bloquées de manière sécurisée uniquement pour des responsabilités légales.',
+
+        '6. Disclosure to third parties' => '6. Communication à des tiers',
+        'We do not share your data with third parties, except when legally required or when necessary to provide the contracted service (for example, vehicle insurance or roadside assistance companies), as well as technology providers that host our website, email or customer communications, under the appropriate data processing agreements.' =>
+            'Nous ne partageons pas vos données avec des tiers, sauf obligation légale ou nécessité pour fournir le service (par exemple, assureurs du véhicule ou assistance routière), ainsi qu’avec des prestataires technologiques hébergeant notre site, e-mail ou communications client, dans le cadre d’accords de sous-traitance adaptés.',
+
+        '7. International transfers' => '7. Transferts internationaux',
+        'Some providers may be located outside the European Economic Area. Where this happens, we ensure adequate safeguards such as Standard Contractual Clauses or equivalent legal mechanisms.' =>
+            'Certains prestataires peuvent être situés hors EEE. Dans ce cas, nous garantissons des mécanismes adéquats comme les Clauses Contractuelles Types ou des dispositifs équivalents.',
+
+        '8. User rights' => '8. Droits des utilisateurs',
+        'You may exercise your rights of access, rectification, deletion, objection, restriction and portability by emailing' =>
+            'Vous pouvez exercer vos droits d’accès, de rectification, d’effacement, d’opposition, de limitation et de portabilité en écrivant à',
+        'Please include sufficient information to verify your identity.' =>
+            'Merci d’inclure les informations nécessaires pour vérifier votre identité.',
+        'If you believe your data is being processed in violation of current regulations, you have the right to lodge a complaint with the' =>
+            'Si vous estimez que vos données sont traitées en violation de la réglementation, vous pouvez introduire une réclamation auprès de',
+        'Spanish Data Protection Agency (AEPD)' => 'l’Agence espagnole de protection des données (AEPD)',
+
+        '9. Cookies and tracking' => '9. Cookies et suivi',
+        'We use technical cookies and, with your consent, preference and analytics cookies. For details and to manage your choices, see our' =>
+            'Nous utilisons des cookies techniques et, avec votre consentement, des cookies de préférence et d’analyse. Pour les détails et gérer vos choix, consultez notre',
+        'You can change your consent at any time from' => 'Vous pouvez modifier votre consentement à tout moment depuis',
+
+        '10. Security' => '10. Sécurité',
+        'We apply appropriate technical and organisational measures to protect your data against unauthorised access, alteration, disclosure or destruction.' =>
+            'Nous appliquons des mesures techniques et organisationnelles appropriées pour protéger vos données contre tout accès non autorisé, altération, divulgation ou destruction.',
+
+        '11. Updates to this policy' => '11. Mises à jour de cette politique',
+        'We may update this policy to reflect changes in our practices or legal requirements. We encourage you to review it periodically.' =>
+            'Nous pouvons mettre à jour cette politique pour refléter des changements de pratiques ou d’exigences légales. Nous vous invitons à la consulter régulièrement.',
+
+        // --cookies--
+        'Cookie Policy' => 'Politique de cookies',
+        'Contact us' => 'Contactez-nous',
+        '1. What are cookies' => '1. Qu’est-ce qu’un cookie',
+        'This policy explains what cookies are, which ones we use on this website and how you can manage them.' =>
+            'Cette politique explique ce que sont les cookies, lesquels nous utilisons sur ce site et comment vous pouvez les gérer.',
+        'Cookies are small files downloaded to your device when you access certain web pages, allowing, among other things, the storage and retrieval of information about your browsing habits.' =>
+            'Les cookies sont de petits fichiers téléchargés sur votre appareil lors de l’accès à certaines pages web et permettent notamment de stocker et de récupérer des informations sur votre navigation.',
+        '2. Types of cookies we use' => '2. Types de cookies utilisés',
+        'At Alisios Van, we use:' => 'Chez Alisios Van, nous utilisons :',
+        '<strong>Technical cookies</strong>: necessary for the proper functioning of the website.' =>
+            '<strong>Cookies techniques</strong> : nécessaires au bon fonctionnement du site.',
+        '<strong>Personalization cookies</strong>: remember preferences such as language or region.' =>
+            '<strong>Cookies de personnalisation</strong> : mémorisent des préférences comme la langue ou la région.',
+        '<strong>Analytics cookies (statistics)</strong>: allow us to count users and analyse how the website is used (only activated if accepted by the user).' =>
+            '<strong>Cookies d’analyse (statistiques)</strong> : permettent de compter les utilisateurs et d’analyser l’usage du site (activés uniquement si vous les acceptez).',
+        'We currently do not use cookies for personalized advertising.' =>
+            'Nous n’utilisons pas actuellement de cookies pour la publicité personnalisée.',
+        '3. Consent' => '3. Consentement',
+        'The installation of non-essential cookies is carried out only with the prior consent of the user, requested via a pop-up notice upon accessing the website. This notice allows the user to:' =>
+            'L’installation de cookies non essentiels n’a lieu qu’avec le consentement préalable de l’utilisateur, demandé via une fenêtre lors de l’accès au site. Cette fenêtre permet de :',
+        'Accept all cookies.' => 'Tout accepter.',
+        'Reject all cookies.' => 'Tout refuser.',
+        'Configure cookies to choose which ones to accept.' => 'Configurer les cookies pour choisir lesquels accepter.',
+        '4. Disabling cookies' => '4. Désactivation des cookies',
+        'You can allow, block or delete cookies installed on your device through your browser settings. The steps vary by browser and device.' =>
+            'Vous pouvez autoriser, bloquer ou supprimer les cookies via les réglages de votre navigateur. Les étapes varient selon le navigateur et l’appareil.',
+        '5. Cookies used on this site' => '5. Cookies utilisés sur ce site',
+        'The following list is indicative and may change as we improve the website. Analytics cookies are only set if you accept them in the banner.' =>
+            'La liste suivante est indicative et peut évoluer à mesure que nous améliorons le site. Les cookies d’analyse ne sont déposés que si vous les acceptez dans la bannière.',
+        'Name' => 'Nom',
+        'Provider' => 'Fournisseur',
+        'Purpose' => 'Finalité',
+        'Type' => 'Type',
+        'Duration' => 'Durée',
+        'Alisios Van (first-party)' => 'Alisios Van (propriétaire)',
+        'Maintains the user’s session and basic site functionality.' =>
+            'Maintient la session de l’utilisateur et les fonctions de base du site.',
+        'Essential' => 'Essentiel',
+        'Session' => 'Session',
+        'cookie consent (localStorage: <code>cc_v1</code>)' =>
+            'consentement aux cookies (localStorage : <code>cc_v1</code>)',
+        'Stores your cookie choices so we don’t show the banner again.' =>
+            'Mémorise vos choix afin de ne plus afficher la bannière.',
+        'Preference' => 'Préférence',
+        'Google Analytics (first-party)' => 'Google Analytics (propriétaire)',
+        'Analytics — helps us understand how visitors use the site.' =>
+            'Analyse — nous aide à comprendre l’utilisation du site.',
+        'Analytics (opt-in)' => 'Analyse (opt-in)',
+        'Up to 2 years' => 'Jusqu’à 2 ans',
+        'Up to 12 months' => 'Jusqu’à 12 mois',
+        '24 hours' => '24 heures',
+        '6. More information' => '6. Plus d’informations',
+        'For more information about the use of cookies on this website, you can contact us at' =>
+            'Pour plus d’informations sur l’utilisation des cookies sur ce site, vous pouvez nous contacter à',
+
+
+
     ],
 
     'it' => [
@@ -1181,6 +1955,264 @@ return [
         'Privacy Policy' => 'Informativa sulla privacy',
         'All rights reserved.' => 'Tutti i diritti riservati.',
         'Home' => 'Home',
+
+        // --terms--
+        'Terms of Service' => 'Termini di servizio',
+        'These Terms of Service (“Terms”) govern the booking and rental of camper vans from Alisios Van. By submitting a booking request or using our services, you agree to these Terms.' =>
+            'I presenti Termini di servizio (“Termini”) disciplinano la prenotazione e il noleggio dei camper di Alisios Van. Inviando una richiesta di prenotazione o utilizzando i nostri servizi, accetti tali Termini.',
+
+        '1. Who we are' => '1. Chi siamo',
+        'Owner:' => 'Titolare:',
+        'trade name: Alisios Van' => 'nome commerciale: Alisios Van',
+        'Tax ID (NIF):' => 'Codice fiscale (NIF):',
+        'Address:' => 'Indirizzo:',
+        'Email:' => 'Email:',
+        'Phone:' => 'Telefono:',
+
+        '2. Eligibility & drivers' => '2. Requisiti & conducenti',
+        'Minimum age:' => 'Età minima:',
+        '24+ years. We may accept younger drivers on a case-by-case basis with prior communication and approval.' =>
+            '24+ anni. Possiamo accettare conducenti più giovani caso per caso con preavviso e approvazione.',
+        'Experience:' => 'Esperienza:',
+        'at least 2 years of valid driving experience.' => 'almeno 2 anni di guida valida.',
+        'Licence:' => 'Patente:',
+        'Category B (car). Bring your physical driving licence and ID/passport.' =>
+            'Categoria B (auto). Porta la patente fisica e carta d’identità/passaporto.',
+        'Additional drivers are allowed if identified and approved before pickup (bring their documents too).' =>
+            'Conducenti aggiuntivi ammessi se indicati e approvati prima del ritiro (porta anche i loro documenti).',
+
+        '3. Booking, payment & deposit' => '3. Prenotazione, pagamento & cauzione',
+        'A booking deposit confirms the reservation; the balance is due before or at pickup (as specified in your confirmation).' =>
+            'Un acconto conferma la prenotazione; il saldo è dovuto prima o al momento del ritiro (come indicato nella conferma).',
+        'A refundable security deposit is required at pickup and is returned after inspection if there is no damage, missing items, fuel differences, cleaning charges or fines/tolls pending.' =>
+            'È richiesta una cauzione rimborsabile al ritiro; viene restituita dopo l’ispezione se non ci sono danni, oggetti mancanti, differenze di carburante, costi di pulizia o multe/pedaggi in sospeso.',
+        'Prices include basic insurance and the daily mileage shown below; extras are available on request.' =>
+            'I prezzi includono l’assicurazione base e il chilometraggio giornaliero indicato di seguito; extra disponibili su richiesta.',
+
+        '4. Mileage, fuel & usage' => '4. Chilometraggio, carburante & uso',
+        'Mileage:' => 'Chilometraggio:',
+        '150 km per day included. Extra kilometres can be purchased for a small fee — ask us if you plan a long route.' =>
+            '150 km al giorno inclusi. Chilometri extra acquistabili con un piccolo supplemento — avvisaci se prevedi un percorso lungo.',
+        'Fuel policy:' => 'Carburante:',
+        'full-to-full. We deliver with a full tank; return it full and keep the receipt if requested.' =>
+            'Pieno/pieno. Consegniamo con il pieno; restituiscilo pieno e conserva la ricevuta se richiesta.',
+        'Roads:' => 'Strade:',
+        'light, well-maintained tracks at low speed are fine. Off-road, beaches, dunes or risky terrain are not allowed and may void coverage.' =>
+            'Strade leggere e ben tenute a bassa velocità sono accettate. Fuoristrada, spiagge, dune o terreni rischiosi non sono consentiti e possono annullare la copertura.',
+        'Traffic fines, tolls and penalties during the rental are the renter’s responsibility.' =>
+            'Multe, pedaggi e sanzioni durante il noleggio sono a carico del cliente.',
+
+        '5. Insurance & roadside assistance' => '5. Assicurazione & assistenza stradale',
+        'Basic insurance with third-party liability is included. Optional coverage may reduce the excess/deposit — see your quote.' =>
+            'Assicurazione base con responsabilità civile inclusa. Coperture opzionali possono ridurre franchigia/cauzione — vedi il tuo preventivo.',
+        'Breakdown:' => 'Guasto:',
+        '24/7 roadside assistance is included. Please call us first and we will help you and coordinate everything to make it easier for you.' =>
+            'Assistenza stradale 24/7 inclusa. Chiama prima noi: ti aiuteremo e coordineremo tutto per semplificarti le cose.',
+        'Insurance does not cover misuse, off-road driving, overhead/underbody damage, lost keys, contamination of fuel or personal belongings.' =>
+            'L’assicurazione non copre uso improprio, guida fuoristrada, danni a tetto/sottoscocca, chiavi smarrite, contaminazione del carburante o effetti personali.',
+
+        '6. Pickup & return' => '6. Ritiro & riconsegna',
+        'Pickup:' => 'Ritiro:',
+        'from 15:00 ·' => 'dalle 15:00 ·',
+        'Return:' => 'Riconsegna:',
+        'by 11:00 (flexible when possible). Late returns may incur a fee.' =>
+            'entro le 11:00 (flessibile quando possibile). Le riconsegne in ritardo possono comportare costi.',
+        'Pickup and return are usually in Puerto del Rosario (Fuerteventura). Alternative locations may be available on request.' =>
+            'Ritiro e riconsegna di norma a Puerto del Rosario (Fuerteventura). Luoghi alternativi possibili su richiesta.',
+
+        '7. Cleaning & care' => '7. Pulizia & cura',
+        'Please return dishes clean, interior tidy, and tanks emptied (if applicable). Extra cleaning may be charged otherwise.' =>
+            'Restituisci stoviglie pulite, interno in ordine e serbatoi svuotati (se applicabile). In caso contrario può essere addebitata pulizia extra.',
+        'No smoking inside the vehicle. Reasonable cleaning fees apply for smoke or strong odours.' =>
+            'Vietato fumare all’interno del veicolo. Possono applicarsi costi ragionevoli per fumo o odori forti.',
+        'Report any incident or damage as soon as it occurs.' =>
+            'Segnala qualsiasi incidente o danno appena si verifica.',
+
+        '8. Pets' => '8. Animali',
+        'Well-behaved pets are welcome. Please notify us when booking and return the camper clean and in good condition.' =>
+            'Gli animali ben educati sono i benvenuti. Avvisaci al momento della prenotazione e restituisci il camper pulito e in buone condizioni.',
+
+        '9. Ferries & inter-island travel' => '9. Traghetti & viaggi tra isole',
+        'Ferry travel between islands is usually allowed with prior notice and approval. Ferry tickets and extra insurance may apply.' =>
+            'I viaggi in traghetto tra isole sono di norma consentiti con preavviso e approvazione. Possono applicarsi biglietti del traghetto e coperture assicurative aggiuntive.',
+
+        '10. What’s included' => '10. Cosa è incluso',
+        'Each camper includes, at minimum:' => 'Ogni camper include, almeno:',
+        'Bed set-up, basic kitchen kit (hob, cookware, utensils), fridge, outdoor shower, interior lighting, and cleaning kit.' =>
+            'Letto pronto, kit cucina base (piastra, pentole, utensili), frigo, doccia esterna, illuminazione interna e kit pulizia.',
+        'Some models include awning, outdoor table/chairs. See the specific camper page for details.' =>
+            'Alcuni modelli includono tendalino, tavolo/sedie da esterno. Vedi la pagina del camper per i dettagli.',
+
+        '11. Cancellations & changes' => '11. Cancellazioni & modifiche',
+        'Cancellation terms depend on notice/season and are shown in your booking confirmation or quote.' =>
+            'Le condizioni di cancellazione dipendono dal preavviso/stagione e sono indicate nella tua conferma o nel preventivo.',
+        'Date or model changes are subject to availability and any price difference in effect at the time of change.' =>
+            'I cambi di data o modello sono soggetti a disponibilità e a eventuali differenze di prezzo vigenti al momento del cambio.',
+        'No-show or early return may be charged as per the confirmation terms.' =>
+            'No-show o riconsegna anticipata possono essere addebitati secondo le condizioni della conferma.',
+
+        '12. Prohibited uses' => '12. Usi vietati',
+        'The camper must not be used for illegal activities, races, towing, sub-rental or any purpose not covered by the insurance. Do not carry more passengers than seats or exceed load limits.' =>
+            'Il camper non deve essere utilizzato per attività illegali, gare, traino, subaffitto o fini non coperti dall’assicurazione. Non trasportare più passeggeri dei posti o superare i limiti di carico.',
+
+        '13. Liability & limitation' => '13. Responsabilità & limitazioni',
+        'To the extent permitted by law, Alisios Van is not liable for indirect, incidental or consequential losses. Nothing in these Terms excludes liability that cannot be excluded by law.' =>
+            'Nei limiti di legge, Alisios Van non è responsabile per perdite indirette, accidentali o consequenziali. Nulla in questi Termini esclude responsabilità che la legge non consente di escludere.',
+
+        '14. Personal data' => '14. Dati personali',
+        'We process personal data in accordance with our' => 'Trattiamo i dati personali in conformità con la nostra',
+        'You can manage cookie preferences at any time from' => 'Puoi gestire le preferenze cookie in qualsiasi momento da',
+
+        '15. Governing law & jurisdiction' => '15. Legge applicabile & foro competente',
+        'These Terms are governed by Spanish law. For any dispute, the parties submit to the competent Courts and Tribunals in the province of Las Palmas, unless a different jurisdiction is imperatively established by law.' =>
+            'I presenti Termini sono regolati dalla legge spagnola. Per qualsiasi controversia, le parti si sottopongono ai tribunali competenti della provincia di Las Palmas, salvo diversa giurisdizione imposta dalla legge.',
+
+        '16. Changes to these terms' => '16. Modifiche ai presenti termini',
+        'We may update these Terms to reflect changes in our service or legal requirements. The version published on this website is the one in force.' =>
+            'Possiamo aggiornare questi Termini per riflettere cambi di servizio o requisiti legali. Fa fede la versione pubblicata su questo sito.',
+
+        'Last updated:' => 'Ultimo aggiornamento:',
+
+        // --legal--
+        '1. Website Owner' => '1. Titolare del sito',
+        'In compliance with Law 34/2002, of 11 July, on Information Society Services and Electronic Commerce (LSSI-CE), the following details are provided:' =>
+            'In conformità con la Legge 34/2002 dell’11 luglio sui servizi della società dell’informazione e il commercio elettronico (LSSI-CE), si forniscono i seguenti dati:',
+
+        '2. Purpose' => '2. Finalità',
+        'This website aims to present the services of Alisios Van for the rental of camper vans, as well as to provide information and a contact channel for clients and potential customers.' =>
+            'Questo sito ha lo scopo di presentare i servizi di Alisios Van per il noleggio di camper, nonché di fornire informazioni e un canale di contatto per clienti e interessati.',
+
+        '3. Access and use' => '3. Accesso e uso',
+        'Access to the website is free. Users agree to use the site in a lawful manner, in accordance with these terms and applicable regulations, and to refrain from carrying out any activity that may damage the image, interests or rights of the owner or third parties.' =>
+            'L’accesso al sito è gratuito. L’utente si impegna a utilizzarlo in modo lecito, in conformità con le presenti condizioni e con la normativa applicabile, astenendosi da attività che possano danneggiare l’immagine, gli interessi o i diritti del titolare o di terzi.',
+
+        '4. Intellectual and industrial property' => '4. Proprietà intellettuale e industriale',
+        'All contents of this website (texts, images, logos, designs, source code, etc.) are owned by the owner or by third parties who have authorised their use. Reproduction, distribution, public communication or modification without prior written authorisation is prohibited.' =>
+            'Tutti i contenuti di questo sito (testi, immagini, loghi, design, codice sorgente, ecc.) sono di proprietà del titolare o di terzi che ne hanno autorizzato l’uso. È vietata la riproduzione, distribuzione, comunicazione pubblica o modifica senza previa autorizzazione scritta.',
+
+        '5. Links policy' => '5. Politica dei link',
+        'This website may include links to third-party sites. We are not responsible for their contents or the results that may arise from accessing them. The inclusion of links does not imply any association, merger or participation with the linked entities.' =>
+            'Questo sito può includere link a siti di terzi. Non siamo responsabili dei loro contenuti né delle conseguenze del loro accesso. L’inclusione di link non implica alcuna associazione, fusione o partecipazione con le entità collegate.',
+
+        '6. Liability' => '6. Responsabilità',
+        'The owner is not responsible for misuse of the information on the website or for damages arising from such misuse. We do not guarantee the absence of interruptions or errors in access to the website, although we will make our best efforts to avoid them or correct them.' =>
+            'Il titolare non è responsabile dell’uso improprio delle informazioni del sito né dei danni derivanti da tale uso. Non garantiamo l’assenza di interruzioni o errori nell’accesso al sito, pur impegnandoci a evitarli o correggerli.',
+
+        '7. Applicable law and jurisdiction' => '7. Legge applicabile e foro competente',
+        'These terms are governed by Spanish law. For any dispute, the parties submit to the Courts and Tribunals legally competent in the province of Las Palmas, unless a different jurisdiction is imperatively established by law.' =>
+            'Le presenti condizioni sono regolate dalla legge spagnola. Per qualsiasi controversia, le parti si sottopongono ai tribunali legalmente competenti della provincia di Las Palmas, salvo diversa giurisdizione imposta dalla legge.',
+
+        // --privacy--
+        'Privacy Policy' => 'Informativa sulla privacy',
+        'At Alisios Van, we respect the privacy of our users and are committed to protecting the personal data you share with us.' =>
+            'In Alisios Van rispettiamo la privacy degli utenti e ci impegniamo a proteggere i dati personali che ci fornisci.',
+
+        '1. Data Controller' => '1. Titolare del trattamento',
+
+        '2. Personal data we collect' => '2. Dati personali che raccogliamo',
+        'Data you provide through our contact or booking forms, such as: name, email, phone, preferred model, travel dates and your message. If you complete a reservation, we may receive booking details necessary to manage the service. Payments are processed by secure payment providers; we do not store full card data on our servers.' =>
+            'Dati che fornisci tramite i moduli di contatto o prenotazione: nome, email, telefono, modello preferito, date di viaggio e messaggio. In caso di prenotazione, riceviamo i dati necessari alla gestione del servizio. I pagamenti sono trattati da fornitori sicuri; non memorizziamo i dati completi della carta sui nostri server.',
+
+        '3. Purpose of data processing' => '3. Finalità del trattamento',
+        'To manage inquiries and requests.' => 'Gestire richieste e domande.',
+        'To process camper van rental bookings and provide customer support.' => 'Processare le prenotazioni dei camper e fornire assistenza clienti.',
+        'To maintain necessary business communications and administrative messages.' => 'Mantenere le comunicazioni aziendali necessarie e i messaggi amministrativi.',
+
+        '4. Legal basis' => '4. Base giuridica',
+        'The processing is based on the consent you give us when submitting a form, and, where applicable, on the execution of a contract (booking and rental). We may also rely on legitimate interest for security, fraud prevention and basic analytics of site performance (only if you consent to analytics cookies).' =>
+            'Il trattamento si basa sul consenso prestato con l’invio del modulo e, se applicabile, sull’esecuzione di un contratto (prenotazione e noleggio). Possiamo inoltre fare affidamento sul legittimo interesse per sicurezza, prevenzione delle frodi e analisi di base delle prestazioni del sito (solo se acconsenti ai cookie di analisi).',
+
+        '5. Data retention' => '5. Conservazione dei dati',
+        'We keep your data while there is a contractual or business relationship and for the periods required by applicable law (e.g., tax and accounting obligations). Afterwards, data may be securely blocked only for legal liabilities.' =>
+            'Conserviamo i dati per la durata del rapporto contrattuale/commerciale e per i periodi richiesti dalla legge (es. obblighi fiscali e contabili). Successivamente i dati possono essere bloccati in modo sicuro solo per eventuali responsabilità legali.',
+
+        '6. Disclosure to third parties' => '6. Comunicazione a terzi',
+        'We do not share your data with third parties, except when legally required or when necessary to provide the contracted service (for example, vehicle insurance or roadside assistance companies), as well as technology providers that host our website, email or customer communications, under the appropriate data processing agreements.' =>
+            'Non condividiamo i tuoi dati con terzi, salvo obbligo di legge o quando necessario per erogare il servizio (ad es. assicurazione del veicolo o assistenza stradale), nonché con fornitori tecnologici che ospitano il sito, l’email o le comunicazioni con i clienti, in base ad accordi di trattamento appropriati.',
+
+        '7. International transfers' => '7. Trasferimenti internazionali',
+        'Some providers may be located outside the European Economic Area. Where this happens, we ensure adequate safeguards such as Standard Contractual Clauses or equivalent legal mechanisms.' =>
+            'Alcuni fornitori possono trovarsi al di fuori dello Spazio Economico Europeo. In tal caso garantiamo adeguate garanzie, come le Clausole Contrattuali Standard o meccanismi legali equivalenti.',
+
+        '8. User rights' => '8. Diritti degli interessati',
+        'You may exercise your rights of access, rectification, deletion, objection, restriction and portability by emailing' =>
+            'Puoi esercitare i diritti di accesso, rettifica, cancellazione, opposizione, limitazione e portabilità scrivendo a',
+        'Please include sufficient information to verify your identity.' =>
+            'Includi informazioni sufficienti per verificare la tua identità.',
+        'If you believe your data is being processed in violation of current regulations, you have the right to lodge a complaint with the' =>
+            'Se ritieni che i tuoi dati siano trattati in violazione della normativa, hai diritto di proporre reclamo presso',
+        'Spanish Data Protection Agency (AEPD)' => 'l’Agenzia spagnola per la protezione dei dati (AEPD)',
+
+        '9. Cookies and tracking' => '9. Cookie e tracciamento',
+        'We use technical cookies and, with your consent, preference and analytics cookies. For details and to manage your choices, see our' =>
+            'Utilizziamo cookie tecnici e, con il tuo consenso, cookie di preferenza e di analisi. Per i dettagli e per gestire le scelte, vedi la nostra',
+        'You can change your consent at any time from' => 'Puoi modificare il consenso in qualsiasi momento da',
+
+        '10. Security' => '10. Sicurezza',
+        'We apply appropriate technical and organisational measures to protect your data against unauthorised access, alteration, disclosure or destruction.' =>
+            'Applichiamo misure tecniche e organizzative adeguate per proteggere i dati da accessi non autorizzati, alterazione, divulgazione o distruzione.',
+
+        '11. Updates to this policy' => '11. Aggiornamenti della presente informativa',
+        'We may update this policy to reflect changes in our practices or legal requirements. We encourage you to review it periodically.' =>
+            'Possiamo aggiornare la presente informativa per riflettere cambi nelle nostre prassi o nei requisiti legali. Ti invitiamo a consultarla periodicamente.',
+
+        // --cookies--
+        'Cookie Policy' => 'Informativa sui cookie',
+        'Contact us' => 'Contattaci',
+        '1. What are cookies' => '1. Cosa sono i cookie',
+        'This policy explains what cookies are, which ones we use on this website and how you can manage them.' =>
+            'Questa informativa spiega cosa sono i cookie, quali utilizziamo su questo sito e come puoi gestirli.',
+        'Cookies are small files downloaded to your device when you access certain web pages, allowing, among other things, the storage and retrieval of information about your browsing habits.' =>
+            'I cookie sono piccoli file scaricati sul tuo dispositivo quando accedi a determinate pagine web e consentono, tra le altre cose, di memorizzare e recuperare informazioni sulle tue abitudini di navigazione.',
+        '2. Types of cookies we use' => '2. Tipi di cookie che utilizziamo',
+        'At Alisios Van, we use:' => 'In Alisios Van utilizziamo:',
+        '<strong>Technical cookies</strong>: necessary for the proper functioning of the website.' =>
+            '<strong>Cookie tecnici</strong>: necessari al corretto funzionamento del sito.',
+        '<strong>Personalization cookies</strong>: remember preferences such as language or region.' =>
+            '<strong>Cookie di personalizzazione</strong>: memorizzano preferenze come lingua o regione.',
+        '<strong>Analytics cookies (statistics)</strong>: allow us to count users and analyse how the website is used (only activated if accepted by the user).' =>
+            '<strong>Cookie di analisi (statistiche)</strong>: consentono di conteggiare gli utenti e analizzare l’uso del sito (attivati solo se accettati).',
+        'We currently do not use cookies for personalized advertising.' =>
+            'Attualmente non utilizziamo cookie per la pubblicità personalizzata.',
+        '3. Consent' => '3. Consenso',
+        'The installation of non-essential cookies is carried out only with the prior consent of the user, requested via a pop-up notice upon accessing the website. This notice allows the user to:' =>
+            'L’installazione di cookie non essenziali avviene solo con il consenso preventivo dell’utente, richiesto tramite un avviso all’accesso al sito. Questo avviso consente di:',
+        'Accept all cookies.' => 'Accettare tutti i cookie.',
+        'Reject all cookies.' => 'Rifiutare tutti i cookie.',
+        'Configure cookies to choose which ones to accept.' => 'Configurare i cookie per scegliere quali accettare.',
+        '4. Disabling cookies' => '4. Disattivazione dei cookie',
+        'You can allow, block or delete cookies installed on your device through your browser settings. The steps vary by browser and device.' =>
+            'Puoi consentire, bloccare o eliminare i cookie tramite le impostazioni del tuo browser. I passaggi variano in base al browser e al dispositivo.',
+        '5. Cookies used on this site' => '5. Cookie utilizzati su questo sito',
+        'The following list is indicative and may change as we improve the website. Analytics cookies are only set if you accept them in the banner.' =>
+            'L’elenco seguente è indicativo e può cambiare man mano che miglioriamo il sito. I cookie di analisi vengono impostati solo se li accetti nel banner.',
+        'Name' => 'Nome',
+        'Provider' => 'Fornitore',
+        'Purpose' => 'Finalità',
+        'Type' => 'Tipo',
+        'Duration' => 'Durata',
+        'Alisios Van (first-party)' => 'Alisios Van (di prima parte)',
+        'Maintains the user’s session and basic site functionality.' =>
+            'Mantiene la sessione dell’utente e le funzionalità di base del sito.',
+        'Essential' => 'Essenziale',
+        'Session' => 'Sessione',
+        'cookie consent (localStorage: <code>cc_v1</code>)' =>
+            'consenso cookie (localStorage: <code>cc_v1</code>)',
+        'Stores your cookie choices so we don’t show the banner again.' =>
+            'Memorizza le tue scelte sui cookie per non mostrare di nuovo il banner.',
+        'Preference' => 'Preferenza',
+        'Google Analytics (first-party)' => 'Google Analytics (di prima parte)',
+        'Analytics — helps us understand how visitors use the site.' =>
+            'Analisi — ci aiuta a capire come i visitatori utilizzano il sito.',
+        'Analytics (opt-in)' => 'Analisi (opt-in)',
+        'Up to 2 years' => 'Fino a 2 anni',
+        'Up to 12 months' => 'Fino a 12 mesi',
+        '24 hours' => '24 ore',
+        '6. More information' => '6. Ulteriori informazioni',
+        'For more information about the use of cookies on this website, you can contact us at' =>
+            'Per ulteriori informazioni sull’uso dei cookie su questo sito, puoi contattarci a',
+
+
     ],
 
 

@@ -3,7 +3,7 @@ require_once __DIR__ . '/../config/bootstrap_env.php';
 require_once __DIR__ . '/../config/i18n-lite.php';
 ?>
 <!doctype html>
-<html lang="<?= htmlspecialchars($LANG) ?>">
+<html lang="<?= htmlspecialchars($LANG ?? 'en') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -114,7 +114,7 @@ require_once __DIR__ . '/../config/i18n-lite.php';
         <div class="swiper-wrapper">
             <!-- Dejo los testimonios tal cual (multilenguaje real) -->
             <div class="swiper-slide">
-                <p>"I traveled around the Canary Islands, between Fuerteventura and Lanzarote, for 10 days ..."</p>
+                <p>"I traveled around the Canary Islands, between Fuerteventura and Lanzarote, for 10 days and rented Carlos’ van for this trip. Carlos was very helpful and friendly throughout my stay, always ready to solve any doubts or needs I had. Even though I don’t speak Spanish, we were able to communicate easily in English. I’m grateful for the experience he made possible thanks to his van, which allowed me to enjoy a super pleasant and comfortable holiday. The van was well-equipped with everything I needed and was clean. I would highly recommend it to anyone looking to enjoy a road trip and a van life experience!"</p>
                 <div class="nombre">
                     <strong>- Valerio, Italy</strong>
                     <div class="review-stars">
@@ -123,7 +123,7 @@ require_once __DIR__ . '/../config/i18n-lite.php';
                 </div>
             </div>
             <div class="swiper-slide">
-                <p>"Carlos es una persona encantadora y muy resolutiva, muy agradecido por su trato excelente..."</p>
+                <p>"Carlos es una persona encantadora y muy resolutiva, muy agradecido por su trato excelente. Repetiremos sin duda"</p>
                 <div class="nombre">
                     <strong>- Juan, Spain</strong>
                     <div class="review-stars">
@@ -132,7 +132,7 @@ require_once __DIR__ . '/../config/i18n-lite.php';
                 </div>
             </div>
             <div class="swiper-slide">
-                <p>"Abbiamo passato 10 giorni in van tra Fuerteventura e Lanzarote..."</p>
+                <p>"Abbiamo passato 10 giorni in van tra Fuerteventura e Lanzarote, esplorarle in van ha reso tutto più indimenticabile!"</p>
                 <div class="nombre">
                     <strong>- Libe, Italy</strong>
                     <div class="review-stars">
@@ -141,7 +141,7 @@ require_once __DIR__ . '/../config/i18n-lite.php';
                 </div>
             </div>
             <div class="swiper-slide">
-                <p>"Experiencia inolvidable! Carlos súper atento y amable..."</p>
+                <p>"Experiencia inolvidable! Carlos súper atento y amable, la camper tiene todo lo necesario para vivir la experiencia completa. Es preciosa y cómoda, se conduce muy bien aunque sea antigua. Repetiria la experiencia sin duda."</p>
                 <div class="nombre">
                     <strong>- María, Spain</strong>
                     <div class="review-stars">
@@ -150,7 +150,7 @@ require_once __DIR__ . '/../config/i18n-lite.php';
                 </div>
             </div>
             <div class="swiper-slide">
-                <p>"È andato tutto alla grande..."</p>
+                <p>"È andato tutto alla grande, Van pulito ordinato e perfettamente attrezzato, esperienza straordinaria! Carlos il proprietario è una persona eccezionale, disponibile e molto gentile."</p>
                 <div class="nombre">
                     <strong>- Omar, Italy</strong>
                     <div class="review-stars">
