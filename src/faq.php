@@ -128,7 +128,7 @@
             <div class="faq-col" data-col="right">
                 <details class="faq-item" id="faq-insurance" data-tags="insurance">
                     <summary>Is insurance included?</summary>
-                    <div class="content">Basic insurance with third-party liability is included. Optional coverage can reduce the excess/deposit.</div>
+                    <div class="content">Driving insurance is included in the booking price, with 24/7 roadside assistance.</div>
                 </details>
 
                 <details class="faq-item" id="faq-deposit" data-tags="payments,insurance">

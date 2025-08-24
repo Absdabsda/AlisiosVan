@@ -1,4 +1,10 @@
 <?php
+// Cargar i18n si aún no está cargado
+if (!defined('I18N_READY')) {
+    $i18n = __DIR__ . '/../../config/i18n-lite.php'; // subir 2 niveles
+    if (is_file($i18n)) require_once $i18n;
+}
+
 // Página actual para resaltar el menú
 $__cur = basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 function navActive(string $file): string {
@@ -12,60 +18,50 @@ function navActive(string $file): string {
         <a class="navbar-brand d-flex align-items-center gap-2" href="index.php" aria-label="Alisios Van — Home">
           <span class="brand-logo-box">
             <picture class="brand-picture">
-              <!-- Logo para móvil (≤ 991.98px) -->
               <source media="(max-width: 991.98px)" srcset="img/icono.png">
-                <!-- Fallback / desktop -->
-              <img
-                      src="img/alisios-logo.png"
-                      alt="Alisios Van"
-                      class="brand-logo"
-                      width="200" height="60"
-                loading="eager" decoding="async">
+              <img src="img/alisios-logo.png" alt="Alisios Van" class="brand-logo" width="200" height="60" loading="eager" decoding="async">
             </picture>
           </span>
         </a>
 
-
-        <!-- Hamburguesa -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarMain" aria-controls="navbarMain"
                 aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Menú -->
         <div class="collapse navbar-collapse justify-content-end" id="navbarMain">
             <ul class="navbar-nav mb-2 mb-lg-0 align-items-lg-center gap-lg-2">
                 <li class="nav-item">
-                    <a class="nav-link <?= navActive('campers.php') ?>"
-                       <?php if (navActive('campers.php')): ?>aria-current="page"<?php endif; ?>
-                       href="campers.php">Campers</a>
+                    <a class="nav-link <?= navActive('campers.php') ?>" href="campers.php"><?= __('Campers') ?></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= navActive('sobre-nosotros.php') ?>"
-                       <?php if (navActive('sobre-nosotros.php')): ?>aria-current="page"<?php endif; ?>
-                       href="sobre-nosotros.php">About Us</a>
+                    <a class="nav-link <?= navActive('sobre-nosotros.php') ?>" href="sobre-nosotros.php"><?= __('About Us') ?></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= navActive('faq.php') ?>"
-                       <?php if (navActive('faq.php')): ?>aria-current="page"<?php endif; ?>
-                       href="faq.php">FAQ</a>
+                    <a class="nav-link <?= navActive('faq.php') ?>" href="faq.php">FAQ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= navActive('contacto.php') ?>"
-                       <?php if (navActive('contacto.php')): ?>aria-current="page"<?php endif; ?>
-                       href="contacto.php">Contact</a>
+                    <a class="nav-link <?= navActive('contacto.php') ?>" href="contacto.php"><?= __('Contact') ?></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#manageBookingModal">
-                        Manage Booking
+                        <?= __('Manage Booking') ?>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link instagram-link" href="https://www.instagram.com/alisios_van/"
-                       target="_blank" rel="noopener noreferrer" title="Instagram">
+                    <a class="nav-link instagram-link" href="https://www.instagram.com/alisios_van/" target="_blank" rel="noopener noreferrer" title="Instagram">
                         <i class="fab fa-instagram"></i>
                     </a>
+                </li>
+
+                <!-- Selector ES/EN -->
+                <li class="nav-item d-flex align-items-center ms-lg-2">
+                    <a class="nav-link py-1 px-2 <?= ($LANG ?? 'en')==='es' ? 'active' : '' ?>"
+                       href="<?= htmlspecialchars(url_with_lang('es')) ?>">ES</a>
+                    <span class="text-muted">/</span>
+                    <a class="nav-link py-1 px-2 <?= ($LANG ?? 'en')==='en' ? 'active' : '' ?>"
+                       href="<?= htmlspecialchars(url_with_lang('en')) ?>">EN</a>
                 </li>
             </ul>
         </div>
@@ -77,7 +73,7 @@ function navActive(string $file): string {
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4">
             <div class="modal-header">
-                <h5 class="modal-title">Manage your booking</h5>
+                <h5 class="modal-title"><?= __('Manage your booking') ?></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
@@ -97,10 +93,9 @@ function navActive(string $file): string {
                 </div>
 
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary w-100">Continue</button>
+                    <button type="submit" class="btn btn-primary w-100"><?= __('Continue') ?></button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
