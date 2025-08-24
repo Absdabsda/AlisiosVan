@@ -6,7 +6,7 @@ if (defined('I18N_READY')) return;
 define('I18N_READY', true);
 
 // Idiomas permitidos
-$ALLOWED_LANGS = ['es','en'];
+$ALLOWED_LANGS = ['es','en','de','fr','it'];
 
 // Detectar idioma: ?lang= → cookie → 'en'
 $GET    = strtolower($_GET['lang'] ?? '');

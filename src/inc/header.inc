@@ -56,46 +56,97 @@ function navActive(string $file): string {
                 </li>
 
                 <!-- Selector ES/EN -->
-                <li class="nav-item d-flex align-items-center ms-lg-2">
-                    <a class="nav-link py-1 px-2 <?= ($LANG ?? 'en')==='es' ? 'active' : '' ?>"
-                       href="<?= htmlspecialchars(url_with_lang('es')) ?>">ES</a>
-                    <span class="text-muted">/</span>
-                    <a class="nav-link py-1 px-2 <?= ($LANG ?? 'en')==='en' ? 'active' : '' ?>"
-                       href="<?= htmlspecialchars(url_with_lang('en')) ?>">EN</a>
+                <?php $cur = $LANG ?? 'en';
+                $flagOf = [
+                    'en' => 'gb',   // usa GB o US, elige la que prefieras
+                    'es' => 'es',
+                    'de' => 'de',
+                    'fr' => 'fr',
+                    'it' => 'it',
+                ];
+                $curFlag = isset($flagOf[$cur]) ? $flagOf[$cur] : 'gb';
+                ?>
+
+                <li class="nav-item dropdown ms-lg-2">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+                       href="#" id="langMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="fi fi-<?= $curFlag ?>"></span>
+                        <span class="d-none d-lg-inline text-uppercase"><?= htmlspecialchars($cur) ?></span>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langMenu">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 <?= $cur==='es'?'active':'' ?>"
+                               href="<?= htmlspecialchars(url_with_lang('es')) ?>">
+                                <span class="fi fi-es"></span> Español
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 <?= $cur==='en'?'active':'' ?>"
+                               href="<?= htmlspecialchars(url_with_lang('en')) ?>">
+                                <span class="fi fi-gb"></span> English
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 <?= $cur==='de'?'active':'' ?>"
+                               href="<?= htmlspecialchars(url_with_lang('de')) ?>">
+                                <span class="fi fi-de"></span> Deutsch
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 <?= $cur==='fr'?'active':'' ?>"
+                               href="<?= htmlspecialchars(url_with_lang('fr')) ?>">
+                                <span class="fi fi-fr"></span> Français
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 <?= $cur==='it'?'active':'' ?>"
+                               href="<?= htmlspecialchars(url_with_lang('it')) ?>">
+                                <span class="fi fi-it"></span> Italiano
+                            </a>
+                        </li>
+                    </ul>
                 </li>
+
+
             </ul>
         </div>
     </div>
 </nav>
 
 <!-- Manage Booking Modal -->
-<div class="modal fade" id="manageBookingModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="manageBookingModal" tabindex="-1" aria-labelledby="manageBookingTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4">
+
+            <!-- ÚNICO header -->
             <div class="modal-header">
-                <h5 class="modal-title"><?= __('Manage your booking') ?></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="manageBookingTitle"><?= __('Manage your booking') ?></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= __('Close') ?>"></button>
             </div>
 
+            <!-- Formulario SIN otro header dentro -->
             <form action="find-reservation.php" method="get" class="needs-validation" novalidate>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Reservation #</label>
+                        <label class="form-label"><?= __('Reservation #') ?></label>
                         <input type="number" name="rid" class="form-control" required min="1" inputmode="numeric" pattern="[0-9]+">
-                        <div class="invalid-feedback">Please enter your reservation number.</div>
+                        <div class="invalid-feedback"><?= __('Please enter your reservation number.') ?></div>
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">Email used for the booking</label>
+                        <label class="form-label"><?= __('Email used for the booking') ?></label>
                         <input type="email" name="email" class="form-control" required>
-                        <div class="invalid-feedback">We need your email to verify it's you.</div>
+                        <div class="invalid-feedback"><?= __('We need your email to verify it\'s you.') ?></div>
                     </div>
-                    <p class="small text-muted mb-0">We’ll verify and take you to your booking.</p>
+                    <p class="small text-muted mb-0"><?= __('We’ll verify and take you to your booking.') ?></p>
                 </div>
 
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary w-100"><?= __('Continue') ?></button>
                 </div>
             </form>
+
         </div>
     </div>
 </div>
+

@@ -23,7 +23,7 @@ $campers = [
         'desc'   => 'Spacious green T3—great for friends or a small family. Simple to drive, fully equipped for island adventures.',
         'baby_seat' => true,
         'features' => [
-            '5 travel seats','Sleeps 3', 'Baby seat can be included', 'Equipped kitchen: hob, sink & fridge',
+            '5 travel seats','Sleeps 3','Baby seat can be included','Equipped kitchen: hob, sink & fridge',
             'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs',
         ],
     ],
@@ -74,11 +74,14 @@ $camper = $campers[$id] ?? $campers[1];
 $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="<?= htmlspecialchars($LANG ?? 'en') ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title><?= htmlspecialchars($camper['series'].' '.$camper['name']) ?> | Alisios Van</title>
+
+    <!-- evita traducción automática de Chrome -->
+    <meta name="google" content="notranslate">
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
@@ -91,9 +94,11 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-    <!-- Swiper (FALTABA) -->
+    <!-- Swiper -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
     <!-- CSS propio -->
     <link rel="stylesheet" href="css/estilos.css">
@@ -104,10 +109,8 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
     <!-- JS propio -->
     <script src="js/header.js" defer></script>
     <script src="js/cookies.js" defer></script>
-    <!-- Engancha el botón Reserve -->
     <script src="js/ficha-camper.js" defer></script>
 
-    <!-- Inicialización de Swiper -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const thumbs = new Swiper('#galleryThumbs', {
@@ -146,9 +149,9 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
 </section>
 
 <nav class="pd-breadcrumb container">
-    <a href="campers.php">Campers</a>
+    <a href="campers.php"><?= __('Campers') ?></a>
     <span>›</span>
-    <span>Details</span>
+    <span><?= __('Details') ?></span>
 </nav>
 
 <main class="camper-detail-wrap">
@@ -179,12 +182,12 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
                         <div class="swiper-wrapper">
                             <?php foreach (array_slice($camper['images'], 1) as $img): ?>
                                 <div class="swiper-slide">
-                                    <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($camper['name']) ?> thumbnail">
+                                    <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($camper['name'].' '.__('thumbnail')) ?>">
                                 </div>
                             <?php endforeach; ?>
                             <?php if (count($camper['images']) < 2): ?>
                                 <div class="swiper-slide">
-                                    <img src="<?= htmlspecialchars($hero) ?>" alt="<?= htmlspecialchars($camper['name']) ?> thumbnail">
+                                    <img src="<?= htmlspecialchars($hero) ?>" alt="<?= htmlspecialchars($camper['name'].' '.__('thumbnail')) ?>">
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -197,35 +200,33 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
                 <div class="detail-card">
                     <div class="detail-head">
                         <div class="badges">
-                            <span class="badge-soft"><i class="bi bi-people"></i> <?= (int)$camper['seats'] ?> travel seats</span>
-                            <span class="badge-soft"><i class="bi bi-moon-stars"></i> Sleeps <?= (int)$camper['sleeps'] ?></span>
-                            <span class="badge-soft"><i class="bi bi-sun"></i> Solar</span>
-                            <span class="badge-soft"><i class="bi bi-droplet"></i> Outdoor shower</span>
-
+                            <span class="badge-soft"><i class="bi bi-people"></i> <?= (int)$camper['seats'].' '.__('travel seats') ?></span>
+                            <span class="badge-soft"><i class="bi bi-moon-stars"></i> <?= __('Sleeps').' '.(int)$camper['sleeps'] ?></span>
+                            <span class="badge-soft"><i class="bi bi-sun"></i> <?= __('Solar') ?></span>
+                            <span class="badge-soft"><i class="bi bi-droplet"></i> <?= __('Outdoor shower') ?></span>
                             <?php if (!empty($camper['baby_seat'])): ?>
-                                <span class="badge-soft"><i class="bi bi-baby"></i> Baby seat on request</span>
+                                <span class="badge-soft"><i class="bi bi-baby"></i> <?= __('Baby seat on request') ?></span>
                             <?php endif; ?>
                         </div>
 
-                        <p class="lead mb-0"><?= htmlspecialchars($camper['desc']) ?></p>
+                        <p class="lead mb-0"><?= htmlspecialchars(__($camper['desc'])) ?></p>
                     </div>
 
                     <hr>
 
-                    <h2 class="section-title">What you’ll find onboard</h2>
+                    <h2 class="section-title"><?= __('What you’ll find onboard') ?></h2>
                     <ul class="icon-list">
                         <?php foreach ($camper['features'] as $f): ?>
-                            <li><?= htmlspecialchars($f) ?></li>
+                            <li><?= htmlspecialchars(__($f)) ?></li>
                         <?php endforeach; ?>
                     </ul>
 
                     <div class="cta-row">
-                        <!-- IDs y data-* para el JS -->
-                        <button id="btnReserve" class="btn btn-primary" data-id="<?= (int)$id ?>">Reserve</button>
-                        <a id="btnBack" class="btn btn-outline-secondary" href="campers.php">Back</a>
+                        <button id="btnReserve" class="btn btn-primary" data-id="<?= (int)$id ?>"><?= __('Reserve') ?></button>
+                        <a id="btnBack" class="btn btn-outline-secondary" href="campers.php"><?= __('Back') ?></a>
                     </div>
 
-                    <p class="mini-note">150 km/day included · Basic insurance · 24/7 roadside assistance</p>
+                    <p class="mini-note"><?= __('150 km/day included · Basic insurance · 24/7 roadside assistance') ?></p>
                 </div>
             </aside>
         </div>
