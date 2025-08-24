@@ -18,11 +18,12 @@ $campers = [
             'img/matcha/matcha-abierta-playa.jpeg',
             'img/matcha-landing-page.jpeg',
         ],
-        'seats'  => 4,
+        'seats'  => 5,
         'sleeps' => 3,
         'desc'   => 'Spacious green T3—great for friends or a small family. Simple to drive, fully equipped for island adventures.',
+        'baby_seat' => true,
         'features' => [
-            '4 travel seats','Sleeps 3','Equipped kitchen: hob, sink & fridge',
+            '5 travel seats','Sleeps 3', 'Baby seat can be included', 'Equipped kitchen: hob, sink & fridge',
             'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs',
         ],
     ],
@@ -200,7 +201,12 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
                             <span class="badge-soft"><i class="bi bi-moon-stars"></i> Sleeps <?= (int)$camper['sleeps'] ?></span>
                             <span class="badge-soft"><i class="bi bi-sun"></i> Solar</span>
                             <span class="badge-soft"><i class="bi bi-droplet"></i> Outdoor shower</span>
+
+                            <?php if (!empty($camper['baby_seat'])): ?>
+                                <span class="badge-soft"><i class="bi bi-baby"></i> Baby seat on request</span>
+                            <?php endif; ?>
                         </div>
+
                         <p class="lead mb-0"><?= htmlspecialchars($camper['desc']) ?></p>
                     </div>
 
