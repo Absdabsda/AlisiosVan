@@ -1,7 +1,6 @@
 // src/js/buscar.js
 (function () {
     // Detecta la raíz del proyecto según estés en /src/...
-    // Ej: en local => "/CanaryVanGit/AlisiosVan", en prod => ""
     const ROOT = location.pathname.includes('/src/')
         ? location.pathname.split('/src/')[0]
         : '';
@@ -46,7 +45,7 @@
     // ---------- Overlay checkout ----------
     function showCheckoutOverlay(msg){
         const el = document.getElementById('checkoutOverlay');
-        if (!el) return; // si no existe en el HTML, simplemente no mostramos overlay
+        if (!el) return;
         const p = el.querySelector('p');
         if (p && msg) p.textContent = msg;
         el.classList.add('show');
@@ -68,6 +67,12 @@
         if (!s) return null;
         const [y, m, d] = s.split('-').map(Number);
         return new Date(y, m - 1, d);
+    }
+    function nightsBetweenYmd(s1, s2) {
+        const d1 = parseYMDToLocalDate(s1);
+        const d2 = parseYMDToLocalDate(s2);
+        if (!d1 || !d2) return 0;
+        return Math.round((d2 - d1) / 86400000);
     }
 
     // ---------- Locale común para Flatpickr ----------
@@ -111,12 +116,23 @@
         }
         backLink.href = url.toString();
     }
+    function setDatesAndReload(newStart, newEnd) {
+        start = newStart;
+        end   = newEnd;
+        updateRangeLabel();
+        updateQueryString();
+        updateBackLinkHref();
+        if (window.__datePicker) {
+            window.__datePicker.setDate([parseYMDToLocalDate(start), parseYMDToLocalDate(end)], true);
+        }
+        loadAvailability();
+    }
 
     // ---------- Render de cards ----------
     function render(campers) {
         resultsEl.innerHTML = '';
         if (!campers.length) {
-            emptyMsg.textContent = 'No campers available for these dates.';
+            // El mensaje se pinta en loadAvailability() usando meta
             emptyMsg.style.display = '';
             return;
         }
@@ -127,7 +143,6 @@
             const q = (start && end)
                 ? `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`
                 : '';
-            // 👇 Aquí cambiamos a la ficha con bandera "from=buscar"
             const detailsHref = `ficha-camper.php?id=${encodeURIComponent(c.id)}&from=buscar${q}`;
 
             const col = document.createElement('div');
@@ -173,7 +188,78 @@
             const res = await fetch(url);
             const data = await res.json();
             if (!data.ok) throw new Error(data.error || 'Error');
-            render(data.campers);
+
+            if (data.campers && data.campers.length) {
+                render(data.campers);
+                return;
+            }
+
+            // ----- Sin resultados: construimos mensajes útiles -----
+            const meta = data.meta || {};
+            const nights = meta.nights ?? nightsBetweenYmd(start, end);
+            const PHONE = '34610136383';
+            const waText = `Hola, estoy viendo disponibilidad (${start} a ${end}, ${nights} noche/s) y no me aparecen campers. ¿Podemos ver opciones?`;
+            const waUrl  = `https://wa.me/${PHONE}?text=` + encodeURIComponent(waText);
+
+            if (meta.no_results_reason === 'min_nights' && meta.min_required) {
+                const btnId = 'btnAdjustToMin';
+                emptyMsg.innerHTML = `
+          <div class="alert alert-info" role="alert" style="line-height:1.45">
+            <strong>No hay resultados</strong> para ${nights} noche${nights===1?'':'s'}.
+            Para estas fechas, el <b>mínimo requerido</b> es <b>${meta.min_required}</b> noche${meta.min_required===1?'':'s'}.
+            <div class="mt-2 d-flex gap-2 flex-wrap">
+              <button id="${btnId}" class="btn btn-primary btn-sm">
+                Ajustar a ${meta.min_required} noche${meta.min_required===1?'':'s'}
+              </button>
+              <a class="btn btn-outline-success btn-sm" href="${waUrl}" target="_blank" rel="noopener">
+                <i class="bi bi-whatsapp"></i> Escríbenos por WhatsApp
+              </a>
+            </div>
+            <div class="text-muted small mt-2">
+              No es posible mostrar otras opciones porque no cumplen el mínimo de noches necesario.
+            </div>
+          </div>
+        `;
+                emptyMsg.style.display = '';
+
+                document.getElementById(btnId)?.addEventListener('click', () => {
+                    let suggestedEnd = meta.suggested_end;
+                    if (!suggestedEnd) {
+                        const base = parseYMDToLocalDate(start);
+                        const e = new Date(base.getFullYear(), base.getMonth(), base.getDate() + meta.min_required);
+                        suggestedEnd = ymdLocal(e); // end exclusivo
+                    }
+                    setDatesAndReload(start, suggestedEnd);
+                });
+
+                return;
+            }
+
+            // Ocupado / bloqueos
+            emptyMsg.innerHTML = `
+        <div class="alert alert-warning" role="alert" style="line-height:1.45">
+          <strong>Sin disponibilidad</strong> para ${start} → ${end}.
+          Puede deberse a reservas confirmadas o bloqueos de calendario.
+          <div class="mt-2 d-flex gap-2 flex-wrap">
+            <a class="btn btn-outline-primary btn-sm" href="#" id="btnTryShift">Probar +1 día</a>
+            <a class="btn btn-outline-success btn-sm" href="${waUrl}" target="_blank" rel="noopener">
+              <i class="bi bi-whatsapp"></i> WhatsApp
+            </a>
+          </div>
+          <div class="text-muted small mt-2">Cuéntanos tus fechas y vemos alternativas.</div>
+        </div>
+      `;
+            emptyMsg.style.display = '';
+
+            document.getElementById('btnTryShift')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                const s = parseYMDToLocalDate(start);
+                const e2 = parseYMDToLocalDate(end);
+                s.setDate(s.getDate() + 1);
+                e2.setDate(e2.getDate() + 1);
+                setDatesAndReload(ymdLocal(s), ymdLocal(e2));
+            });
+
         } catch (e) {
             console.error(e);
             emptyMsg.textContent = "Couldn't load availability.";
@@ -207,7 +293,6 @@
                 btn.disabled = true;
                 btn.innerHTML = 'Redirecting...';
 
-                // Muestra overlay (si está añadido en el HTML)
                 showCheckoutOverlay('Redirecting you to a safe checkout…');
 
                 try {
@@ -218,7 +303,6 @@
                     });
                     const data = await res.json();
                     if (data.ok && data.url) {
-                        // dejamos el overlay visible mientras salta a Stripe
                         window.location.href = data.url;
                     } else {
                         hideCheckoutOverlay();
@@ -262,7 +346,6 @@
             locale: localeEN,
 
             onReady(_, __, inst){
-                // En desktop asegúrate de que flote por encima de todo
                 if (!isMobile()) inst.calendarContainer.style.zIndex = '10010';
                 updateRangeLabel();
             },
@@ -280,6 +363,9 @@
                 }
             }
         });
+
+        // Guarda referencia para poder ajustar fechas desde los CTA
+        window.__datePicker = fp;
 
         // Abrir tocando toda la “pill” de fechas
         dateInput.closest('.date-chip')?.addEventListener('click', () => fp.open());
@@ -300,7 +386,7 @@
        WHATSAPP MINI-CHAT (desktop) / Deep-link directo (móvil)
        =========================== */
     const PHONE = '34610136383';           // sin +
-    const REDIRECT_AFTER_SEND_MS = 900;     // tiempo de lectura al pulsar enviar
+    const REDIRECT_AFTER_SEND_MS = 900;
     const GREET_DELAY_MS = 150;
 
     const launcher = document.getElementById('wa-launcher');
@@ -372,14 +458,13 @@
     launcher.addEventListener('click', () => {
         if (isMobileDevice()) {
             const text = (input?.value || '').trim();
-            openWhatsApp(text, true); // en móvil en la misma pestaña / app
+            openWhatsApp(text, true);
             return;
         }
         panel.hidden ? openPanel() : closePanel();
     });
     closeBtn?.addEventListener('click', closePanel);
 
-    // Enviar → aviso + breve pausa antes de abrir WhatsApp
     sendBtn?.addEventListener('click', () => {
         const text = input.value;
         if (!text.trim()) { input.focus(); return; }
@@ -394,7 +479,6 @@
         if (e.key === 'Enter') { e.preventDefault(); sendBtn.click(); }
     });
 
-    // Chips → solo preparan el texto
     quick?.addEventListener('click', (e) => {
         if (e.target.matches('button[data-text]')) {
             const t = e.target.getAttribute('data-text');
@@ -404,7 +488,6 @@
         }
     });
 
-    // Auto-abrir solo en escritorio
     if (!sessionStorage.getItem('waOpenedOnce') && !isMobileDevice()) {
         setTimeout(() => {
             openPanel();
