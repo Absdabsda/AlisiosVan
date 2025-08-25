@@ -17,7 +17,203 @@ use PHPMailer\PHPMailer\Exception as MailException;
 // Clave de Stripe desde /secure/.env
 Stripe::setApiKey(env('STRIPE_SECRET',''));
 
-// --- Helpers generales ------------------------------------------------------
+/* -----------------------------------------------------------
+ * I18N mínimo para la página de gestión
+ * ---------------------------------------------------------*/
+function current_locale(): string {
+    $try = strtolower((string)($_GET['lang'] ?? $_GET['l'] ?? $_COOKIE['lang'] ?? ''));
+    if (!$try && !empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+        $try = substr(strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']), 0, 2);
+    }
+    $supported = ['en','es','de','fr','it'];
+    return in_array($try, $supported, true) ? $try : 'en';
+}
+
+$LC = current_locale();
+
+$STRINGS = [
+    'en' => [
+        'error.missingRid'  => 'Missing reservation id',
+        'error.notfound'    => 'Reservation not found',
+        'error.invalidLink' => 'Invalid link',
+
+        'page.title'        => 'Reservation #%d | Manage',
+        'hero.title'        => 'Reservation #%d',
+        'hero.subtitle.admin'    => 'Admin · Manage or cancel the trip',
+        'hero.subtitle.customer' => 'Customer · Manage or cancel your trip',
+
+        'alert.cancelled'   => 'Reservation cancelled.',
+        'alert.already'     => 'This reservation was already cancelled.',
+
+        'section.trip'      => 'Your trip',
+        'label.dates'       => 'Dates',
+        'label.status'      => 'Status',
+
+        'badge.night.one'   => 'night',
+        'badge.night.other' => 'nights',
+
+        'confirm.cancel'    => 'Are you sure you want to cancel this reservation?',
+        'note.admin'        => 'Admin cancellation: the deposit will be refunded automatically.',
+        'note.customer'     => 'Customer cancellation: the deposit is non-refundable per policy.',
+        'btn.cancel'        => 'Cancel reservation',
+        'label.cancelledAt' => 'Cancelled at:',
+
+        'section.payment'   => 'Payment',
+        'label.priceNight'  => 'Price/night',
+        'label.nights'      => 'Nights',
+        'label.depositPaid' => 'Deposit paid',
+
+        'footer.questions'  => 'Questions? Email us at',
+    ],
+
+    'es' => [
+        'error.missingRid'  => 'Falta el id de la reserva',
+        'error.notfound'    => 'Reserva no encontrada',
+        'error.invalidLink' => 'Enlace no válido',
+
+        'page.title'        => 'Reserva #%d | Gestionar',
+        'hero.title'        => 'Reserva #%d',
+        'hero.subtitle.admin'    => 'Admin · Gestionar o cancelar el viaje',
+        'hero.subtitle.customer' => 'Cliente · Gestiona o cancela tu viaje',
+
+        'alert.cancelled'   => 'Reserva cancelada.',
+        'alert.already'     => 'Esta reserva ya estaba cancelada.',
+
+        'section.trip'      => 'Tu viaje',
+        'label.dates'       => 'Fechas',
+        'label.status'      => 'Estado',
+
+        'badge.night.one'   => 'noche',
+        'badge.night.other' => 'noches',
+
+        'confirm.cancel'    => '¿Seguro que quieres cancelar esta reserva?',
+        'note.admin'        => 'Cancelación por admin: el depósito se reembolsará automáticamente.',
+        'note.customer'     => 'Cancelación por cliente: el depósito no es reembolsable según la política.',
+        'btn.cancel'        => 'Cancelar reserva',
+        'label.cancelledAt' => 'Cancelada el:',
+
+        'section.payment'   => 'Pago',
+        'label.priceNight'  => 'Precio/noche',
+        'label.nights'      => 'Noches',
+        'label.depositPaid' => 'Depósito pagado',
+
+        'footer.questions'  => '¿Dudas? Escríbenos a',
+    ],
+
+    'de' => [
+        'error.missingRid'  => 'Reservierungs-ID fehlt',
+        'error.notfound'    => 'Reservierung nicht gefunden',
+        'error.invalidLink' => 'Ungültiger Link',
+
+        'page.title'        => 'Reservierung Nr. %d | Verwalten',
+        'hero.title'        => 'Reservierung Nr. %d',
+        'hero.subtitle.admin'    => 'Admin · Reise verwalten oder stornieren',
+        'hero.subtitle.customer' => 'Kunde · Reise verwalten oder stornieren',
+
+        'alert.cancelled'   => 'Reservierung storniert.',
+        'alert.already'     => 'Diese Reservierung wurde bereits storniert.',
+
+        'section.trip'      => 'Deine Reise',
+        'label.dates'       => 'Zeitraum',
+        'label.status'      => 'Status',
+
+        'badge.night.one'   => 'Nacht',
+        'badge.night.other' => 'Nächte',
+
+        'confirm.cancel'    => 'Möchtest du diese Reservierung wirklich stornieren?',
+        'note.admin'        => 'Admin-Stornierung: Die Anzahlung wird automatisch erstattet.',
+        'note.customer'     => 'Kundenstornierung: Die Anzahlung ist gemäß Richtlinie nicht erstattungsfähig.',
+        'btn.cancel'        => 'Reservierung stornieren',
+        'label.cancelledAt' => 'Storniert am:',
+
+        'section.payment'   => 'Zahlung',
+        'label.priceNight'  => 'Preis/Nacht',
+        'label.nights'      => 'Nächte',
+        'label.depositPaid' => 'Anzahlung bezahlt',
+
+        'footer.questions'  => 'Fragen? Schreib uns an',
+    ],
+
+    'fr' => [
+        'error.missingRid'  => 'ID de réservation manquante',
+        'error.notfound'    => 'Réservation introuvable',
+        'error.invalidLink' => 'Lien invalide',
+
+        'page.title'        => 'Réservation n° %d | Gérer',
+        'hero.title'        => 'Réservation n° %d',
+        'hero.subtitle.admin'    => 'Admin · Gérer ou annuler le voyage',
+        'hero.subtitle.customer' => 'Client · Gérez ou annulez votre voyage',
+
+        'alert.cancelled'   => 'Réservation annulée.',
+        'alert.already'     => 'Cette réservation était déjà annulée.',
+
+        'section.trip'      => 'Votre voyage',
+        'label.dates'       => 'Dates',
+        'label.status'      => 'Statut',
+
+        'badge.night.one'   => 'nuit',
+        'badge.night.other' => 'nuits',
+
+        'confirm.cancel'    => 'Voulez-vous vraiment annuler cette réservation ?',
+        'note.admin'        => 'Annulation par l’admin : l’acompte sera remboursé automatiquement.',
+        'note.customer'     => 'Annulation par le client : l’acompte n’est pas remboursable selon la politique.',
+        'btn.cancel'        => 'Annuler la réservation',
+        'label.cancelledAt' => 'Annulée le :',
+
+        'section.payment'   => 'Paiement',
+        'label.priceNight'  => 'Prix/nuit',
+        'label.nights'      => 'Nuits',
+        'label.depositPaid' => 'Acompte payé',
+
+        'footer.questions'  => 'Des questions ? Écrivez-nous à',
+    ],
+
+    'it' => [
+        'error.missingRid'  => 'ID prenotazione mancante',
+        'error.notfound'    => 'Prenotazione non trovata',
+        'error.invalidLink' => 'Link non valido',
+
+        'page.title'        => 'Prenotazione n. %d | Gestisci',
+        'hero.title'        => 'Prenotazione n. %d',
+        'hero.subtitle.admin'    => 'Admin · Gestisci o annulla il viaggio',
+        'hero.subtitle.customer' => 'Cliente · Gestisci o annulla il tuo viaggio',
+
+        'alert.cancelled'   => 'Prenotazione annullata.',
+        'alert.already'     => 'Questa prenotazione era già stata annullata.',
+
+        'section.trip'      => 'Il tuo viaggio',
+        'label.dates'       => 'Date',
+        'label.status'      => 'Stato',
+
+        'badge.night.one'   => 'notte',
+        'badge.night.other' => 'notti',
+
+        'confirm.cancel'    => 'Sei sicuro di voler annullare questa prenotazione?',
+        'note.admin'        => "Annullamento dall'admin: il deposito sarà rimborsato automaticamente.",
+        'note.customer'     => "Annullamento del cliente: il deposito non è rimborsabile secondo la policy.",
+        'btn.cancel'        => 'Annulla prenotazione',
+        'label.cancelledAt' => 'Annullata il:',
+
+        'section.payment'   => 'Pagamento',
+        'label.priceNight'  => 'Prezzo/notte',
+        'label.nights'      => 'Notti',
+        'label.depositPaid' => 'Deposito pagato',
+
+        'footer.questions'  => 'Domande? Scrivici a',
+    ],
+];
+
+function t(string $key, ...$args): string {
+    global $STRINGS, $LC;
+    $base = $STRINGS[$LC][$key] ?? ($STRINGS['en'][$key] ?? $key);
+    return $args ? vsprintf($base, $args) : $base;
+}
+
+function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
+
+/* -----------------------------------------------------------
+ * Helpers / DB / Stripe / Mail (igual que tenías)
+ * ---------------------------------------------------------*/
 function admin_key(): ?string {
     $envKey = env('ADMIN_KEY','');
     if (!$envKey) return null;
@@ -38,8 +234,6 @@ function admin_key(): ?string {
     return null;
 }
 
-function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
-
 function columnExists(PDO $pdo, string $table, string $column): bool {
     $sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t AND COLUMN_NAME = :c LIMIT 1";
@@ -49,10 +243,7 @@ function columnExists(PDO $pdo, string $table, string $column): bool {
 }
 
 /**
- * Intenta obtener email y nombre del cliente:
- * 1) Tu tabla reservations: customer_email/email, customer_name/name
- * 2) Stripe PaymentIntent: charges.billing_details.email o receipt_email
- * 3) Stripe Checkout Session: customer_details.email
+ * Intenta obtener email y nombre del cliente
  */
 function getReservationContact(PDO $pdo, array $r): array {
     try {
@@ -126,7 +317,6 @@ function buildMailerFromEnv(): ?PHPMailer {
     return $mail;
 }
 
-
 // --- Input -----------------------------------------------------------------
 $rid = (int)($_GET['rid'] ?? 0);
 $t   = $_GET['t'] ?? '';
@@ -134,7 +324,7 @@ $ADMIN_KEY = admin_key();
 $admin = $ADMIN_KEY !== null;
 
 if(!$rid){
-    http_response_code(400); echo "Missing reservation id"; exit;
+    http_response_code(400); echo t('error.missingRid'); exit;
 }
 
 // --- Carga reserva ----------------------------------------------------------
@@ -159,7 +349,7 @@ if ($admin) {
 $r = $st->fetch(PDO::FETCH_ASSOC);
 if(!$r){
     http_response_code(403);
-    echo $admin ? "Reservation not found" : "Invalid link";
+    echo $admin ? t('error.notfound') : t('error.invalidLink');
     exit;
 }
 
@@ -175,7 +365,7 @@ $refundNote = '';
 if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel'){
     // si ya estaba cancelada
     if (strpos((string)$r['status'],'cancelled') === 0) {
-        $qs = 'rid='.$rid.($admin ? '&key='.urlencode($ADMIN_KEY) : ($t ? '&t='.urlencode($t) : ''));
+        $qs = 'rid='.$rid.($admin ? '&key='.urlencode($ADMIN_KEY) : ($t ? '&t='.urlencode($t) : '')).'&lang='.$LC;
         header('Location: manage.php?'.$qs.'&m=already'); exit;
     }
 
@@ -222,9 +412,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
         $r['cancelled_at'] = date('Y-m-d H:i:s');
     }
 
-    // ======= Email de confirmación de cancelación ===========================
+    // ======= Email de confirmación de cancelación (igual que tenías) =======
     try {
-        // ¿ya enviado?
         $emailSentAlready = false;
         if (columnExists($pdo, 'reservations', 'cancellation_email_sent_at')) {
             $q = $pdo->prepare("SELECT cancellation_email_sent_at FROM reservations WHERE id=? LIMIT 1");
@@ -331,7 +520,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
     }
 
     // Redirección post-cancel
-    $qs = 'rid='.$rid.($admin ? '&key='.urlencode($ADMIN_KEY) : ($t ? '&t='.urlencode($t) : ''));
+    $qs = 'rid='.$rid.($admin ? '&key='.urlencode($ADMIN_KEY) : ($t ? '&t='.urlencode($t) : '')).'&lang='.$LC;
     if ($refundNote) $qs .= '&rn='.urlencode($refundNote);
     header('Location: manage.php?'.$qs.'&m=cancelled');
     exit;
@@ -339,12 +528,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
 
 // Mensajes de la vista
 if (isset($_GET['m']) && $_GET['m']==='cancelled') {
-    $msgTop = 'Reservation cancelled.';
+    $msgTop = t('alert.cancelled');
 } elseif (isset($_GET['m']) && $_GET['m']==='already') {
-    $msgTop = 'This reservation was already cancelled.';
+    $msgTop = t('alert.already');
 }
 if (isset($_GET['rn'])) {
-    $refundNote = (string)$_GET['rn'];
+    $refundNote = (string)$_GET['rn']; // nota en inglés tal como viene del proceso de cancelación
 }
 
 // --- Presentación -----------------------------------------------------------
@@ -352,9 +541,12 @@ $startHuman = date('j M Y', strtotime($r['start_date']));
 $endHuman   = date('j M Y', strtotime($r['end_date']));
 ?>
 <!doctype html>
-<html lang="en"><head>
+<html lang="<?= h($LC) ?>"><head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Reservation #<?= (int)$r['id'] ?> | Manage</title>
+    <title><?= h(sprintf(t('page.title'), (int)$r['id'])) ?></title>
+
+    <!-- evita traducción automática de Chrome -->
+    <meta name="google" content="notranslate">
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
@@ -363,8 +555,10 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
@@ -384,8 +578,8 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
 
 <section class="page-hero manage-hero">
     <div class="page-hero__content">
-        <h1 class="page-hero__title">Reservation #<?= (int)$r['id'] ?></h1>
-        <p class="mt-2"><?= $admin ? 'Admin' : 'Customer' ?> · Manage or cancel your trip</p>
+        <h1 class="page-hero__title"><?= h(sprintf(t('hero.title'), (int)$r['id'])) ?></h1>
+        <p class="mt-2"><?= $admin ? h(t('hero.subtitle.admin')) : h(t('hero.subtitle.customer')) ?></p>
     </div>
 </section>
 
@@ -400,46 +594,46 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
     <div class="cardy mb-3">
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
             <div class="flex-grow-1">
-                <h2 class="h5 mb-2">Your trip</h2>
+                <h2 class="h5 mb-2"><?= h(t('section.trip')) ?></h2>
                 <div class="d-flex flex-wrap gap-2 mb-2">
                     <span class="badge-soft"><i class="bi bi-truck"></i> <?= h($r['camper']) ?></span>
-                    <span class="badge-soft"><i class="bi bi-moon-stars"></i> <?= (int)$nights ?> night<?= $nights>1?'s':'' ?></span>
+                    <span class="badge-soft"><i class="bi bi-moon-stars"></i> <?= (int)$nights ?> <?= h($nights===1 ? t('badge.night.one') : t('badge.night.other')) ?></span>
                 </div>
-                <p class="mb-1"><strong>Dates:</strong>
+                <p class="mb-1"><strong><?= h(t('label.dates')) ?>:</strong>
                     <span style="white-space:nowrap"><?= h($startHuman) ?>&nbsp;→&nbsp;<?= h($endHuman) ?></span>
                 </p>
-                <p class="mb-2"><strong>Status:</strong> <?= h($r['status']) ?></p>
+                <p class="mb-2"><strong><?= h(t('label.status')) ?>:</strong> <?= h($r['status']) ?></p>
 
                 <?php if (strpos((string)$r['status'],'cancelled') !== 0): ?>
-                    <form method="post" onsubmit="return confirm('Are you sure you want to cancel this reservation?');">
+                    <form method="post" onsubmit="return confirm('<?= h(t('confirm.cancel')) ?>');">
                         <input type="hidden" name="action" value="cancel">
                         <?php if ($admin): ?>
-                            <p class="text-muted">Admin cancellation: the deposit will be refunded automatically.</p>
+                            <p class="text-muted"><?= h(t('note.admin')) ?></p>
                         <?php else: ?>
-                            <p class="text-warning">Customer cancellation: the deposit is non-refundable per policy.</p>
+                            <p class="text-warning"><?= h(t('note.customer')) ?></p>
                         <?php endif; ?>
                         <button class="btn <?= $admin ? 'btn-danger' : 'btn-outline-secondary' ?>">
-                            <i class="bi bi-x-circle"></i> Cancel reservation
+                            <i class="bi bi-x-circle"></i> <?= h(t('btn.cancel')) ?>
                         </button>
                     </form>
                 <?php else: ?>
-                    <p class="text-muted">Cancelled at: <?= h($r['cancelled_at'] ?? '') ?></p>
+                    <p class="text-muted"><?= h(t('label.cancelledAt')) ?> <?= h($r['cancelled_at'] ?? '') ?></p>
                 <?php endif; ?>
             </div>
 
             <div style="min-width:260px;max-width:320px;" class="ms-auto">
-                <h3 class="h6 mb-2">Payment</h3>
+                <h3 class="h6 mb-2"><?= h(t('section.payment')) ?></h3>
                 <div class="summary">
-                    <div class="rowx"><span>Price/night</span><span>€<?= number_format($price, 2) ?></span></div>
-                    <div class="rowx"><span>Nights</span><span><?= (int)$nights ?></span></div>
-                    <div class="rowx total"><span>Deposit paid</span><span>€<?= number_format($deposit, 2) ?></span></div>
+                    <div class="rowx"><span><?= h(t('label.priceNight')) ?></span><span>€<?= number_format($price, 2) ?></span></div>
+                    <div class="rowx"><span><?= h(t('label.nights')) ?></span><span><?= (int)$nights ?></span></div>
+                    <div class="rowx total"><span><?= h(t('label.depositPaid')) ?></span><span>€<?= number_format($deposit, 2) ?></span></div>
                 </div>
             </div>
         </div>
     </div>
 
     <p class="text-muted small">
-        Questions? Email us at <a href="mailto:alisios.van@gmail.com">alisios.van@gmail.com</a>.
+        <?= h(t('footer.questions')) ?> <a href="mailto:alisios.van@gmail.com">alisios.van@gmail.com</a>.
     </p>
 </main>
 <?php include 'inc/footer.inc'; ?>

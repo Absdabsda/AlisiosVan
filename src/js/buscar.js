@@ -75,23 +75,58 @@
         return Math.round((d2 - d1) / 86400000);
     }
 
-    // ---------- Locale común para Flatpickr ----------
-    const localeEN = {
-        firstDayOfWeek: 1,
-        weekdays: {
-            shorthand: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
-            longhand:  ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
-        },
-        months: {
-            shorthand: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-            longhand:  ['January','February','March','April','May','June','July','August','September','October','November','December'],
-        },
-    };
+    // ---- i18n helpers ----
+    const __STRINGS = (window.I18N && window.I18N.strings) || {};
+    function t(key, params) {
+        let s = __STRINGS[key] || key;
+        if (Array.isArray(params)) {
+            params.forEach(v => { s = s.replace(/%[sd]/, String(v)); });
+        }
+        return s;
+    }
+    // Flatpickr locale dinámico (sin importar bundles extra)
+    function flatpickrLocale(lang) {
+        try {
+            const weekdaysLong  = [];
+            const weekdaysShort = [];
+            const monthsLong    = [];
+            const monthsShort   = [];
+            const base = new Date(Date.UTC(2023,0,1)); // domingo
+            for (let i=0;i<7;i++){
+                const d = new Date(base); d.setUTCDate(base.getUTCDate()+i);
+                weekdaysLong .push(new Intl.DateTimeFormat(lang, { weekday:'long',  timeZone:'UTC' }).format(d));
+                weekdaysShort.push(new Intl.DateTimeFormat(lang, { weekday:'short', timeZone:'UTC' }).format(d));
+            }
+            for (let m=0;m<12;m++){
+                const d = new Date(Date.UTC(2023,m,1));
+                monthsLong .push(new Intl.DateTimeFormat(lang, { month:'long',  timeZone:'UTC' }).format(d));
+                monthsShort.push(new Intl.DateTimeFormat(lang, { month:'short', timeZone:'UTC' }).format(d));
+            }
+            return {
+                firstDayOfWeek: 1,
+                weekdays: { shorthand: weekdaysShort, longhand: weekdaysLong },
+                months:   { shorthand: monthsShort,   longhand:  monthsLong   },
+            };
+        } catch {
+            return {
+                firstDayOfWeek: 1,
+                weekdays: {
+                    shorthand: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+                    longhand:  ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+                },
+                months: {
+                    shorthand: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                    longhand:  ['January','February','March','April','May','June','July','August','September','October','November','December'],
+                },
+            };
+        }
+    }
+    const FP_LOCALE = flatpickrLocale((window.I18N && window.I18N.lang) || 'en');
 
     // ---------- UI helpers ----------
     function updateRangeLabel() {
         if (!rangeLabel) return;
-        rangeLabel.textContent = (start && end) ? `From ${start} to ${end}` : '';
+        rangeLabel.textContent = (start && end) ? t('from_to', [start, end]) : '';
     }
     function updateQueryString() {
         const url = new URL(location.href);
@@ -132,7 +167,6 @@
     function render(campers) {
         resultsEl.innerHTML = '';
         if (!campers.length) {
-            // El mensaje se pinta en loadAvailability() usando meta
             emptyMsg.style.display = '';
             return;
         }
@@ -154,10 +188,10 @@
           </a>
           <div class="camper-info">
             <h3>"${c.name}"</h3>
-            <p>${Number(c.price_per_night).toFixed(0)}€ per night.</p>
+            <p>${Number(c.price_per_night).toFixed(0)}€ ${t('per_night')}.</p>
             <div class="d-flex align-items-center mt-2">
-              <button class="btn btn-primary btn-sm js-reserve" data-id="${c.id}">Reserve</button>
-              <a class="btn btn-outline-secondary btn-sm ms-auto" href="${detailsHref}">View camper</a>
+              <button class="btn btn-primary btn-sm js-reserve" data-id="${c.id}">${t('reserve')}</button>
+              <a class="btn btn-outline-secondary btn-sm ms-auto" href="${detailsHref}">${t('view_camper')}</a>
             </div>
           </div>
         </div>
@@ -174,7 +208,7 @@
         emptyMsg.style.display = 'none';
 
         if (!start || !end) {
-            emptyMsg.textContent = 'Missing dates.';
+            emptyMsg.textContent = t('missing_dates');
             emptyMsg.style.display = '';
             return;
         }
@@ -203,21 +237,20 @@
 
             if (meta.no_results_reason === 'min_nights' && meta.min_required) {
                 const btnId = 'btnAdjustToMin';
+                const min = meta.min_required;
                 emptyMsg.innerHTML = `
           <div class="alert alert-info" role="alert" style="line-height:1.45">
-            <strong>No hay resultados</strong> para ${nights} noche${nights===1?'':'s'}.
-            Para estas fechas, el <b>mínimo requerido</b> es <b>${meta.min_required}</b> noche${meta.min_required===1?'':'s'}.
+            <strong>${t('no_results_title')}</strong>.
+            ${ (min === 1) ? t('min_stay_line_one', [min]) : t('min_stay_line', [min]) }
             <div class="mt-2 d-flex gap-2 flex-wrap">
               <button id="${btnId}" class="btn btn-primary btn-sm">
-                Ajustar a ${meta.min_required} noche${meta.min_required===1?'':'s'}
+                ${ (min === 1) ? t('adjust_to_min_one', [min]) : t('adjust_to_min', [min]) }
               </button>
               <a class="btn btn-outline-success btn-sm" href="${waUrl}" target="_blank" rel="noopener">
-                <i class="bi bi-whatsapp"></i> Escríbenos por WhatsApp
+                <i class="bi bi-whatsapp"></i> ${t('whatsapp_cta')}
               </a>
             </div>
-            <div class="text-muted small mt-2">
-              No es posible mostrar otras opciones porque no cumplen el mínimo de noches necesario.
-            </div>
+            <div class="text-muted small mt-2">${t('no_results_note')}</div>
           </div>
         `;
                 emptyMsg.style.display = '';
@@ -226,7 +259,7 @@
                     let suggestedEnd = meta.suggested_end;
                     if (!suggestedEnd) {
                         const base = parseYMDToLocalDate(start);
-                        const e = new Date(base.getFullYear(), base.getMonth(), base.getDate() + meta.min_required);
+                        const e = new Date(base.getFullYear(), base.getMonth(), base.getDate() + min);
                         suggestedEnd = ymdLocal(e); // end exclusivo
                     }
                     setDatesAndReload(start, suggestedEnd);
@@ -238,15 +271,15 @@
             // Ocupado / bloqueos
             emptyMsg.innerHTML = `
         <div class="alert alert-warning" role="alert" style="line-height:1.45">
-          <strong>Sin disponibilidad</strong> para ${start} → ${end}.
-          Puede deberse a reservas confirmadas o bloqueos de calendario.
+          <strong>${t('occupied_title')}</strong> (${start} → ${end}).
+          ${t('occupied_line')}
           <div class="mt-2 d-flex gap-2 flex-wrap">
-            <a class="btn btn-outline-primary btn-sm" href="#" id="btnTryShift">Probar +1 día</a>
+            <a class="btn btn-outline-primary btn-sm" href="#" id="btnTryShift">${t('try_plus_one')}</a>
             <a class="btn btn-outline-success btn-sm" href="${waUrl}" target="_blank" rel="noopener">
               <i class="bi bi-whatsapp"></i> WhatsApp
             </a>
           </div>
-          <div class="text-muted small mt-2">Cuéntanos tus fechas y vemos alternativas.</div>
+          <div class="text-muted small mt-2">${t('alternatives_line')}</div>
         </div>
       `;
             emptyMsg.style.display = '';
@@ -262,7 +295,7 @@
 
         } catch (e) {
             console.error(e);
-            emptyMsg.textContent = "Couldn't load availability.";
+            emptyMsg.textContent = t('couldnt_load');
             emptyMsg.style.display = '';
         }
     }
@@ -282,7 +315,7 @@
         document.querySelectorAll('.js-reserve').forEach(btn => {
             btn.addEventListener('click', async () => {
                 if (!start || !end) {
-                    alert('Select the dates before reserving.');
+                    alert(t('select_dates_first'));
                     return;
                 }
 
@@ -291,9 +324,9 @@
 
                 const old = btn.innerHTML;
                 btn.disabled = true;
-                btn.innerHTML = 'Redirecting...';
+                btn.innerHTML = t('redirecting');
 
-                showCheckoutOverlay('Redirecting you to a safe checkout…');
+                showCheckoutOverlay(t('redirecting_overlay'));
 
                 try {
                     const res = await fetch(apiUrl('create-checkout.php'), {
@@ -306,12 +339,12 @@
                         window.location.href = data.url;
                     } else {
                         hideCheckoutOverlay();
-                        alert(data.error || 'Could not initialize checkout.');
+                        alert(data.error || t('checkout_init_error'));
                     }
                 } catch (err) {
                     console.error(err);
                     hideCheckoutOverlay();
-                    alert('Network error.');
+                    alert(t('network_error'));
                 } finally {
                     btn.disabled = false;
                     btn.innerHTML = old;
@@ -343,7 +376,7 @@
             static: isMobile(),
             appendTo: isMobile() ? undefined : document.body,
             position: 'auto',
-            locale: localeEN,
+            locale: FP_LOCALE,
 
             onReady(_, __, inst){
                 if (!isMobile()) inst.calendarContainer.style.zIndex = '10010';
@@ -425,15 +458,15 @@
         if (!greeted) {
             greeted = true;
             setTimeout(() => {
-                addMsg('¡Hola! 👋 Somos Alisios Van.');
-                addMsg('Elige una opción o escribe tu mensaje y luego pulsa “enviar”.');
+                addMsg(t('wa_hello'));
+                addMsg(t('wa_hint'));
             }, GREET_DELAY_MS);
         }
     }
     function closePanel() { panel.hidden = true; }
 
     function openWhatsApp(text, sameTab = false) {
-        const msg = text && text.trim() ? text.trim() : 'Hola, me gustaría más información 🙂';
+        const msg = text && text.trim() ? text.trim() : t('wa_default_msg');
         const page = '\n\n(Página: ' + window.location.href + ')';
         const waUrl = 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(msg + page);
 
@@ -471,7 +504,7 @@
         addMsg(text, 'user');
         input.value = '';
         setTimeout(() => {
-            addMsg('Abriendo WhatsApp…', 'bot');
+            addMsg(t('wa_opening'), 'bot');
             setTimeout(() => openWhatsApp(text, isMobileDevice()), REDIRECT_AFTER_SEND_MS);
         }, 200);
     });
@@ -481,10 +514,10 @@
 
     quick?.addEventListener('click', (e) => {
         if (e.target.matches('button[data-text]')) {
-            const t = e.target.getAttribute('data-text');
-            input.value = t;
+            const t0 = e.target.getAttribute('data-text');
+            input.value = t0;
             input.focus();
-            addMsg('Mensaje preparado. Pulsa “enviar” para abrir WhatsApp 👉', 'bot');
+            addMsg(t('wa_prepared'), 'bot');
         }
     });
 

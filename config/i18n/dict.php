@@ -547,6 +547,101 @@ return [
         'For more information about the use of cookies on this website, you can contact us at' =>
             'Para más información sobre el uso de cookies en este sitio web, puedes escribirnos a',
 
+        // --buscar--
+        'Change dates' => 'Cambiar fechas',
+        'View details' => 'Ver detalles',
+        'From %s to %s' => 'Del %s al %s',
+        'No results' => 'Sin resultados',
+        'No availability' => 'Sin disponibilidad',
+        'Try +1 day' => 'Probar +1 día',
+        'Message us on WhatsApp' => 'Escríbenos por WhatsApp',
+        'Opening WhatsApp…' => 'Abriendo WhatsApp…',
+        'Message ready. Press “send” to open WhatsApp 👉' => 'Mensaje listo. Pulsa “enviar” para abrir WhatsApp 👉',
+        'Hello, I’d like more information 🙂' => 'Hola, me gustaría más información 🙂',
+        'Select dates to see availability.' => 'Selecciona fechas para ver disponibilidad.',
+        'Could not initialize checkout.' => 'No se pudo iniciar el pago.',
+        'Network error.' => 'Error de red.',
+        'Adjust to %d night' => 'Ajustar a %d noche',
+        'Adjust to %d nights' => 'Ajustar a %d noches',
+        'For these dates, the minimum stay is %d night.' => 'Para estas fechas, la estancia mínima es de %d noche.',
+        'For these dates, the minimum stay is %d nights.' => 'Para estas fechas, la estancia mínima es de %d noches.',
+        'Redirecting you to our secure checkout ...' => 'Redirigiéndote a nuestro pago seguro…',
+        "Don't close this window." => 'No cierres esta ventana.',
+
+        // — Stripe Checkout —
+        '%s (%s) – Booking deposit (first night) · %d nights total' => '%s (%s) – Depósito de reserva (primera noche) · %d noches en total',
+        'Reservation #%d · Dates %s → %s · Estimated total €%0.2f • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' => 'Reserva n.º %d · Fechas %s → %s · Importe estimado €%0.2f • Estás pagando solo el depósito de reserva (primera noche) ahora; el resto se paga a la entrega (efectivo o PayPal).',
+        'You are paying the booking deposit (first night). The remaining balance is paid in person at pick-up (cash or PayPal).' => 'Estás pagando el depósito de reserva (primera noche). El resto se paga en persona al recoger (efectivo o PayPal).',
+        'I accept the [Terms & Cancellation Policy](%s). Company cancellations: full refund. Customer cancellations: deposit is non-refundable.' => 'Acepto los [Términos y la política de cancelación](%s). Cancelaciones de la empresa: reembolso completo. Cancelaciones del cliente: el depósito no es reembolsable.',
+        'Alisios Van · Canary Islands · alisios.van@gmail.com · Cancellation: company cancellations → full refund; customer cancellations → deposit non-refundable.' => 'Alisios Van · Islas Canarias · alisios.van@gmail.com · Cancelación: cancelaciones de la empresa → reembolso completo; cancelaciones del cliente → el depósito no es reembolsable.',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' =>
+            'Reserva n.º %d · Fechas %s → %s · Importe estimado €%s • Estás pagando solo el depósito de reserva (primera noche) ahora; el resto se paga a la entrega (efectivo o PayPal).',
+
+        // --cancel--
+        'Missing or invalid reservation id.' => 'Falta el ID de reserva o no es válido.',
+        'Reservation not found.' => 'No se encontró la reserva.',
+        'Forbidden' => 'Acceso denegado.',
+        'Your reservation has been successfully cancelled.' => 'Tu reserva se ha cancelado correctamente.',
+        'We couldn’t cancel the reservation (its status may have changed).' => 'No pudimos cancelar la reserva (su estado pudo haber cambiado).',
+        'This reservation is already confirmed. To cancel it, please contact us.' => 'Esta reserva ya está confirmada. Para cancelarla, por favor contáctanos.',
+        'This reservation was already cancelled.' => 'Esta reserva ya había sido cancelada.',
+        'This reservation cannot be cancelled from this page.' => 'Esta reserva no puede cancelarse desde esta página.',
+        'Reservation cancelled' => 'Reserva cancelada',
+        'Reservation status' => 'Estado de la reserva',
+        'Your reservation has been cancelled' => 'Tu reserva ha sido cancelada',
+        'Your reservation information' => 'Información de tu reserva',
+        'Back to Home' => 'Volver al inicio',
+        'Browse campers' => 'Ver campers',
+        'Contact us' => 'Contactar',
+        'Retry payment' => 'Reintentar pago',
+
+        // --thanks--
+        'Stripe not configured' => 'Stripe no está configurado',
+        'Missing session_id' => 'Falta session_id',
+        'Payment not completed yet. Status: %s' => 'El pago aún no se ha completado. Estado: %s',
+        'Error:' => 'Error:',
+
+        'Payment confirmed' => 'Pago confirmado',
+        'Payment confirmed!' => '¡Pago confirmado!',
+        'Reservation #%d · Thank you for choosing Alisios Van' => 'Reserva n.º %d · Gracias por elegir Alisios Van',
+        'Your trip' => 'Tu viaje',
+        'Dates' => 'Fechas',
+        'Nights' => 'Noches',
+        'Nights: %d' => 'Noches: %d',
+        'We’ve emailed you the booking details and next steps.' => 'Te hemos enviado por email los detalles de la reserva y los siguientes pasos.',
+        'Add to calendar' => 'Añadir al calendario',
+        'Download invoice (PDF)' => 'Descargar factura (PDF)',
+        'View invoice online' => 'Ver factura online',
+        'Manage / cancel reservation' => 'Gestionar / cancelar reserva',
+        'Print' => 'Imprimir',
+        'Your invoice is being generated. It can take a little while. We’ll email it to you and this page will update automatically when it’s ready.' => 'Estamos generando tu factura. Puede tardar un poco. Te la enviaremos por email y esta página se actualizará automáticamente cuando esté lista.',
+        'The invoice was created but the file isn’t ready yet. We’ll email it as soon as it’s available.' => 'La factura se creó pero el archivo aún no está listo. Te la enviaremos por email en cuanto esté disponible.',
+        'Your invoice is being generated. We will email it to you shortly.' => 'Estamos generando tu factura. Te la enviaremos por email en breve.',
+        'Payment' => 'Pago',
+        'Total price' => 'Precio total', // si ya la tienes, puedes omitir
+        'Reservation confirmed' => 'Reserva confirmada',
+        'Questions? Email us at %s' => '¿Dudas? Escríbenos a %s',
+        'Alisios Van · %s' => 'Alisios Van · %s',
+
+        // — Email de confirmación —
+        'Your reservation #%d is confirmed' => 'Tu reserva n.º %d está confirmada',
+        'Reservation #%d — Thank you for choosing Alisios Van' => 'Reserva n.º %d — Gracias por elegir Alisios Van',
+        'Hi %s,' => 'Hola %s,',
+        'Your reservation is confirmed. Here are your details:' => 'Tu reserva está confirmada. Estos son los detalles:',
+
+        'Camper' => 'Camper',
+        'Price/night' => 'Precio/noche',
+
+        "We've attached a calendar file (.ics) so you can add the trip to your calendar." =>
+            'Hemos adjuntado un archivo de calendario (.ics) para que puedas añadir el viaje a tu calendario.',
+        'Questions? Write us at %s.' => '¿Dudas? Escríbenos a %s.',
+
+        'Manage your booking' => 'Gestiona tu reserva',
+        'Open management page' => 'Abrir página de gestión',
+
+
+
 
     ],
     'en' => [
@@ -1107,6 +1202,96 @@ return [
         'For more information about the use of cookies on this website, you can contact us at' =>
             'Für weitere Informationen zur Verwendung von Cookies auf dieser Website kontaktiere uns unter',
 
+        // --buscar--
+        'Change dates' => 'Daten ändern',
+        'View details' => 'Details ansehen',
+        'From %s to %s' => 'Vom %s bis %s',
+        'No results' => 'Keine Ergebnisse',
+        'No availability' => 'Keine Verfügbarkeit',
+        'Try +1 day' => '+1 Tag probieren',
+        'Message us on WhatsApp' => 'Schreib uns auf WhatsApp',
+        'Opening WhatsApp…' => 'WhatsApp wird geöffnet…',
+        'Message ready. Press “send” to open WhatsApp 👉' => 'Nachricht bereit. Drücke „Senden“, um WhatsApp zu öffnen 👉',
+        'Hello, I’d like more information 🙂' => 'Hallo, ich hätte gern mehr Informationen 🙂',
+        'Select dates to see availability.' => 'Wähle Daten, um die Verfügbarkeit zu sehen.',
+        'Could not initialize checkout.' => 'Checkout konnte nicht gestartet werden.',
+        'Network error.' => 'Netzwerkfehler.',
+        'Adjust to %d night' => 'Auf %d Nacht anpassen',
+        'Adjust to %d nights' => 'Auf %d Nächte anpassen',
+        'For these dates, the minimum stay is %d night.' => 'Für diese Daten beträgt der Mindestaufenthalt %d Nacht.',
+        'For these dates, the minimum stay is %d nights.' => 'Für diese Daten beträgt der Mindestaufenthalt %d Nächte.',
+        'Redirecting you to our secure checkout ...' => 'Du wirst zu unserem sicheren Checkout weitergeleitet…',
+        "Don't close this window." => 'Dieses Fenster nicht schließen.',
+
+        // — Stripe Checkout —
+        '%s (%s) – Booking deposit (first night) · %d nights total' => '%s (%s) – Reservierungsanzahlung (erste Nacht) · %d Nächte gesamt',
+        'Reservation #%d · Dates %s → %s · Estimated total €%0.2f • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' => 'Reservierung Nr. %d · Daten %s → %s · Voraussichtlicher Gesamtbetrag €%0.2f • Sie zahlen jetzt nur die Anzahlung (erste Nacht); der Rest wird bei Abholung gezahlt (Bar oder PayPal).',
+        'You are paying the booking deposit (first night). The remaining balance is paid in person at pick-up (cash or PayPal).' => 'Sie zahlen die Reservierungsanzahlung (erste Nacht). Der Restbetrag wird bei Abholung vor Ort bezahlt (Bar oder PayPal).',
+        'I accept the [Terms & Cancellation Policy](%s). Company cancellations: full refund. Customer cancellations: deposit is non-refundable.' => 'Ich akzeptiere die [AGB & Stornobedingungen](%s). Stornierungen durch das Unternehmen: volle Rückerstattung. Stornierungen durch den Kunden: Anzahlung nicht erstattungsfähig.',
+        'Alisios Van · Canary Islands · alisios.van@gmail.com · Cancellation: company cancellations → full refund; customer cancellations → deposit non-refundable.' => 'Alisios Van · Kanarische Inseln · alisios.van@gmail.com · Stornierung: Unternehmensstornierungen → volle Erstattung; Kundenstornierungen → Anzahlung nicht erstattungsfähig.',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' =>
+            'Reservierung Nr. %d · Daten %s → %s · Voraussichtlicher Gesamtbetrag €%s • Sie zahlen jetzt nur die Anzahlung (erste Nacht); der Rest wird bei Abholung gezahlt (Bar oder PayPal).',
+
+
+        // --cancel--
+        'Missing or invalid reservation id.' => 'Fehlende oder ungültige Buchungs-ID.',
+        'Reservation not found.' => 'Reservierung nicht gefunden.',
+        'Forbidden' => 'Zugriff verweigert.',
+        'Your reservation has been successfully cancelled.' => 'Deine Reservierung wurde erfolgreich storniert.',
+        'We couldn’t cancel the reservation (its status may have changed).' => 'Wir konnten die Reservierung nicht stornieren (Status könnte sich geändert haben).',
+        'This reservation is already confirmed. To cancel it, please contact us.' => 'Diese Reservierung ist bereits bestätigt. Zum Stornieren kontaktiere uns bitte.',
+        'This reservation was already cancelled.' => 'Diese Reservierung wurde bereits storniert.',
+        'This reservation cannot be cancelled from this page.' => 'Diese Reservierung kann auf dieser Seite nicht storniert werden.',
+        'Reservation cancelled' => 'Reservierung storniert',
+        'Reservation status' => 'Reservierungsstatus',
+        'Your reservation has been cancelled' => 'Deine Reservierung wurde storniert',
+        'Your reservation information' => 'Informationen zu deiner Reservierung',
+        'Back to Home' => 'Zur Startseite',
+        'Browse campers' => 'Camper ansehen',
+        'Contact us' => 'Kontaktiere uns',
+        'Retry payment' => 'Zahlung erneut versuchen',
+
+        // --thanks--
+        'Stripe not configured' => 'Stripe ist nicht konfiguriert',
+        'Missing session_id' => 'session_id fehlt',
+        'Payment not completed yet. Status: %s' => 'Zahlung noch nicht abgeschlossen. Status: %s',
+        'Error:' => 'Fehler:',
+
+        'Payment confirmed' => 'Zahlung bestätigt',
+        'Payment confirmed!' => 'Zahlung bestätigt!',
+        'Reservation #%d · Thank you for choosing Alisios Van' => 'Reservierung Nr. %d · Danke, dass du Alisios Van gewählt hast',
+        'Your trip' => 'Deine Reise',
+        'Dates' => 'Daten',
+        'Nights' => 'Nächte',
+        'Nights: %d' => 'Nächte: %d',
+        'We’ve emailed you the booking details and next steps.' => 'Wir haben dir die Buchungsdetails und die nächsten Schritte per E-Mail gesendet.',
+        'Add to calendar' => 'Zum Kalender hinzufügen',
+        'Download invoice (PDF)' => 'Rechnung herunterladen (PDF)',
+        'View invoice online' => 'Rechnung online ansehen',
+        'Manage / cancel reservation' => 'Buchung verwalten / stornieren',
+        'Print' => 'Drucken',
+        'Your invoice is being generated. It can take a little while. We’ll email it to you and this page will update automatically when it’s ready.' => 'Deine Rechnung wird erstellt. Das kann etwas dauern. Wir senden sie dir per E-Mail und diese Seite aktualisiert sich automatisch, sobald sie bereit ist.',
+        'The invoice was created but the file isn’t ready yet. We’ll email it as soon as it’s available.' => 'Die Rechnung wurde erstellt, die Datei ist aber noch nicht bereit. Wir senden sie dir per E-Mail, sobald sie verfügbar ist.',
+        'Your invoice is being generated. We will email it to you shortly.' => 'Deine Rechnung wird erstellt. Wir senden sie dir in Kürze per E-Mail.',
+        'Payment' => 'Zahlung',
+        'Total price' => 'Gesamtpreis',
+        'Reservation confirmed' => 'Reservierung bestätigt',
+        'Questions? Email us at %s' => 'Fragen? Schreib uns an %s',
+        'Alisios Van · %s' => 'Alisios Van · %s',
+
+        // ---- DE (Deutsch) — Email-Bestätigung ----
+        'Your reservation #%d is confirmed' => 'Deine Reservierung Nr. %d ist bestätigt',
+        'Reservation #%d — Thank you for choosing Alisios Van' => 'Reservierung Nr. %d — Danke, dass du Alisios Van gewählt hast',
+        'Hi %s,' => 'Hallo %s,',
+        'Your reservation is confirmed. Here are your details:' => 'Deine Reservierung ist bestätigt. Hier sind deine Details:',
+        'Camper' => 'Camper',
+        'Price/night' => 'Preis/Nacht',
+        "We've attached a calendar file (.ics) so you can add the trip to your calendar." =>
+            'Wir haben eine Kalenderdatei (.ics) angehängt, damit du die Reise zu deinem Kalender hinzufügen kannst.',
+        'Questions? Write us at %s.' => 'Fragen? Schreib uns an %s.',
+        'Open management page' => 'Verwaltungsseite öffnen',
+
 
     ],
 
@@ -1659,6 +1844,95 @@ return [
         'For more information about the use of cookies on this website, you can contact us at' =>
             'Pour plus d’informations sur l’utilisation des cookies sur ce site, vous pouvez nous contacter à',
 
+        // --buscar--
+        'Change dates' => 'Modifier les dates',
+        'View details' => 'Voir les détails',
+        'From %s to %s' => 'Du %s au %s',
+        'No results' => 'Aucun résultat',
+        'No availability' => 'Pas de disponibilité',
+        'Try +1 day' => 'Essayer +1 jour',
+        'Message us on WhatsApp' => 'Écrivez-nous sur WhatsApp',
+        'Opening WhatsApp…' => 'Ouverture de WhatsApp…',
+        'Message ready. Press “send” to open WhatsApp 👉' => 'Message prêt. Appuyez sur « envoyer » pour ouvrir WhatsApp 👉',
+        'Hello, I’d like more information 🙂' => 'Bonjour, je voudrais plus d’informations 🙂',
+        'Select dates to see availability.' => 'Sélectionnez des dates pour voir la disponibilité.',
+        'Could not initialize checkout.' => 'Impossible d’initialiser le paiement.',
+        'Network error.' => 'Erreur réseau.',
+        'Adjust to %d night' => 'Ajuster à %d nuit',
+        'Adjust to %d nights' => 'Ajuster à %d nuits',
+        'For these dates, the minimum stay is %d night.' => 'Pour ces dates, le séjour minimum est de %d nuit.',
+        'For these dates, the minimum stay is %d nights.' => 'Pour ces dates, le séjour minimum est de %d nuits.',
+        'Redirecting you to our secure checkout ...' => 'Redirection vers notre paiement sécurisé…',
+        "Don't close this window." => 'Ne fermez pas cette fenêtre.',
+
+        // — Stripe Checkout —
+        '%s (%s) – Booking deposit (first night) · %d nights total' => '%s (%s) – Acompte de réservation (première nuit) · %d nuits au total',
+        'Reservation #%d · Dates %s → %s · Estimated total €%0.2f • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' => 'Réservation n° %d · Dates %s → %s · Total estimé €%0.2f • Vous payez maintenant uniquement l’acompte (première nuit) ; le solde est réglé au retrait (espèces ou PayPal).',
+        'You are paying the booking deposit (first night). The remaining balance is paid in person at pick-up (cash or PayPal).' => 'Vous payez l’acompte de réservation (première nuit). Le solde est réglé en personne au retrait (espèces ou PayPal).',
+        'I accept the [Terms & Cancellation Policy](%s). Company cancellations: full refund. Customer cancellations: deposit is non-refundable.' => 'J’accepte les [Conditions & Politique d’annulation](%s). Annulations de l’entreprise : remboursement intégral. Annulations du client : l’acompte n’est pas remboursable.',
+        'Alisios Van · Canary Islands · alisios.van@gmail.com · Cancellation: company cancellations → full refund; customer cancellations → deposit non-refundable.' => 'Alisios Van · Îles Canaries · alisios.van@gmail.com · Annulation : annulations de l’entreprise → remboursement intégral ; annulations du client → acompte non remboursable.',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' =>
+            'Réservation n° %d · Dates %s → %s · Total estimé €%s • Vous payez maintenant uniquement l’acompte (première nuit) ; le solde est réglé au retrait (espèces ou PayPal).',
+
+
+        // --cancel--
+        'Missing or invalid reservation id.' => 'ID de réservation manquante ou invalide.',
+        'Reservation not found.' => 'Réservation introuvable.',
+        'Forbidden' => 'Accès refusé.',
+        'Your reservation has been successfully cancelled.' => 'Votre réservation a été annulée avec succès.',
+        'We couldn’t cancel the reservation (its status may have changed).' => 'Nous n’avons pas pu annuler la réservation (son statut a pu changer).',
+        'This reservation is already confirmed. To cancel it, please contact us.' => 'Cette réservation est déjà confirmée. Pour l’annuler, veuillez nous contacter.',
+        'This reservation was already cancelled.' => 'Cette réservation a déjà été annulée.',
+        'This reservation cannot be cancelled from this page.' => 'Cette réservation ne peut pas être annulée depuis cette page.',
+        'Reservation cancelled' => 'Réservation annulée',
+        'Reservation status' => 'Statut de la réservation',
+        'Your reservation has been cancelled' => 'Votre réservation a été annulée',
+        'Your reservation information' => 'Informations de votre réservation',
+        'Back to Home' => 'Retour à l’accueil',
+        'Browse campers' => 'Voir les vans',
+        'Contact us' => 'Nous contacter',
+        'Retry payment' => 'Réessayer le paiement',
+
+        // --thanks--
+        'Stripe not configured' => 'Stripe n’est pas configuré',
+        'Missing session_id' => 'session_id manquant',
+        'Payment not completed yet. Status: %s' => 'Paiement non encore finalisé. Statut : %s',
+        'Error:' => 'Erreur :',
+
+        'Payment confirmed' => 'Paiement confirmé',
+        'Payment confirmed!' => 'Paiement confirmé !',
+        'Reservation #%d · Thank you for choosing Alisios Van' => 'Réservation n° %d · Merci d’avoir choisi Alisios Van',
+        'Your trip' => 'Votre voyage',
+        'Dates' => 'Dates',
+        'Nights' => 'Nuits',
+        'Nights: %d' => 'Nuits : %d',
+        'We’ve emailed you the booking details and next steps.' => 'Nous vous avons envoyé par e-mail les détails de la réservation et la suite.',
+        'Add to calendar' => 'Ajouter au calendrier',
+        'Download invoice (PDF)' => 'Télécharger la facture (PDF)',
+        'View invoice online' => 'Voir la facture en ligne',
+        'Manage / cancel reservation' => 'Gérer / annuler la réservation',
+        'Print' => 'Imprimer',
+        'Your invoice is being generated. It can take a little while. We’ll email it to you and this page will update automatically when it’s ready.' => 'Votre facture est en cours de génération. Cela peut prendre un peu de temps. Nous vous l’enverrons par e-mail et cette page se mettra à jour automatiquement dès qu’elle sera prête.',
+        'The invoice was created but the file isn’t ready yet. We’ll email it as soon as it’s available.' => 'La facture a été créée mais le fichier n’est pas encore prêt. Nous vous l’enverrons par e-mail dès qu’il sera disponible.',
+        'Your invoice is being generated. We will email it to you shortly.' => 'Votre facture est en cours de génération. Nous vous l’enverrons prochainement par e-mail.',
+        'Payment' => 'Paiement',
+        'Total price' => 'Prix total',
+        'Reservation confirmed' => 'Réservation confirmée',
+        'Questions? Email us at %s' => 'Des questions ? Écrivez-nous à %s',
+        'Alisios Van · %s' => 'Alisios Van · %s',
+
+        // ---- FR (Français) — Email de confirmation ----
+        'Your reservation #%d is confirmed' => 'Votre réservation n° %d est confirmée',
+        'Reservation #%d — Thank you for choosing Alisios Van' => 'Réservation n° %d — Merci d’avoir choisi Alisios Van',
+        'Hi %s,' => 'Bonjour %s,',
+        'Your reservation is confirmed. Here are your details:' => 'Votre réservation est confirmée. Voici les détails :',
+        'Camper' => 'Van',
+        'Price/night' => 'Prix/nuit',
+        "We've attached a calendar file (.ics) so you can add the trip to your calendar." =>
+            'Nous avons joint un fichier calendrier (.ics) pour ajouter le voyage à votre agenda.',
+        'Questions? Write us at %s.' => 'Des questions ? Écrivez-nous à %s.',
+        'Open management page' => 'Ouvrir la page de gestion',
 
 
     ],
@@ -2211,6 +2485,97 @@ return [
         '6. More information' => '6. Ulteriori informazioni',
         'For more information about the use of cookies on this website, you can contact us at' =>
             'Per ulteriori informazioni sull’uso dei cookie su questo sito, puoi contattarci a',
+
+        // --buscar--
+        'Change dates' => 'Modifica date',
+        'View details' => 'Vedi dettagli',
+        'From %s to %s' => 'Dal %s al %s',
+        'No results' => 'Nessun risultato',
+        'No availability' => 'Nessuna disponibilità',
+        'Try +1 day' => 'Prova +1 giorno',
+        'Message us on WhatsApp' => 'Scrivici su WhatsApp',
+        'Opening WhatsApp…' => 'Apertura WhatsApp…',
+        'Message ready. Press “send” to open WhatsApp 👉' => 'Messaggio pronto. Premi “invia” per aprire WhatsApp 👉',
+        'Hello, I’d like more information 🙂' => 'Ciao, vorrei più informazioni 🙂',
+        'Select dates to see availability.' => 'Seleziona le date per vedere la disponibilità.',
+        'Could not initialize checkout.' => 'Impossibile iniziare il pagamento.',
+        'Network error.' => 'Errore di rete.',
+        'Adjust to %d night' => 'Adatta a %d notte',
+        'Adjust to %d nights' => 'Adatta a %d notti',
+        'For these dates, the minimum stay is %d night.' => 'Per queste date, il soggiorno minimo è di %d notte.',
+        'For these dates, the minimum stay is %d nights.' => 'Per queste date, il soggiorno minimo è di %d notti.',
+        'Redirecting you to our secure checkout ...' => 'Reindirizzamento al nostro checkout sicuro…',
+        "Don't close this window." => 'Non chiudere questa finestra.',
+
+        // — Stripe Checkout —
+        '%s (%s) – Booking deposit (first night) · %d nights total' => '%s (%s) – Acconto (prima notte) · %d notti totali',
+        'Reservation #%d · Dates %s → %s · Estimated total €%0.2f • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' => 'Prenotazione n. %d · Date %s → %s · Totale stimato €%0.2f • Ora stai pagando solo l’acconto (prima notte); il resto si paga al ritiro (contanti o PayPal).',
+        'You are paying the booking deposit (first night). The remaining balance is paid in person at pick-up (cash or PayPal).' => 'Stai pagando l’acconto (prima notte). Il saldo restante si paga di persona al ritiro (contanti o PayPal).',
+        'I accept the [Terms & Cancellation Policy](%s). Company cancellations: full refund. Customer cancellations: deposit is non-refundable.' => 'Accetto i [Termini e la politica di cancellazione](%s). Cancellazioni dell’azienda: rimborso totale. Cancellazioni del cliente: l’acconto non è rimborsabile.',
+        'Alisios Van · Canary Islands · alisios.van@gmail.com · Cancellation: company cancellations → full refund; customer cancellations → deposit non-refundable.' => 'Alisios Van · Isole Canarie · alisios.van@gmail.com · Cancellazioni: dell’azienda → rimborso totale; del cliente → acconto non rimborsabile.',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' =>
+            'Prenotazione n. %d · Date %s → %s · Totale stimato €%s • Ora stai pagando solo l’acconto (prima notte); il resto si paga al ritiro (contanti o PayPal).',
+
+
+        // --cancel--
+        'Missing or invalid reservation id.' => 'ID prenotazione mancante o non valido.',
+        'Reservation not found.' => 'Prenotazione non trovata.',
+        'Forbidden' => 'Accesso negato.',
+        'Your reservation has been successfully cancelled.' => 'La tua prenotazione è stata annullata con successo.',
+        'We couldn’t cancel the reservation (its status may have changed).' => 'Non siamo riusciti ad annullare la prenotazione (lo stato potrebbe essere cambiato).',
+        'This reservation is already confirmed. To cancel it, please contact us.' => 'Questa prenotazione è già confermata. Per annullarla, contattaci.',
+        'This reservation was already cancelled.' => 'Questa prenotazione era già stata annullata.',
+        'This reservation cannot be cancelled from this page.' => 'Questa prenotazione non può essere annullata da questa pagina.',
+        'Reservation cancelled' => 'Prenotazione annullata',
+        'Reservation status' => 'Stato della prenotazione',
+        'Your reservation has been cancelled' => 'La tua prenotazione è stata annullata',
+        'Your reservation information' => 'Informazioni sulla tua prenotazione',
+        'Back to Home' => 'Torna alla Home',
+        'Browse campers' => 'Vedi camper',
+        'Contact us' => 'Contattaci',
+        'Retry payment' => 'Riprova pagamento',
+
+        // --thanks--
+        'Stripe not configured' => 'Stripe non è configurato',
+        'Missing session_id' => 'Manca session_id',
+        'Payment not completed yet. Status: %s' => 'Pagamento non ancora completato. Stato: %s',
+        'Error:' => 'Errore:',
+
+        'Payment confirmed' => 'Pagamento confermato',
+        'Payment confirmed!' => 'Pagamento confermato!',
+        'Reservation #%d · Thank you for choosing Alisios Van' => 'Prenotazione n. %d · Grazie per aver scelto Alisios Van',
+        'Your trip' => 'Il tuo viaggio',
+        'Dates' => 'Date',
+        'Nights' => 'Notti',
+        'Nights: %d' => 'Notti: %d',
+        'We’ve emailed you the booking details and next steps.' => 'Ti abbiamo inviato via email i dettagli della prenotazione e i prossimi passi.',
+        'Add to calendar' => 'Aggiungi al calendario',
+        'Download invoice (PDF)' => 'Scarica fattura (PDF)',
+        'View invoice online' => 'Vedi fattura online',
+        'Manage / cancel reservation' => 'Gestisci / annulla prenotazione',
+        'Print' => 'Stampa',
+        'Your invoice is being generated. It can take a little while. We’ll email it to you and this page will update automatically when it’s ready.' => 'Stiamo generando la tua fattura. Può richiedere un po’ di tempo. Te la invieremo via email e questa pagina si aggiornerà automaticamente quando sarà pronta.',
+        'The invoice was created but the file isn’t ready yet. We’ll email it as soon as it’s available.' => 'La fattura è stata creata ma il file non è ancora pronto. Te la invieremo via email appena sarà disponibile.',
+        'Your invoice is being generated. We will email it to you shortly.' => 'Stiamo generando la tua fattura. Te la invieremo a breve via email.',
+        'Payment' => 'Pagamento',
+        'Total price' => 'Prezzo totale',
+        'Reservation confirmed' => 'Prenotazione confermata',
+        'Questions? Email us at %s' => 'Domande? Scrivici a %s',
+        'Alisios Van · %s' => 'Alisios Van · %s',
+
+        // ---- IT (Italiano) — Email di conferma ----
+        'Your reservation #%d is confirmed' => 'La tua prenotazione n. %d è confermata',
+        'Reservation #%d — Thank you for choosing Alisios Van' => 'Prenotazione n. %d — Grazie per aver scelto Alisios Van',
+        'Hi %s,' => 'Ciao %s,',
+        'Your reservation is confirmed. Here are your details:' => 'La tua prenotazione è confermata. Ecco i dettagli:',
+        'Camper' => 'Camper',
+        'Price/night' => 'Prezzo/notte',
+        "We've attached a calendar file (.ics) so you can add the trip to your calendar." =>
+            'Abbiamo allegato un file calendario (.ics) per aggiungere il viaggio al tuo calendario.',
+        'Questions? Write us at %s.' => 'Domande? Scrivici a %s.',
+        'Open management page' => 'Apri la pagina di gestione',
+
 
 
     ],

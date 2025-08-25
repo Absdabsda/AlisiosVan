@@ -3,6 +3,7 @@ declare(strict_types=1);
 ini_set('display_errors','1'); error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config/bootstrap_env.php';
+require_once __DIR__ . '/../config/i18n-lite.php';   // ← AÑADIDO
 require __DIR__ . '/../config/db.php';
 
 use Stripe\StripeClient;
@@ -10,31 +11,29 @@ use Stripe\StripeClient;
 $pdo = get_pdo();
 
 $rid   = (int)($_GET['rid'] ?? 0);
-$token = $_GET['t']  ?? ''; // token de gestión (manage_token) que pusiste en manageUrl
+$token = $_GET['t']  ?? '';
 
 if ($rid < 1) {
     http_response_code(400);
-    echo 'Missing or invalid reservation id.';
+    echo __('Missing or invalid reservation id.');
     exit;
 }
 
 try {
-    // Traer la reserva (incluye manage_token para validar)
     $st = $pdo->prepare("SELECT id, status, stripe_session_id, manage_token FROM reservations WHERE id = :id LIMIT 1");
     $st->execute([':id' => $rid]);
     $res = $st->fetch(PDO::FETCH_ASSOC);
 
     if (!$res) {
         http_response_code(404);
-        echo 'Reservation not found.';
+        echo __('Reservation not found.');
         exit;
     }
 
-    // Validar token si existe en la reserva
     if (!empty($res['manage_token'])) {
         if (!$token || !hash_equals((string)$res['manage_token'], (string)$token)) {
             http_response_code(403);
-            echo 'Forbidden';
+            echo __('Forbidden');
             exit;
         }
     }
@@ -45,19 +44,15 @@ try {
     $changed = false;
     $message = '';
 
-    // Si está pendiente, se cancela
     if ($status === 'pending') {
         $up = $pdo->prepare("
             UPDATE reservations
-               SET status='cancelled_by_customer',
-                   cancelled_at=NOW()
-             WHERE id=:id AND status='pending'
-             LIMIT 1
+               SET status='cancelled_by_customer', cancelled_at=NOW()
+             WHERE id=:id AND status='pending' LIMIT 1
         ");
         $up->execute([':id' => $rid]);
         $changed = $up->rowCount() > 0;
 
-        // Intentar expirar la Checkout Session en Stripe
         $stripeSecret = env('STRIPE_SECRET');
         if ($sessionId && $stripeSecret) {
             try {
@@ -69,17 +64,16 @@ try {
         }
 
         $message = $changed
-            ? 'Your reservation has been successfully cancelled.'
-            : 'We couldn’t cancel the reservation (its status may have changed).';
+            ? __('Your reservation has been successfully cancelled.')
+            : __('We couldn’t cancel the reservation (its status may have changed).');
     } else {
-        // Otros estados: solo informar
         $nonCancelable = ['paid', 'confirmed', 'confirmed_deposit', 'paid_deposit'];
         if (in_array($status, $nonCancelable, true)) {
-            $message = 'This reservation is already confirmed. To cancel it, please contact us.';
+            $message = __('This reservation is already confirmed. To cancel it, please contact us.');
         } elseif ($status === 'cancelled' || $status === 'cancelled_by_customer') {
-            $message = 'This reservation was already cancelled.';
+            $message = __('This reservation was already cancelled.');
         } else {
-            $message = 'This reservation cannot be cancelled from this page.';
+            $message = __('This reservation cannot be cancelled from this page.');
         }
     }
 
@@ -89,23 +83,30 @@ try {
     exit;
 }
 
-// Mostrar estado en la página
 $isCancelled  = ($status === 'cancelled' || $status === 'cancelled_by_customer' || !empty($changed));
-$title        = $isCancelled ? 'Reservation cancelled' : 'Reservation status';
+$titleKey     = $isCancelled ? 'Reservation cancelled' : 'Reservation status';
+$title        = __($titleKey);
 $icon         = $isCancelled ? 'check-circle' : 'info-circle';
 $accentClass  = $isCancelled ? 'ok' : 'warn';
 ?>
 
 <!doctype html>
-<html lang="en">
+<html lang="<?= htmlspecialchars($GLOBALS['LANG'] ?? 'en') ?>">
 <head>
     <meta charset="utf-8">
     <title><?= $title ?> | Alisios Van</title>
+
+    <!-- evita traducción automática de Chrome -->
+    <meta name="google" content="notranslate">
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
+
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/cookies.css">
     <script src="js/cookies.js" defer></script>
@@ -137,7 +138,6 @@ $accentClass  = $isCancelled ? 'ok' : 'warn';
     </style>
 </head>
 <body>
-
 <section class="page-hero">
     <div class="page-hero__content">
         <h1 class="page-hero__title"><?= $title ?> #<?= (int)$rid ?></h1>
@@ -150,21 +150,20 @@ $accentClass  = $isCancelled ? 'ok' : 'warn';
         <div class="state mb-3">
             <i class="bi bi-<?= $icon ?> <?= $accentClass ?>"></i>
             <div class="flex-grow-1">
-                <strong><?= $isCancelled ? 'Your reservation has been cancelled' : 'Your reservation information'; ?></strong>
+                <strong><?= $isCancelled ? __('Your reservation has been cancelled') : __('Your reservation information'); ?></strong>
                 <div class="text-muted"><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?></div>
             </div>
         </div>
 
         <div class="d-flex flex-wrap gap-2">
-            <a class="btn" href="index.php"><i class="bi bi-house-door"></i> Back to Home</a>
-            <a class="btn btn-outline-secondary" href="campers.php"><i class="bi bi-search"></i> Browse campers</a>
-            <a class="btn btn-outline-secondary" href="contact.php"><i class="bi bi-envelope"></i> Contact us</a>
+            <a class="btn" href="index.php"><i class="bi bi-house-door"></i> <?= __('Back to Home') ?></a>
+            <a class="btn btn-outline-secondary" href="campers.php"><i class="bi bi-search"></i> <?= __('Browse campers') ?></a>
+            <a class="btn btn-outline-secondary" href="contact.php"><i class="bi bi-envelope"></i> <?= __('Contact us') ?></a>
             <?php if(!$isCancelled && $status === 'pending'): ?>
-                <a class="btn btn-danger" href="/checkout/retry.php?rid=<?= (int)$rid ?>"><i class="bi bi-arrow-repeat"></i> Retry payment</a>
+                <a class="btn btn-danger" href="/checkout/retry.php?rid=<?= (int)$rid ?>"><i class="bi bi-arrow-repeat"></i> <?= __('Retry payment') ?></a>
             <?php endif; ?>
         </div>
     </div>
 </main>
-
 </body>
 </html>

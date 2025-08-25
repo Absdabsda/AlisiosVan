@@ -34,11 +34,21 @@ require_once __DIR__ . '/../config/i18n-lite.php';
 
     <!-- Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <?php if ($LANG==='es'): ?>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
-        <script>window.FLATPICKR_LOCALE = flatpickr.l10ns.es;</script>
-    <?php endif; ?>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js" defer></script>
+    <!-- Locales desde /assets para que nunca fallen -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/de.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/it.js" defer></script>
+
+
+    <!-- Idioma activo de la web para JS -->
+    <script defer>
+        window.APP_LANG = "<?= htmlspecialchars($LANG ?? 'es') ?>".split('-')[0];
+    </script>
+
+    <!-- Init común de Flatpickr -->
+    <script defer src="js/datepicker-init.js"></script>
 
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/landing.css">

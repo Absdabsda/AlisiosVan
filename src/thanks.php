@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/bootstrap_env.php';
+require_once __DIR__ . '/../config/i18n-lite.php';
 require_once __DIR__ . '/../config/db.php';
 
 use Stripe\Stripe;
@@ -52,6 +53,22 @@ try {
     $session = CheckoutSession::retrieve($sessionId, [
         'expand' => ['payment_intent', 'invoice', 'customer']
     ]);
+
+    // ====== Determinar y fijar idioma para esta ejecución ===================
+    $lang = $GLOBALS['LANG'] ?? 'en';
+    if (!empty($session->metadata->lang)) {
+        $lang = preg_replace('/[^a-zA-Z_-]/', '', (string)$session->metadata->lang);
+    } elseif (columnExists($pdo, 'reservations', 'lang')) {
+        $q = $pdo->prepare("SELECT lang FROM reservations WHERE stripe_session_id = ? LIMIT 1");
+        $q->execute([$sessionId]);
+        $dbLang = $q->fetchColumn();
+        if ($dbLang) { $lang = preg_replace('/[^a-zA-Z_-]/', '', (string)$dbLang); }
+    }
+    if (function_exists('i18n_set_locale')) {
+        i18n_set_locale($lang);
+    } else {
+        $GLOBALS['LANG'] = $lang;
+    }
 
     if ($session->payment_status === 'paid') {
         // Marca la reserva como pagada
@@ -118,8 +135,8 @@ try {
             }
 
             $pdo->prepare("UPDATE reservations
-                              SET customer_id = COALESCE(?, customer_id)
-                            WHERE stripe_session_id = ? LIMIT 1")
+                  SET customer_id = COALESCE(customer_id, ?)
+                WHERE stripe_session_id = ? LIMIT 1")
                 ->execute([$customerId, $sessionId]);
         }
 
@@ -205,13 +222,23 @@ try {
             }
         } catch (Throwable $e) { /* ignore */ }
 
-        // Fechas
-        $startFmt   = date('Y-m-d', strtotime($res['start_date']));
-        $endFmt     = date('Y-m-d', strtotime($res['end_date']));
-        $startHuman = date('j M Y', strtotime($res['start_date']));
-        $endHuman   = date('j M Y', strtotime($res['end_date']));
+        // Fechas localizadas (fallback a formato simple)
+        $startFmt = date('Y-m-d', strtotime($res['start_date']));
+        $endFmt   = date('Y-m-d', strtotime($res['end_date']));
 
-        // .ics (evento de día completo)
+        $fmtDate = class_exists('IntlDateFormatter')
+            ? new IntlDateFormatter(str_replace('_','-',$lang), IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE)
+            : null;
+        $startHuman = $fmtDate ? $fmtDate->format(new DateTime($res['start_date'])) : date('j M Y', strtotime($res['start_date']));
+        $endHuman   = $fmtDate ? $fmtDate->format(new DateTime($res['end_date']))   : date('j M Y', strtotime($res['end_date']));
+
+        // Moneda localizada
+        $currency = isset($session->currency) ? strtoupper((string)$session->currency) : 'EUR';
+        $fmtMoney = class_exists('NumberFormatter') ? new NumberFormatter(str_replace('_','-',$lang), NumberFormatter::CURRENCY) : null;
+        $priceTxt = $fmtMoney ? $fmtMoney->formatCurrency((float)$price, $currency) : ('€'.number_format($price,2));
+        $totalTxt = $fmtMoney ? $fmtMoney->formatCurrency((float)$total, $currency) : ('€'.number_format($total,2));
+
+        // .ics (evento de día completo) para adjuntar en el email
         $endExclusive = (new DateTime($endFmt))->modify('+1 day')->format('Ymd');
         $ics = implode("\r\n", [
             'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Alisios Van//EN','BEGIN:VEVENT',
@@ -219,10 +246,28 @@ try {
             'DTSTAMP:' . gmdate('Ymd\THis\Z'),
             'DTSTART;VALUE=DATE:' . date('Ymd', strtotime($startFmt)),
             'DTEND;VALUE=DATE:' . $endExclusive,
-            'SUMMARY:' . 'Alisios Van · ' . $res['camper'],
-            'DESCRIPTION:Reservation confirmed',
+            'SUMMARY:' . sprintf(__('Alisios Van · %s'), $res['camper']),
+            'DESCRIPTION:' . __('Reservation confirmed'),
             'END:VEVENT','END:VCALENDAR'
         ]);
+
+        // Textos localizados para email
+        $tPaymentConfirmed = __('Payment confirmed');
+        $tHeaderSub        = sprintf(__('Reservation #%d — Thank you for choosing Alisios Van'), (int)$res['id']);
+        $tHi               = $customerName
+            ? sprintf(__('Hi %s,'), htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8'))
+            : __('Hi,');
+        $tIntro            = __('Your reservation is <strong>confirmed</strong>. Here are your details:');
+        $tCamper           = __('Camper');
+        $tDates            = __('Dates');
+        $tNights           = __('Nights');
+        $tPriceNight       = __('Price/night');
+        $tTotalPrice       = __('Total price');
+        $tReceiptLabel     = __('Receipt');
+        $tViewStripe       = __('View Stripe receipt');
+        $tAttachIcs        = __('We\'ve attached a calendar file (.ics) so you can add the trip to your calendar.');
+        $tQuestions        = sprintf(__('Questions? Write us at %s.'), '<a href="mailto:alisios.van@gmail.com" style="color:#5698A6;">alisios.van@gmail.com</a>');
+        $tFooter           = __('Alisios Van · Canary Islands');
 
         // Plantilla email (resumen) -----------------------------------------
         $summaryTable = '
@@ -232,26 +277,26 @@ try {
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
            style="font-family:Arial, sans-serif; font-size:14px; line-height:20px; mso-line-height-rule:exactly;">
       <tr>
-        <td style="padding:10px 14px;">Camper</td>
+        <td style="padding:10px 14px;">'.htmlspecialchars($tCamper,ENT_QUOTES,'UTF-8').'</td>
         <td align="right" style="padding:10px 14px;"><strong>'.htmlspecialchars($res['camper'],ENT_QUOTES,'UTF-8').'</strong></td>
       </tr>
       <tr>
-        <td style="padding:10px 14px; border-top:1px dashed #DDD;">Dates</td>
+        <td style="padding:10px 14px; border-top:1px dashed #DDD;">'.htmlspecialchars($tDates,ENT_QUOTES,'UTF-8').'</td>
         <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD; white-space:nowrap;">'
             .htmlspecialchars($startHuman,ENT_QUOTES,'UTF-8').' &nbsp;&rarr;&nbsp; '
             .htmlspecialchars($endHuman,ENT_QUOTES,'UTF-8').'</td>
       </tr>
       <tr>
-        <td style="padding:10px 14px; border-top:1px dashed #DDD;">Nights</td>
+        <td style="padding:10px 14px; border-top:1px dashed #DDD;">'.htmlspecialchars($tNights,ENT_QUOTES,'UTF-8').'</td>
         <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD;">'.$nights.'</td>
       </tr>
       <tr>
-        <td style="padding:10px 14px; border-top:1px dashed #DDD;">Price/night</td>
-        <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD;">€'.number_format($price,2).'</td>
+        <td style="padding:10px 14px; border-top:1px dashed #DDD;">'.htmlspecialchars($tPriceNight,ENT_QUOTES,'UTF-8').'</td>
+        <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD;">'.htmlspecialchars($priceTxt,ENT_QUOTES,'UTF-8').'</td>
       </tr>
       <tr>
-        <td style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">Total price</td>
-        <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">€'.number_format($total,2).'</td>
+        <td style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">'.htmlspecialchars($tTotalPrice,ENT_QUOTES,'UTF-8').'</td>
+        <td align="right" style="padding:10px 14px; border-top:1px dashed #DDD; font-weight:700;">'.htmlspecialchars($totalTxt,ENT_QUOTES,'UTF-8').'</td>
       </tr>
     </table>
   </td></tr>
@@ -265,28 +310,28 @@ try {
              style="background:#FFFFFF;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.10);overflow:hidden;border:1px solid rgba(0,0,0,0.04);">
         <tr>
           <td style="background:#80C1D0;color:#fff;padding:18px 22px;">
-            <div style="font-size:22px;font-weight:700;margin:0;">Payment confirmed</div>
-            <div style="opacity:.9;margin-top:4px;">Reservation #'.(int)$res['id'].' — Thank you for choosing Alisios Van</div>
+            <div style="font-size:22px;font-weight:700;margin:0;">'.htmlspecialchars($tPaymentConfirmed,ENT_QUOTES,'UTF-8').'</div>
+            <div style="opacity:.9;margin-top:4px;">'.htmlspecialchars($tHeaderSub,ENT_QUOTES,'UTF-8').'</div>
           </td>
         </tr>
         <tr>
           <td style="padding:20px 22px;">
-            <p style="margin:0 0 8px 0">Hi'.($customerName ? ' '.htmlspecialchars($customerName,ENT_QUOTES,'UTF-8') : '').',</p>
-            <p style="margin:0 0 12px 0">Your reservation is <strong>confirmed</strong>. Here are your details:</p>
+            <p style="margin:0 0 8px 0">'.$tHi.'</p>
+            <p style="margin:0 0 12px 0">'.$tIntro.'</p>
             '.$summaryTable.'
-            '.($receiptUrl ? '<p style="margin:0 0 12px 0">Receipt: <a href="'.htmlspecialchars($receiptUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">View Stripe receipt</a></p>' : '').'
-            <p style="margin:0 0 12px 0">We\'ve attached a calendar file (.ics) so you can add the trip to your calendar.</p>
-            <p style="margin:0;color:#555">Questions? Write us at <a href="mailto:alisios.van@gmail.com" style="color:#5698A6;">alisios.van@gmail.com</a>.</p>
+            '.($receiptUrl ? '<p style="margin:0 0 12px 0">'.htmlspecialchars($tReceiptLabel,ENT_QUOTES,'UTF-8').': <a href="'.htmlspecialchars($receiptUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">'.htmlspecialchars($tViewStripe,ENT_QUOTES,'UTF-8').'</a></p>' : '').'
+            <p style="margin:0 0 12px 0">'.$tAttachIcs.'</p>
+            <p style="margin:0;color:#555">'.$tQuestions.'</p>
           </td>
         </tr>
         <tr>
-          <td style="padding:12px 22px;background:#f7f7f7;color:#7D7D7D;font-size:12px;">Alisios Van · Canary Islands</td>
+          <td style="padding:12px 22px;background:#f7f7f7;color:#7D7D7D;font-size:12px;">'.htmlspecialchars($tFooter,ENT_QUOTES,'UTF-8').'</td>
         </tr>
       </table>
       '.(isset($manageUrl) && $manageUrl
                 ? '<div style="max-width:640px;margin:0 auto;padding:12px 0 0 0;font-family:Arial,sans-serif;">
-                 <p style="margin:12px 0">Manage your booking:
-                   <a href="'.htmlspecialchars($manageUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">Open management page</a>
+                 <p style="margin:12px 0">'.__('Manage your booking:').' 
+                   <a href="'.htmlspecialchars($manageUrl,ENT_QUOTES,'UTF-8').'" style="color:#5698A6;">'.__('Open management page').'</a>
                  </p>
                </div>'
                 : '').'
@@ -294,14 +339,13 @@ try {
   </table>
 </div>';
 
-        $alt = "Payment confirmed\n".
-            "Reservation #{$res['id']}\n".
-            "Camper: {$res['camper']}\n".
-            "Dates: {$startHuman} -> {$endHuman}\n".
-            "Nights: {$nights}\n".
-            "Price/night: €".number_format($price,2)."\n".
-            "Total price: €".number_format($total,2)."\n".
-            ($manageUrl ? "Manage: $manageUrl\n" : "");
+        $alt = sprintf(__("Payment confirmed\nReservation #%d\n"), (int)$res['id']).
+            __("Camper").": {$res['camper']}\n".
+            __("Dates").": {$startHuman} -> {$endHuman}\n".
+            __("Nights").": {$nights}\n".
+            __("Price/night").": {$priceTxt}\n".
+            __("Total price").": {$totalTxt}\n".
+            ($manageUrl ? __("Manage").": $manageUrl\n" : "");
 
         // SMTP config ---------------------------------------------------------
         $host      = env('SMTP_HOST', env('MAIL_HOST',''));
@@ -366,8 +410,9 @@ try {
                 $mail->addAddress($customerEmail, $customerName ?: $customerEmail);
                 if (!empty($adminTo)) { $mail->addBCC($adminTo); }
                 $mail->addReplyTo('alisios.van@gmail.com', 'Alisios Van');
+                $mail->addCustomHeader('Content-Language', $lang);
 
-                $mail->Subject = "Your reservation #{$res['id']} is confirmed";
+                $mail->Subject = sprintf(__('Your reservation #%d is confirmed'), (int)$res['id']);
                 $mail->isHTML(true);
                 $mail->Body    = $html;
                 $mail->AltBody = $alt;
@@ -410,16 +455,22 @@ try {
         // ------------------ Página (para navegador) --------------------------
         ?>
         <!doctype html>
-        <html lang="en">
+        <html lang="<?= htmlspecialchars($lang) ?>">
         <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>Payment confirmed | Alisios Van</title>
+            <title><?= htmlspecialchars(__('Payment confirmed')) ?> | Alisios Van</title>
+
+            <!-- evita traducción automática de Chrome -->
+            <meta name="google" content="notranslate">
 
             <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
             <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
             <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
+
             <link rel="stylesheet" href="css/estilos.css">
             <link rel="stylesheet" href="css/cookies.css">
             <script src="js/cookies.js" defer></script>
@@ -442,8 +493,10 @@ try {
         <body>
         <section class="page-hero">
             <div class="page-hero__content">
-                <h1 class="page-hero__title">Payment confirmed!</h1>
-                <p class="mt-2">Reservation #<?= (int)$res['id'] ?> · Thank you for choosing Alisios Van.</p>
+                <h1 class="page-hero__title"><?= __('Payment confirmed!') ?></h1>
+                <p class="mt-2">
+                    <?= sprintf(__('Reservation #%d · Thank you for choosing Alisios Van'), (int)$res['id']) ?>
+                </p>
             </div>
         </section>
 
@@ -451,47 +504,52 @@ try {
             <div class="cardy mb-3">
                 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                     <div class="flex-grow-1">
-                        <h2 class="h4 mb-2">Your trip</h2>
+                        <h2 class="h4 mb-2"><?= __('Your trip') ?></h2>
                         <div class="d-flex flex-wrap gap-2 mb-2">
                             <span class="badge-soft"><i class="bi bi-truck"></i> <?= htmlspecialchars($res['camper'], ENT_QUOTES, 'UTF-8') ?></span>
-                            <span class="badge-soft"><i class="bi bi-moon-stars"></i> <?= (int)$nights ?> night<?= $nights>1?'s':'' ?></span>
+                            <span class="badge-soft"><i class="bi bi-moon-stars"></i> <?= sprintf(__('Nights: %d'), (int)$nights) ?></span>
                         </div>
-                        <p class="mb-1"><strong>Dates:</strong> <?= htmlspecialchars($startHuman, ENT_QUOTES, 'UTF-8') ?> → <?= htmlspecialchars($endHuman, ENT_QUOTES, 'UTF-8') ?></p>
-                        <p class="mb-3 text-muted">We’ve emailed you the booking details and next steps.</p>
+                        <p class="mb-1">
+                            <strong><?= __('Dates') ?>:</strong>
+                            <?= htmlspecialchars($startHuman, ENT_QUOTES, 'UTF-8') ?> → <?= htmlspecialchars($endHuman, ENT_QUOTES, 'UTF-8') ?>
+                        </p>
+                        <p class="mb-3 text-muted"><?= __('We’ve emailed you the booking details and next steps.') ?></p>
 
                         <div class="d-flex flex-wrap gap-2">
-                            <a class="btn" href="index.php"><i class="bi bi-house-door"></i> Back to Home</a>
-                            <a class="btn btn-outline-secondary" href="campers.php"><i class="bi bi-truck"></i> Browse campers</a>
-                            <button id="btnIcs" class="btn btn-outline-secondary"><i class="bi bi-calendar-event"></i> Add to calendar</button>
+                            <a class="btn" href="index.php"><i class="bi bi-house-door"></i> <?= __('Back to Home') ?></a>
+                            <a class="btn btn-outline-secondary" href="campers.php"><i class="bi bi-truck"></i> <?= __('Browse campers') ?></a>
+                            <button id="btnIcs" class="btn btn-outline-secondary"><i class="bi bi-calendar-event"></i> <?= __('Add to calendar') ?></button>
+
                             <?php if ($invoicePdf): ?>
                                 <a class="btn btn-outline-secondary" id="btnInvPdf" href="<?= htmlspecialchars($invoicePdf, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">
-                                    <i class="bi bi-file-earmark-pdf"></i> Download invoice (PDF)
+                                    <i class="bi bi-file-earmark-pdf"></i> <?= __('Download invoice (PDF)') ?>
                                 </a>
                             <?php endif; ?>
                             <?php if ($invoiceUrl): ?>
                                 <a class="btn btn-outline-secondary" id="btnInvUrl" href="<?= htmlspecialchars($invoiceUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">
-                                    <i class="bi bi-receipt"></i> View invoice online
+                                    <i class="bi bi-receipt"></i> <?= __('View invoice online') ?>
                                 </a>
                             <?php endif; ?>
                             <?php if ($manageUrl): ?>
                                 <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($manageUrl, ENT_QUOTES, 'UTF-8') ?>">
-                                    <i class="bi bi-gear"></i> Manage / cancel reservation
+                                    <i class="bi bi-gear"></i> <?= __('Manage / cancel reservation') ?>
                                 </a>
                             <?php endif; ?>
-                            <button class="btn btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
+                            <button class="btn btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer"></i> <?= __('Print') ?></button>
                         </div>
 
                         <?php if (!$invoicePdf && !$invoiceUrl && !$invoiceId): ?>
                             <p class="text-muted mt-3 small">
-                                Your invoice is being generated. It can take a little while. We’ll email it to you and this page will update automatically when it’s ready.
+                                <?= __('Your invoice is being generated. It can take a little while. We’ll email it to you and this page will update automatically when it’s ready.') ?>
                             </p>
                         <?php elseif (!$invoicePdf && !$invoiceUrl): ?>
                             <p class="text-muted mt-3 small">
-                                The invoice was created but the file isn’t ready yet. We’ll email it as soon as it’s available.
+                                <?= __('The invoice was created but the file isn’t ready yet. We’ll email it as soon as it’s available.') ?>
                             </p>
                         <?php endif; ?>
 
                         <p id="invMsg" class="text-muted small" style="display:none;"></p>
+
                         <script>
                             (function(){
                                 const msg = document.getElementById('invMsg');
@@ -501,7 +559,6 @@ try {
 
                                 async function check() {
                                     try {
-                                        // OJO: ruta relativa a thanks.php (está en /src/)
                                         const r = await fetch('/../api/invoice-status.php?session_id=' + encodeURIComponent(sid) + '&_ts=' + Date.now());
                                         const j = await r.json();
                                         if (j.ok && (j.invoice_pdf || j.invoice_url)) {
@@ -510,14 +567,14 @@ try {
                                                 const a = document.createElement('a');
                                                 a.id='btnInvPdf'; a.className='btn btn-outline-secondary';
                                                 a.href=j.invoice_pdf; a.target='_blank'; a.rel='noopener';
-                                                a.innerHTML='<i class="bi bi-file-earmark-pdf"></i> Download invoice (PDF)';
+                                                a.innerHTML='<i class="bi bi-file-earmark-pdf"></i> <?= addslashes(__('Download invoice (PDF)')) ?>';
                                                 btnWrap.appendChild(a);
                                             }
                                             if (!document.querySelector('#btnInvUrl') && j.invoice_url) {
                                                 const a = document.createElement('a');
                                                 a.id='btnInvUrl'; a.className='btn btn-outline-secondary';
                                                 a.href=j.invoice_url; a.target='_blank'; a.rel='noopener';
-                                                a.innerHTML='<i class="bi bi-receipt"></i> View invoice online';
+                                                a.innerHTML='<i class="bi bi-receipt"></i> <?= addslashes(__('View invoice online')) ?>';
                                                 btnWrap.appendChild(a);
                                             }
                                             msg.style.display='none';
@@ -525,11 +582,10 @@ try {
                                         }
                                     } catch(e){}
                                     msg.style.display='block';
-                                    msg.textContent = 'Your invoice is being generated. We will email it to you shortly.';
+                                    msg.textContent = <?= json_encode(__('Your invoice is being generated. We will email it to you shortly.')) ?>;
                                     return false;
                                 }
 
-                                // primer chequeo rápido, luego cada 10 s hasta 2 min
                                 let tries = 0;
                                 (async function loop(){
                                     const ok = await check();
@@ -541,23 +597,23 @@ try {
                     </div>
 
                     <div style="min-width:260px;max-width:320px;" class="ms-auto">
-                        <h3 class="h6 mb-2">Payment</h3>
+                        <h3 class="h6 mb-2"><?= __('Payment') ?></h3>
                         <div class="summary">
-                            <div class="rowx"><span>Price/night</span><span>€<?= number_format((float)$price, 2) ?></span></div>
-                            <div class="rowx"><span>Nights</span><span><?= (int)$nights ?></span></div>
-                            <div class="rowx total"><span>Total price</span><span>€<?= number_format((float)$total, 2) ?></span></div>
+                            <div class="rowx"><span><?= __('Price/night') ?></span><span>€<?= number_format((float)$price, 2) ?></span></div>
+                            <div class="rowx"><span><?= __('Nights') ?></span><span><?= (int)$nights ?></span></div>
+                            <div class="rowx total"><span><?= __('Total price') ?></span><span>€<?= number_format((float)$total, 2) ?></span></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <p class="text-muted small">
-                Questions? Email us at <a href="mailto:alisios.van@gmail.com">alisios.van@gmail.com</a>.
+                <?= sprintf(__('Questions? Email us at %s'), '<a href="mailto:alisios.van@gmail.com">alisios.van@gmail.com</a>') ?>
             </p>
 
             <!-- Data for ICS generation -->
             <div id="icsData"
-                 data-title="<?= htmlspecialchars('Alisios Van · '.$res['camper'], ENT_QUOTES, 'UTF-8') ?>"
+                 data-title="<?= htmlspecialchars(sprintf(__('Alisios Van · %s'), $res['camper']), ENT_QUOTES, 'UTF-8') ?>"
                  data-start="<?= htmlspecialchars($startFmt, ENT_QUOTES, 'UTF-8') ?>"
                  data-end="<?= htmlspecialchars($endFmt, ENT_QUOTES, 'UTF-8') ?>"
                  data-id="<?= (int)$res['id'] ?>"></div>
@@ -582,7 +638,9 @@ try {
                         'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Alisios Van//EN','METHOD:PUBLISH',
                         'BEGIN:VEVENT','UID:' + uid,'DTSTAMP:' + dtstamp,
                         'DTSTART;VALUE=DATE:' + start,'DTEND;VALUE=DATE:' + end,
-                        'SUMMARY:' + title,'DESCRIPTION:Reservation confirmed','END:VEVENT','END:VCALENDAR'
+                        'SUMMARY:' + title,
+                        'DESCRIPTION:<?= addslashes(__('Reservation confirmed')) ?>',
+                        'END:VEVENT','END:VCALENDAR'
                     ].join('\r\n');
                 }
 
