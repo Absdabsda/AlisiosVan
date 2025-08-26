@@ -32,9 +32,11 @@ try {
     $nights = (int)$d1->diff($d2)->format('%a');
     if ($nights < 1) throw new Exception('Invalid date range');
 
-    $unit         = (float)$camper['price_per_night'];
-    $depositCents = (int) round($unit * 100);           // 1ª noche
-    $totalCents   = (int) round($unit * 100 * $nights); // total estimado
+    $unit = (float)$camper['price_per_night'];
+
+    $depositPercent = max(1, min(100, (int)env('DEPOSIT_PERCENT', 20))); // ← usa 20 por defecto
+    $totalCents     = (int) round($unit * 100 * $nights);                 // total estimado
+    $depositCents   = (int) max(1, round($totalCents * $depositPercent / 100));
 
     // ---- RESERVATION ----
     $token = bin2hex(random_bytes(24));
@@ -78,16 +80,23 @@ try {
 
     // Cadenas traducibles
     $nameLine = sprintf(
-        __('%s (%s) – Booking deposit (first night) · %d nights total'),
+        __('%s (%s) – Booking deposit (%d%% of total) · %d nights total'),
         $camper['name'],
         $camper['series'],
+        $depositPercent,
         $nights
     );
+
     $descLine = sprintf(
-        __('Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).'),
-        $reservationId, $start, $end, number_format($totalCents / 100, 2, '.', '')
+        __('Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only a %d%% deposit now; remaining balance at pick-up (cash or PayPal).'),
+        $reservationId, $start, $end, number_format($totalCents / 100, 2, '.', ''), $depositPercent
     );
-    $submitMsg = __('You are paying the booking deposit (first night). The remaining balance is paid in person at pick-up (cash or PayPal).');
+
+    $submitMsg = sprintf(
+        __('You are paying a %d%% booking deposit now. The remaining balance is paid in person at pick-up (cash or PayPal).'),
+        $depositPercent
+    );
+
     $tosMsg = sprintf(
         __('I accept the [Terms & Cancellation Policy](%s). Company cancellations: full refund. Customer cancellations: deposit is non-refundable.'),
         'https://alisiosvan.com/terms'

@@ -577,6 +577,17 @@ return [
 
         'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' =>
             'Reserva n.º %d · Fechas %s → %s · Importe estimado €%s • Estás pagando solo el depósito de reserva (primera noche) ahora; el resto se paga a la entrega (efectivo o PayPal).',
+        '%s (%s) – Booking deposit (%d%% of total) · %d nights total' =>
+            '%s (%s) – Depósito de reserva (%d%% del total) · %d noches en total',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%0.2f • You are paying only a %d%% deposit now; remaining balance at pick-up (cash or PayPal).' =>
+            'Reserva n.º %d · Fechas %s → %s · Importe estimado €%0.2f • Estás pagando ahora solo un depósito del %d%%; el resto se paga a la entrega (efectivo o PayPal).',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only a %d%% deposit now; remaining balance at pick-up (cash or PayPal).' =>
+            'Reserva n.º %d · Fechas %s → %s · Importe estimado €%s • Estás pagando ahora solo un depósito del %d%%; el resto se paga a la entrega (efectivo o PayPal).',
+
+        'You are paying a %d%% booking deposit now. The remaining balance is paid in person at pick-up (cash or PayPal).' =>
+            'Estás pagando ahora un depósito de reserva del %d%%. El resto se paga en persona al recoger (efectivo o PayPal).',
 
         // --cancel--
         'Missing or invalid reservation id.' => 'Falta el ID de reserva o no es válido.',
@@ -1233,6 +1244,17 @@ return [
         'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' =>
             'Reservierung Nr. %d · Daten %s → %s · Voraussichtlicher Gesamtbetrag €%s • Sie zahlen jetzt nur die Anzahlung (erste Nacht); der Rest wird bei Abholung gezahlt (Bar oder PayPal).',
 
+        '%s (%s) – Booking deposit (%d%% of total) · %d nights total' =>
+            '%s (%s) – Reservierungsanzahlung (%d%% vom Gesamtbetrag) · %d Nächte gesamt',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%0.2f • You are paying only a %d%% deposit now; remaining balance at pick-up (cash or PayPal).' =>
+            'Reservierung Nr. %d · Daten %s → %s · Voraussichtlicher Gesamtbetrag €%0.2f • Sie zahlen jetzt nur eine Anzahlung von %d%%; der Rest wird bei Abholung gezahlt (Bar oder PayPal).',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only a %d%% deposit now; remaining balance at pick-up (cash or PayPal).' =>
+            'Reservierung Nr. %d · Daten %s → %s · Voraussichtlicher Gesamtbetrag €%s • Sie zahlen jetzt nur eine Anzahlung von %d%%; der Rest wird bei Abholung gezahlt (Bar oder PayPal).',
+
+        'You are paying a %d%% booking deposit now. The remaining balance is paid in person at pick-up (cash or PayPal).' =>
+            'Sie zahlen jetzt eine Reservierungsanzahlung von %d%%. Der Restbetrag wird bei Abholung vor Ort bezahlt (Bar oder PayPal).',
 
         // --cancel--
         'Missing or invalid reservation id.' => 'Fehlende oder ungültige Buchungs-ID.',
@@ -1875,6 +1897,17 @@ return [
         'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' =>
             'Réservation n° %d · Dates %s → %s · Total estimé €%s • Vous payez maintenant uniquement l’acompte (première nuit) ; le solde est réglé au retrait (espèces ou PayPal).',
 
+        '%s (%s) – Booking deposit (%d%% of total) · %d nights total' =>
+            '%s (%s) – Acompte de réservation (%d%% du total) · %d nuits au total',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%0.2f • You are paying only a %d%% deposit now; remaining balance at pick-up (cash or PayPal).' =>
+            'Réservation n° %d · Dates %s → %s · Total estimé €%0.2f • Vous payez maintenant uniquement un acompte de %d%% ; le solde est réglé au retrait (espèces ou PayPal).',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only a %d%% deposit now; remaining balance at pick-up (cash or PayPal).' =>
+            'Réservation n° %d · Dates %s → %s · Total estimé €%s • Vous payez maintenant uniquement un acompte de %d%% ; le solde est réglé au retrait (espèces ou PayPal).',
+
+        'You are paying a %d%% booking deposit now. The remaining balance is paid in person at pick-up (cash or PayPal).' =>
+            'Vous payez maintenant un acompte de réservation de %d%%. Le solde est réglé en personne au retrait (espèces ou PayPal).',
 
         // --cancel--
         'Missing or invalid reservation id.' => 'ID de réservation manquante ou invalide.',
@@ -2517,6 +2550,17 @@ return [
         'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).' =>
             'Prenotazione n. %d · Date %s → %s · Totale stimato €%s • Ora stai pagando solo l’acconto (prima notte); il resto si paga al ritiro (contanti o PayPal).',
 
+        '%s (%s) – Booking deposit (%d%% of total) · %d nights total' =>
+            '%s (%s) – Acconto di prenotazione (%d%% del totale) · %d notti totali',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%0.2f • You are paying only a %d%% deposit now; remaining balance at pick-up (cash or PayPal).' =>
+            'Prenotazione n. %d · Date %s → %s · Totale stimato €%0.2f • Ora stai pagando solo un acconto del %d%%; il resto si paga al ritiro (contanti o PayPal).',
+
+        'Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only a %d%% deposit now; remaining balance at pick-up (cash or PayPal).' =>
+            'Prenotazione n. %d · Date %s → %s · Totale stimato €%s • Ora stai pagando solo un acconto del %d%%; il resto si paga al ritiro (contanti o PayPal).',
+
+        'You are paying a %d%% booking deposit now. The remaining balance is paid in person at pick-up (cash or PayPal).' =>
+            'Stai pagando ora un acconto di prenotazione del %d%%. Il saldo restante si paga di persona al ritiro (contanti o PayPal).',
 
         // --cancel--
         'Missing or invalid reservation id.' => 'ID prenotazione mancante o non valido.',
