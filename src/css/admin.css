@@ -1,0 +1,12 @@
+#adminCalendar { background:#fff; border-radius:12px; box-shadow: var(--box-shadow-medium); padding:12px; }
+.fc .fc-button-primary { background: var(--color-mar); border-color: var(--color-mar); }
+.fc .fc-button-primary:hover { background: var(--color-mar-oscuro); border-color: var(--color-mar-oscuro); }
+.fc-event.ev-cancelled { opacity:.75; text-decoration: line-through; }
+
+.form-select-sm{ width:50% }
+.legend { display:flex; gap:.75rem; flex-wrap:wrap; font-size:.9rem }
+.legend i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:.35rem; vertical-align:-2px }
+
+.mini-cal .fc { font-size:12px; }
+.mini-cal .fc-daygrid-day { cursor:pointer; }
+.mini-cal .fc-daygrid-block-event .fc-event-title { font-weight:600; }

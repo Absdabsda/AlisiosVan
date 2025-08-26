@@ -62,3 +62,39 @@
     border-color: var(--color-mar-oscuro) !important;
     box-shadow: 0 0 0 3px rgba(128,193,208,.25) !important;
 }
+
+/* === Checkout overlay === */
+#checkoutOverlay[hidden]{ display: none !important; }
+
+#checkoutOverlay{
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(0,0,0,.45);
+    backdrop-filter: blur(2px);
+    z-index: 11050;            /* por encima de header y del flatpickr (10010) */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+}
+
+#checkoutOverlay.show{
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#checkoutOverlay .co-box{
+    background: #fff;
+    padding: 24px 28px;
+    border-radius: 16px;
+    min-width: 280px;
+    max-width: 90vw;
+    box-shadow: 0 12px 30px rgba(0,0,0,.2);
+    text-align: center;
+}
+
+#checkoutOverlay .spinner-border{
+    width: 2.5rem;
+    height: 2.5rem;
+}
