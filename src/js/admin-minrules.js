@@ -1,12 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     if (!window.bootstrap || typeof FullCalendar === 'undefined') return;
 
-    // URL centralizada (con fallback)
     const MINRULES_URL = window.ADMIN_MINRULES_URL || 'admin-minrules.php';
-
     const calendars = new Map();
 
-    // Modal
+    // Modal + campos
     const modalEl = document.getElementById('minRuleModal');
     const modal   = bootstrap.Modal.getOrCreateInstance(modalEl, { backdrop: true, focus: true });
 
@@ -18,36 +16,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const fReplace = document.getElementById('minRuleReplace');
     const btnSave  = document.getElementById('minRuleSave');
 
-    const ymd = (d) => {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${dd}`;
-    };
-    const monthBounds = (date) => ({
-        first: new Date(date.getFullYear(), date.getMonth(), 1),
-        last:  new Date(date.getFullYear(), date.getMonth() + 1, 0)
-    });
-    const dateOnly = (iso) => (iso || '').slice(0, 10); // YYYY-MM-DD
+    const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const dateOnly = (iso) => (iso || '').slice(0,10);
+    const monthBounds = (date) => ({ first: new Date(date.getFullYear(), date.getMonth(), 1), last: new Date(date.getFullYear(), date.getMonth()+1, 0) });
 
     const parseJsonOrThrow = async (res) => {
         const text = await res.text();
-        try { return JSON.parse(text); }
-        catch { throw new Error(text || `HTTP ${res.status}`); }
+        try { return JSON.parse(text); } catch { throw new Error(text || `HTTP ${res.status}`); }
     };
 
-    // Abrir cada colapsable -> montar calendario si no existe
-    document.querySelectorAll('.btnOpenRules').forEach(btn => {
-        btn.addEventListener('click', (ev) => {
-            const camperId = ev.currentTarget.getAttribute('data-camper');
-            const targetId = ev.currentTarget.getAttribute('data-bs-target'); // #rules-ID
-            const container = document.querySelector(`${targetId} .mini-cal`);
-            const btnMonth  = document.querySelector(`${targetId} .btnApplyMonth`);
+    // Inicializa/recarga el mini-cal cuando se ABRE el colapsable
+    document.querySelectorAll('.collapse[id^="rules-"]').forEach(collapseEl => {
+        collapseEl.addEventListener('shown.bs.collapse', () => {
+            const camperId  = collapseEl.id.replace('rules-','');
+            const container = collapseEl.querySelector('.mini-cal');
+            const btnMonth  = collapseEl.querySelector('.btnApplyMonth');
             if (!container || !camperId) return;
 
             if (!calendars.has(camperId)) {
                 const cal = new FullCalendar.Calendar(container, {
-                    // (opcional) interacción explícita si estuviera disponible
                     plugins: (FullCalendar.interactionPlugin ? [ FullCalendar.interactionPlugin ] : []),
                     initialView: 'dayGridMonth',
                     height: 'auto',
@@ -57,48 +44,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     selectable: true,
                     selectMirror: true,
 
-                    // Cargar reglas existentes
                     events: (info, success, failure) => {
                         const start = encodeURIComponent(dateOnly(info.startStr));
-                        const end   = encodeURIComponent(dateOnly(info.endStr)); // exclusivo en FC
+                        const end   = encodeURIComponent(dateOnly(info.endStr));
                         const join  = MINRULES_URL.includes('?') ? '&' : '?';
                         const url   = `${MINRULES_URL}${join}action=list&camper_id=${encodeURIComponent(camperId)}&start=${start}&end=${end}`;
-
                         fetch(url, { credentials: 'same-origin' })
                             .then(parseJsonOrThrow)
-                            .then(data => {
-                                if (!data.ok) throw new Error(data.error || 'Error');
-                                success(data.events || []);
-                            })
+                            .then(data => { if (!data.ok) throw new Error(data.error || 'Error'); success(data.events || []); })
                             .catch(err => failure(err));
                     },
 
-                    // Selección de rango
                     select: (info) => {
-                        // end exclusivo -> inclusivo
-                        const endInc = new Date(info.endStr + 'T00:00:00');
-                        endInc.setDate(endInc.getDate() - 1);
-                        fCamper.value  = camperId;
-                        fStart.value   = dateOnly(info.startStr);
-                        fEnd.value     = ymd(endInc);
-                        fMin.value     = '';
-                        fNote.value    = '';
-                        fReplace.checked = false;
+                        const endInc = new Date(info.endStr + 'T00:00:00'); endInc.setDate(endInc.getDate() - 1);
+                        fCamper.value = camperId;
+                        fStart.value  = dateOnly(info.startStr);
+                        fEnd.value    = ymd(endInc);
+                        fMin.value = ''; fNote.value = ''; fReplace.checked = false;
                         modal.show();
                     },
 
-                    // Click en día -> un solo día
                     dateClick: (info) => {
-                        fCamper.value  = camperId;
-                        fStart.value   = info.dateStr;
-                        fEnd.value     = info.dateStr;
-                        fMin.value     = '';
-                        fNote.value    = '';
-                        fReplace.checked = false;
+                        fCamper.value = camperId;
+                        fStart.value  = info.dateStr;
+                        fEnd.value    = info.dateStr;
+                        fMin.value = ''; fNote.value = ''; fReplace.checked = false;
                         modal.show();
                     },
 
-                    // Click en evento -> borrar regla
                     eventClick: (info) => {
                         const id = String(info.event.id || '');
                         if (!id.startsWith('mr-')) return;
@@ -109,16 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             method: 'POST',
                             credentials: 'same-origin',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: new URLSearchParams({
-                                action: 'delete',
-                                id: id.replace('mr-', '')
-                            })
+                            body: new URLSearchParams({ action: 'delete', id: id.replace('mr-','') })
                         })
                             .then(parseJsonOrThrow)
-                            .then(data => {
-                                if (!data.ok) throw new Error(data.error || 'Error');
-                                cal.refetchEvents();
-                            })
+                            .then(data => { if (!data.ok) throw new Error(data.error || 'Error'); cal.refetchEvents(); })
                             .catch(e => alert('No se pudo eliminar: ' + e.message));
                     }
                 });
@@ -126,16 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 calendars.set(camperId, cal);
                 cal.render();
 
-                // Botón "Aplicar al mes visible"
                 btnMonth?.addEventListener('click', () => {
                     const current = cal.getDate();
                     const { first, last } = monthBounds(current);
-                    fCamper.value  = camperId;
-                    fStart.value   = ymd(first);
-                    fEnd.value     = ymd(last); // inclusivo
-                    fMin.value     = '';
-                    fNote.value    = '';
-                    fReplace.checked = false;
+                    fCamper.value = camperId;
+                    fStart.value  = ymd(first);
+                    fEnd.value    = ymd(last);
+                    fMin.value = ''; fNote.value = ''; fReplace.checked = false;
                     modal.show();
                 });
             } else {
@@ -153,8 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const replace  = fReplace.checked ? '1' : '0';
 
         if (!camperId || !startStr || !endStr || !Number.isInteger(min) || min < 1 || min > 60) {
-            alert('Datos inválidos.');
-            return;
+            alert('Datos inválidos.'); return;
         }
 
         fetch(MINRULES_URL, {

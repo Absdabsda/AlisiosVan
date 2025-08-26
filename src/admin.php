@@ -89,8 +89,7 @@ $campersAdmin = $pdo->query("SELECT id, name, price_per_night, COALESCE(min_nigh
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -220,7 +219,7 @@ $campersAdmin = $pdo->query("SELECT id, name, price_per_night, COALESCE(min_nigh
                             <th style="width:260px">Acciones</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="campersRulesParent">
                         <?php foreach($campersAdmin as $c): ?>
                             <tr data-id="<?= (int)$c['id'] ?>">
                                 <td class="fw-medium"><?= htmlspecialchars($c['name']) ?></td>
@@ -234,21 +233,25 @@ $campersAdmin = $pdo->query("SELECT id, name, price_per_night, COALESCE(min_nigh
                                 <td>
                                     <div class="btn-group">
                                         <button class="btn btn-primary btn-sm btnSaveCamper"><i class="bi bi-save"></i> Guardar</button>
-                                        <button class="btn btn-outline-secondary btn-sm btnOpenRules" data-camper="<?= (int)$c['id'] ?>" data-bs-toggle="collapse" data-bs-target="#rules-<?= (int)$c['id'] ?>"><i class="bi bi-calendar-range"></i> Reglas por fechas</button>
+                                        <button class="btn btn-outline-secondary btn-sm btnOpenRules" data-camper="<?= (int)$c['id'] ?>" data-bs-toggle="collapse" data-bs-target="#rules-<?= (int)$c['id'] ?>" aria-expanded="false" aria-controls="rules-<?= (int)$c['id'] ?>"><i class="bi bi-calendar-range"></i> Reglas por fechas</button>
                                     </div>
                                 </td>
                             </tr>
-                            <tr class="collapse bg-light" id="rules-<?= (int)$c['id'] ?>">
-                                <td colspan="4">
-                                    <div class="p-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <strong>Reglas de mínimo de noches</strong>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary btnApplyMonth">Aplicar al <span class="text-decoration-underline">mes visible</span></button>
-                                        <div>
-                                        <div class="mini-cal"></div>
-                                        <div class="form-text mt-2">Arrastra para seleccionar un <b>rango</b> y fijar el mínimo. Clic en un bloque “Min X” para eliminarlo.</div>
+                            <tr>
+                              <td colspan="4">
+                                <div id="rules-<?= (int)$c['id'] ?>" class="collapse bg-light" data-bs-parent="#campersRulesParent">
+                                  <div class="p-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                      <strong>Reglas de mínimo de noches</strong>
+                                      <button type="button" class="btn btn-sm btn-outline-secondary btnApplyMonth">
+                                        Aplicar al <span class="text-decoration-underline">mes visible</span>
+                                      </button>
                                     </div>
-                                </td>
+                                    <div class="mini-cal"></div>
+                                    <div class="form-text mt-2">Arrastra para seleccionar un <b>rango</b>…</div>
+                                  </div>
+                                </div>
+                              </td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
