@@ -1,48 +1,66 @@
 <?php
 declare(strict_types=1);
-ini_set('display_errors','1'); // ponlo a '0' cuando acabe la prueba
+ini_set('display_errors','1'); // ponlo a '0' en prod
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config/bootstrap_env.php';
-require __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/db.php';
 $pdo = get_pdo();
 
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+
 function jexit(array $p, int $c=200){ http_response_code($c); echo json_encode($p, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES); exit; }
 
-$key = $_GET['key'] ?? $_POST['key'] ?? '';
-if (!$key || !hash_equals(env('ADMIN_KEY',''), (string)$key)) jexit(['ok'=>false, 'error'=>'forbidden'], 403);
+/* ===== Auth por cookie ===== */
+$adminKeyEnv = env('ADMIN_KEY','');
+$cookieKey   = $_COOKIE['admin_key'] ?? '';
+if (!$adminKeyEnv || !$cookieKey || !hash_equals($adminKeyEnv, (string)$cookieKey)) {
+    jexit(['ok'=>false,'error'=>'forbidden'], 403);
+}
 
-$action = $_GET['action'] ?? $_POST['action'] ?? '';
+/* ===== Input: acepta form y JSON ===== */
+$raw   = file_get_contents('php://input') ?: '';
+$ctype = $_SERVER['CONTENT_TYPE'] ?? '';
+$body  = [];
+if ($raw !== '' && stripos($ctype, 'application/json') !== false) {
+    $body = json_decode($raw, true) ?: [];
+}
+$in = array_merge($_GET, $_POST, $body);
+$action = (string)($in['action'] ?? '');
 
 try {
     /* === LISTAR REGLAS EN RANGO (para el mini-cal) === */
     if ($action === 'list') {
-        $cid = (int)($_GET['camper_id'] ?? 0);
+        $cid = (int)($in['camper_id'] ?? 0);
         if ($cid <= 0) jexit(['ok'=>false, 'error'=>'invalid camper_id'], 400);
 
-        $start = $_GET['start'] ?? null;   // YYYY-MM-DD (inclusive)
-        $end   = $_GET['end']   ?? null;   // YYYY-MM-DD (exclusivo, viene de FullCalendar)
+        // start (incl.) / end (excl.) vienen del calendar
+        $start = isset($in['start']) ? (new DateTime((string)$in['start']))->format('Y-m-d') : null;
+        $end   = isset($in['end'])   ? (new DateTime((string)$in['end']))->format('Y-m-d')   : null;
 
         $sql = "SELECT id, start_date, end_date, min_nights, note
-            FROM camper_min_rules
-            WHERE camper_id = :cid";
-        $p = [':cid' => $cid];
+                FROM camper_min_rules
+                WHERE camper_id = :cid";
+        $p = [':cid'=>$cid];
 
         if ($start && $end) {
+            // overlap: NOT (end < start || start >= end)
             $sql .= " AND NOT (end_date < :s OR start_date >= :e)";
-            $p[':s'] = (new DateTime($start))->format('Y-m-d');
-            $p[':e'] = (new DateTime($end))->format('Y-m-d');
+            $p[':s'] = $start;
+            $p[':e'] = $end;
         }
 
         $sql .= " ORDER BY start_date ASC";
-        $st = $pdo->prepare($sql); $st->execute($p);
+        $st = $pdo->prepare($sql);
+        $st->execute($p);
         $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
         $events = array_map(function($r){
             $endEx = (new DateTime($r['end_date']))->modify('+1 day')->format('Y-m-d'); // exclusivo
             return [
-                'id'    => 'mr-'.$r['id'],
+                'id'    => 'mr-'.(int)$r['id'],
                 'title' => 'Min '.(int)$r['min_nights'],
                 'start' => (string)$r['start_date'],
                 'end'   => $endEx,
@@ -50,7 +68,7 @@ try {
                 'backgroundColor' => '#FFD166',
                 'borderColor'     => '#FFD166',
                 'textColor'       => '#000',
-                'classNames'      => ['ev-minrule']
+                'classNames'      => ['ev-minrule'],
             ];
         }, $rows);
 
@@ -58,15 +76,17 @@ try {
     }
 
     /* === CREAR/ACTUALIZAR REGLA POR RANGO === */
-    if ($action === 'set_range' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $cid   = (int)($_POST['camper_id'] ?? 0);
-        $sdS   = trim((string)($_POST['start_date'] ?? ''));
-        $edS   = trim((string)($_POST['end_date'] ?? ''));
-        $min   = (int)($_POST['min_nights'] ?? 0);
-        $note  = trim((string)($_POST['note'] ?? ''));
-        $replace = (int)($_POST['replace'] ?? 0) === 1;
+    if ($action === 'set_range') {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') jexit(['ok'=>false,'error'=>'method_not_allowed'],405);
 
-        if ($cid <= 0 || !$sdS || !$edS) jexit(['ok'=>false, 'error'=>'invalid input'], 400);
+        $cid   = (int)($in['camper_id'] ?? 0);
+        $sdS   = trim((string)($in['start_date'] ?? ''));
+        $edS   = trim((string)($in['end_date'] ?? ''));
+        $min   = (int)($in['min_nights'] ?? 0);
+        $note  = trim((string)($in['note'] ?? ''));
+        $replace = (int)($in['replace'] ?? 0) === 1;
+
+        if ($cid <= 0 || $sdS === '' || $edS === '') jexit(['ok'=>false,'error'=>'invalid input'], 400);
 
         $sd = (new DateTime($sdS))->format('Y-m-d');
         $ed = (new DateTime($edS))->format('Y-m-d');
@@ -81,16 +101,17 @@ try {
         $st = $pdo->prepare("INSERT INTO camper_min_rules (camper_id, start_date, end_date, min_nights, note) VALUES (?,?,?,?,?)");
         $st->execute([$cid, $sd, $ed, $min, $note]);
 
-        jexit(['ok'=>true, 'id'=>$pdo->lastInsertId()]);
+        jexit(['ok'=>true, 'id'=>(int)$pdo->lastInsertId()]);
     }
 
     /* === BORRAR REGLA === */
-    if ($action === 'delete' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $id = (int)($_POST['id'] ?? 0);
+    if ($action === 'delete') {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') jexit(['ok'=>false,'error'=>'method_not_allowed'],405);
+        $id = (int)($in['id'] ?? 0);
         if ($id <= 0) jexit(['ok'=>false, 'error'=>'invalid id'], 400);
-        $st = $pdo->prepare("DELETE FROM camper_min_rules WHERE id=?");
+        $st = $pdo->prepare("DELETE FROM camper_min_rules WHERE id=? LIMIT 1");
         $st->execute([$id]);
-        jexit(['ok'=>true, 'deleted'=>$st->rowCount()]);
+        jexit(['ok'=>true, 'deleted'=>(int)$st->rowCount()]);
     }
 
     jexit(['ok'=>false, 'error'=>'unknown action'], 400);

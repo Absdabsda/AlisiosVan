@@ -212,27 +212,24 @@ function t(string $key, ...$args): string {
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
 /* -----------------------------------------------------------
- * Helpers / DB / Stripe / Mail (igual que tenías)
+ * Helpers / DB / Stripe / Mail
  * ---------------------------------------------------------*/
-function admin_key(): ?string {
-    $envKey = env('ADMIN_KEY','');
-    if (!$envKey) return null;
 
-    $k = $_GET['key'] ?? ($_COOKIE['admin_key'] ?? '');
-    if ($k && hash_equals($envKey, (string)$k)) {
-        if (empty($_COOKIE['admin_key'])) {
-            setcookie('admin_key', (string)$k, [
-                'expires'  => time() + 60*60*24*30,
-                'path'     => '/',
-                'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
-                'httponly' => true,
-                'samesite' => 'Lax',
-            ]);
-        }
-        return (string)$k;
-    }
-    return null;
+// --- Admin por COOKIE (no aceptamos ?key en manage.php) ---
+function is_admin_cookie(): bool {
+    $envKey = env('ADMIN_KEY','');
+    if (!$envKey) return false;
+    $k = $_COOKIE['admin_key'] ?? '';
+    return $k && hash_equals($envKey, (string)$k);
 }
+$adminCookie = is_admin_cookie();
+
+// Modo de operación / UI
+$forceAdminUi = defined('MANAGE_FORCE_ADMIN_UI') && MANAGE_FORCE_ADMIN_UI === true;
+
+// Acciones de admin (refund, lectura sin token) sólo si hay cookie
+$adminACT = $adminCookie;
+$adminUI  = $forceAdminUi ? $adminCookie : $adminACT;
 
 function columnExists(PDO $pdo, string $table, string $column): bool {
     $sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
@@ -320,15 +317,13 @@ function buildMailerFromEnv(): ?PHPMailer {
 // --- Input -----------------------------------------------------------------
 $rid = (int)($_GET['rid'] ?? 0);
 $t   = $_GET['t'] ?? '';
-$ADMIN_KEY = admin_key();
-$admin = $ADMIN_KEY !== null;
 
 if(!$rid){
     http_response_code(400); echo t('error.missingRid'); exit;
 }
 
 // --- Carga reserva ----------------------------------------------------------
-if ($admin) {
+if ($adminACT) {
     $st = $pdo->prepare("
       SELECT r.*, c.name AS camper, c.price_per_night
       FROM reservations r
@@ -349,7 +344,7 @@ if ($admin) {
 $r = $st->fetch(PDO::FETCH_ASSOC);
 if(!$r){
     http_response_code(403);
-    echo $admin ? t('error.notfound') : t('error.invalidLink');
+    echo $adminACT ? t('error.notfound') : t('error.invalidLink');
     exit;
 }
 
@@ -365,34 +360,49 @@ $refundNote = '';
 if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel'){
     // si ya estaba cancelada
     if (strpos((string)$r['status'],'cancelled') === 0) {
-        $qs = 'rid='.$rid.($admin ? '&key='.urlencode($ADMIN_KEY) : ($t ? '&t='.urlencode($t) : '')).'&lang='.$LC;
+        $qs = 'rid='.$rid.'&lang='.$LC;
+        if (!$adminACT && $t) { $qs .= '&t='.urlencode($t); }
         header('Location: manage.php?'.$qs.'&m=already'); exit;
     }
 
-    $newStatus = $admin ? 'cancelled_by_admin' : 'cancelled_by_customer';
+    $newStatus = $adminACT ? 'cancelled_by_admin' : 'cancelled_by_customer';
 
-    if ($admin && !empty($r['stripe_payment_intent'])) {
-        // Admin: intenta reembolso del depósito
+    // --- Refund: solo si es ADMIN, la reserva está pagada y existe PI ---
+    if ($adminACT && $r['status'] === 'paid' && !empty($r['stripe_payment_intent'])) {
         try {
             $pi = PaymentIntent::retrieve($r['stripe_payment_intent']);
+
             $alreadyRefunded = false;
+            $canRefund = false;
+
             if ($pi && isset($pi->charges->data[0])) {
                 $ch = $pi->charges->data[0];
-                $amountCaptured  = (int)($ch->amount_captured ?? 0);
-                $amountRefunded  = (int)($ch->amount_refunded ?? 0);
-                if ($amountRefunded >= $amountCaptured && $amountCaptured > 0) {
-                    $alreadyRefunded = true;
+                $amountCaptured = (int)($ch->amount_captured ?? 0);
+                $amountRefunded = (int)($ch->amount_refunded ?? 0);
+
+                if ($amountCaptured > 0) {
+                    if ($amountRefunded >= $amountCaptured) {
+                        $alreadyRefunded = true;
+                    } else {
+                        $canRefund = true;
+                    }
                 }
             }
-            if (!$alreadyRefunded) {
-                Refund::create(['payment_intent' => $r['stripe_payment_intent']]); // reembolso total del depósito
+
+            if ($alreadyRefunded) {
+                $refundNote = 'Charge has already been refunded.';
+            } elseif ($canRefund) {
+                Refund::create(['payment_intent' => $r['stripe_payment_intent']]); // total
                 $refundNote = 'Refund issued for the deposit.';
             } else {
-                $refundNote = 'Charge has already been refunded.';
+                $refundNote = 'Skipping refund: nothing captured on the charge.';
             }
         } catch (Throwable $e) {
-            $refundNote = 'Refund error: '.$e->getMessage();
+            $refundNote = 'Refund error: ' . $e->getMessage();
         }
+    } elseif ($adminACT) {
+        // Admin pero no procede el reembolso (no pagada o sin PI)
+        $refundNote = 'Skipping refund (status not paid or missing payment intent).';
     } else {
         // Cliente: sin reembolso por política
         $refundNote = 'Per policy, the deposit is non-refundable on customer-initiated cancellations.';
@@ -412,7 +422,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
         $r['cancelled_at'] = date('Y-m-d H:i:s');
     }
 
-    // ======= Email de confirmación de cancelación (igual que tenías) =======
+    // ======= Email de confirmación de cancelación =======
     try {
         $emailSentAlready = false;
         if (columnExists($pdo, 'reservations', 'cancellation_email_sent_at')) {
@@ -432,7 +442,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
                 $nightsMail = (int)((new DateTime($r['start_date']))->diff(new DateTime($r['end_date']))->format('%a'));
 
                 $subject = "Reservation #{$r['id']} cancelled";
-                $lead    = $admin
+                $lead    = $adminACT
                     ? "Your reservation has been cancelled by our team. The deposit has been (or will be) refunded."
                     : "Your reservation has been cancelled as requested. Per our policy, the deposit is non-refundable.";
 
@@ -487,7 +497,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
                     . "Camper: ".($r['camper'] ?? '')."\n"
                     . "Dates: {$startHuman} -> {$endHuman}\n"
                     . "Status: {$r['status']}\n"
-                    . ($admin ? "Refund: deposit refunded (if applicable)\n" : "Note: deposit non-refundable per policy\n");
+                    . ($adminACT ? "Refund: deposit refunded (if applicable)\n" : "Note: deposit non-refundable per policy\n");
 
                 $mail = buildMailerFromEnv();
                 if ($mail) {
@@ -520,7 +530,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
     }
 
     // Redirección post-cancel
-    $qs = 'rid='.$rid.($admin ? '&key='.urlencode($ADMIN_KEY) : ($t ? '&t='.urlencode($t) : '')).'&lang='.$LC;
+    $qs = 'rid='.$rid.'&lang='.$LC;
+    if (!$adminACT && $t) { $qs .= '&t='.urlencode($t); }
     if ($refundNote) $qs .= '&rn='.urlencode($refundNote);
     header('Location: manage.php?'.$qs.'&m=cancelled');
     exit;
@@ -579,7 +590,7 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
 <section class="page-hero manage-hero">
     <div class="page-hero__content">
         <h1 class="page-hero__title"><?= h(sprintf(t('hero.title'), (int)$r['id'])) ?></h1>
-        <p class="mt-2"><?= $admin ? h(t('hero.subtitle.admin')) : h(t('hero.subtitle.customer')) ?></p>
+        <p class="mt-2"><?= $adminUI ? h(t('hero.subtitle.admin')) : h(t('hero.subtitle.customer')) ?></p>
     </div>
 </section>
 
@@ -607,12 +618,12 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
                 <?php if (strpos((string)$r['status'],'cancelled') !== 0): ?>
                     <form method="post" onsubmit="return confirm('<?= h(t('confirm.cancel')) ?>');">
                         <input type="hidden" name="action" value="cancel">
-                        <?php if ($admin): ?>
+                        <?php if ($adminUI): ?>
                             <p class="text-muted"><?= h(t('note.admin')) ?></p>
                         <?php else: ?>
                             <p class="text-warning"><?= h(t('note.customer')) ?></p>
                         <?php endif; ?>
-                        <button class="btn <?= $admin ? 'btn-danger' : 'btn-outline-secondary' ?>">
+                        <button class="btn <?= $adminUI ? 'btn-danger' : 'btn-outline-secondary' ?>">
                             <i class="bi bi-x-circle"></i> <?= h(t('btn.cancel')) ?>
                         </button>
                     </form>

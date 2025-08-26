@@ -10,16 +10,16 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
-// Auth admin por ?key=...
-$key = $_GET['key'] ?? '';
-$adminKey = env('ADMIN_KEY','');
-if (!$key || !hash_equals($adminKey, (string)$key)) {
+/* ===== Auth por cookie ===== */
+$adminKeyEnv = env('ADMIN_KEY','');
+$cookieKey   = $_COOKIE['admin_key'] ?? '';
+if (!$adminKeyEnv || !$cookieKey || !hash_equals($adminKeyEnv, (string)$cookieKey)) {
     http_response_code(403);
     echo json_encode(['error' => 'forbidden'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
 
-// Base URL (usa PUBLIC_BASE_URL si existe)
+/* ===== Base URL ===== */
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $dir    = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\');
@@ -27,7 +27,7 @@ $base   = rtrim(env('PUBLIC_BASE_URL', "$scheme://$host$dir"), '/');
 
 $events = [];
 
-/* === 1) Reservas === */
+/* === Reservas === */
 $sql = "
   SELECT r.id, r.start_date, r.end_date, r.status, r.manage_token,
          c.name AS camper
@@ -43,21 +43,9 @@ while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
     $endEx = (new DateTime($row['end_date']))->modify('+1 day')->format('Y-m-d'); // allDay end exclusivo
 
     $isCancelled = in_array($row['status'], ['cancelled','cancelled_by_customer','cancelled_by_admin'], true);
+    $bg = $row['status'] === 'pending' ? '#CBB49E' : ($isCancelled ? '#EF476F' : '#80C1D0');
 
-    if ($row['status'] === 'pending') {
-        $bg = '#CBB49E';
-    } elseif ($isCancelled) {
-        $bg = '#EF476F';
-    } else {
-        $bg = '#80C1D0';
-    }
-
-    $url = null;
-    if (!empty($row['manage_token'])) {
-        $url = $base . '/manage.php?rid=' . (int)$row['id']
-            . '&t=' . urlencode($row['manage_token'])
-            . '&key=' . urlencode($adminKey);
-    }
+    $url = $base . '/manage-admin.php?rid=' . (int)$row['id']; // admin view
 
     $events[] = [
         'id'    => 'res-'.$row['id'],
@@ -73,7 +61,7 @@ while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
     ];
 }
 
-/* === Bloqueos (con blackout_dates) === */
+/* === Bloqueos === */
 $sqlB = "
   SELECT b.id, b.start_date, b.end_date, b.reason,
          c.name AS camper, c.id AS camper_id
@@ -86,8 +74,7 @@ $stB = $pdo->query($sqlB);
 
 while ($row = $stB->fetch(PDO::FETCH_ASSOC)) {
     $start = (new DateTime($row['start_date']))->format('Y-m-d');
-    // end inclusivo en BD → +1 día para allDay
-    $endEx = (new DateTime($row['end_date']))->modify('+1 day')->format('Y-m-d');
+    $endEx = (new DateTime($row['end_date']))->modify('+1 day')->format('Y-m-d'); // inclusivo → +1
 
     $title = 'BLOQUEO — ' . (string)$row['camper'];
     if (!empty($row['reason'])) $title .= ' · ' . (string)$row['reason'];
@@ -99,7 +86,7 @@ while ($row = $stB->fetch(PDO::FETCH_ASSOC)) {
         'end'   => $endEx,
         'allDay'=> true,
         'url'   => null,
-        'backgroundColor' => '#60666d', // gris
+        'backgroundColor' => '#60666d',
         'borderColor'     => '#60666d',
         'textColor'       => '#ffffff',
         'classNames'      => ['ev-block']
@@ -107,4 +94,3 @@ while ($row = $stB->fetch(PDO::FETCH_ASSOC)) {
 }
 
 echo json_encode($events, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-exit;

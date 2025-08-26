@@ -6,14 +6,38 @@ require_once __DIR__ . '/../config/bootstrap_env.php';
 require __DIR__ . '/../config/db.php';
 $pdo = get_pdo();
 
-/* ===== Auth ===== */
-$key = $_GET['key'] ?? '';
-$adminKey = env('ADMIN_KEY','');
-if (!$key || !hash_equals($adminKey, $key)) { http_response_code(403); echo "Forbidden"; exit; }
-setcookie('admin_key', (string)$key, [
-    'expires'=> time()+60*60*24*30, 'path'=>'/', 'secure'=> (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']!=='off'),
-    'httponly'=>true,'samesite'=>'Lax'
-]);
+/* ===== Auth (cookie o ?key) ===== */
+$adminKeyEnv = env('ADMIN_KEY','');
+$paramKey    = $_GET['key'] ?? '';
+$cookieKey   = $_COOKIE['admin_key'] ?? '';
+
+$hasValidParam  = $paramKey  && $adminKeyEnv && hash_equals($adminKeyEnv, (string)$paramKey);
+$hasValidCookie = $cookieKey && $adminKeyEnv && hash_equals($adminKeyEnv, (string)$cookieKey);
+
+if ($hasValidParam) {
+    // guarda cookie y redirige a la MISMA página sin el ?key para no filtrar la clave
+    setcookie('admin_key', (string)$paramKey, [
+        'expires'=> time()+60*60*24*30,
+        'path'   => '/',
+        'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']!=='off'),
+        'httponly'=> true,
+        'samesite'=> 'Lax'
+    ]);
+
+    $url = strtok($_SERVER['REQUEST_URI'], '?'); // ruta sin query
+    // conserva otros parámetros si quieres, pero sin "key"
+    $qs  = $_GET; unset($qs['key']);
+    if (!empty($qs)) { $url .= '?' . http_build_query($qs); }
+    header("Location: $url", true, 302);
+    exit;
+}
+
+if (!$hasValidCookie) {
+    http_response_code(403);
+    echo "Forbidden";
+    exit;
+}
+
 
 /* ===== Filtros reservas ===== */
 $status  = $_GET['status'] ?? 'all';
@@ -45,7 +69,7 @@ function baseUrl(): string {
     return rtrim("$scheme://$host$dir", '/');
 }
 $feed      = baseUrl()."/company-ical.php?key=".urlencode(env('COMPANY_ICAL_KEY',''));
-$eventsUrl = baseUrl() . '/admin-events.php?key=' . urlencode($adminKey);
+$eventsUrl = baseUrl() . '/admin-events.php';
 
 /* ===== Campers para selects/tab ===== */
 $campers = $pdo->query("SELECT id, name FROM campers ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
@@ -57,6 +81,9 @@ $campersAdmin = $pdo->query("SELECT id, name, price_per_night, COALESCE(min_nigh
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin · Reservas | Alisios Van</title>
 
+    <!-- evita traducción automática de Chrome -->
+    <meta name="google" content="notranslate">
+
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
 
@@ -66,15 +93,21 @@ $campersAdmin = $pdo->query("SELECT id, name, price_per_night, COALESCE(min_nigh
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
+
+    <script src="js/admin-campers.js" defer></script>
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/admin.css">
 
     <script>
-        window.ADMIN_KEY = '<?= htmlspecialchars($adminKey, ENT_QUOTES, "UTF-8") ?>';
-        window.ADMIN_EVENTS_URL = '<?= htmlspecialchars($eventsUrl, ENT_QUOTES, "UTF-8") ?>';
-        window.ADMIN_MINRULES_URL = '<?= htmlspecialchars(baseUrl()."/admin-minrules.php?key=".urlencode($adminKey), ENT_QUOTES, "UTF-8") ?>';
+        window.ADMIN_EVENTS_URL   = '<?= htmlspecialchars($eventsUrl, ENT_QUOTES, "UTF-8") ?>';
+        window.ADMIN_BLOCKS_URL   = '<?= htmlspecialchars(baseUrl()."/admin-blocks.php", ENT_QUOTES, "UTF-8") ?>';
+        window.ADMIN_MINRULES_URL = '<?= htmlspecialchars(baseUrl()."/admin-minrules.php", ENT_QUOTES, "UTF-8") ?>';
     </script>
+
+
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>
@@ -129,11 +162,11 @@ $campersAdmin = $pdo->query("SELECT id, name, price_per_night, COALESCE(min_nigh
             <div class="cardy mb-3">
                 <div class="d-flex flex-wrap justify-content-between align-items-center">
                     <div class="mb-2">
-                        <a class="btn btn-outline-secondary btn-sm" href="?key=<?= urlencode($key) ?>&status=all#tab-res">Todas</a>
-                        <a class="btn btn-outline-secondary btn-sm" href="?key=<?= urlencode($key) ?>&status=pending#tab-res">Pendientes</a>
-                        <a class="btn btn-outline-secondary btn-sm" href="?key=<?= urlencode($key) ?>&status=paid#tab-res">Pagadas</a>
-                        <a class="btn btn-outline-secondary btn-sm" href="?key=<?= urlencode($key) ?>&status=cancelled_by_customer#tab-res">Canceladas (cliente)</a>
-                        <a class="btn btn-outline-secondary btn-sm" href="?key=<?= urlencode($key) ?>&status=cancelled_by_admin#tab-res">Canceladas (admin)</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="?status=all#tab-res">Todas</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="?status=pending#tab-res">Pendientes</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="?status=paid#tab-res">Pagadas</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="?status=cancelled_by_customer#tab-res">Canceladas (cliente)</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="?status=cancelled_by_admin#tab-res">Canceladas (admin)</a>
                     </div>
                     <div>
                         <a class="btn btn-outline-secondary" href="<?= htmlspecialchars($feed) ?>" target="_blank" rel="noopener">
@@ -158,7 +191,7 @@ $campersAdmin = $pdo->query("SELECT id, name, price_per_night, COALESCE(min_nigh
                                 <td class="text-muted small"><?= htmlspecialchars((string)$r['paid_at']) ?></td>
                                 <td>
                                     <?php if(!empty($r['manage_token'])): ?>
-                                        <a class="btn btn-outline-secondary btn-sm" target="_blank" href="manage.php?rid=<?= (int)$r['id'] ?>&t=<?= urlencode($r['manage_token']) ?>">Abrir gestión</a>
+                                        <a class="btn btn-outline-secondary btn-sm" target="_blank" href="manage-admin.php?rid=<?= (int)$r['id'] ?>">Abrir gestión</a>
                                     <?php else: ?><span class="text-muted small">—</span><?php endif; ?>
                                 </td>
                             </tr>
@@ -211,7 +244,7 @@ $campersAdmin = $pdo->query("SELECT id, name, price_per_night, COALESCE(min_nigh
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <strong>Reglas de mínimo de noches</strong>
                                             <button type="button" class="btn btn-sm btn-outline-secondary btnApplyMonth">Aplicar al <span class="text-decoration-underline">mes visible</span></button>
-                                        </div>
+                                        <div>
                                         <div class="mini-cal"></div>
                                         <div class="form-text mt-2">Arrastra para seleccionar un <b>rango</b> y fijar el mínimo. Clic en un bloque “Min X” para eliminarlo.</div>
                                     </div>

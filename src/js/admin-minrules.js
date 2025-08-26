@@ -1,18 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
     if (!window.bootstrap || typeof FullCalendar === 'undefined') return;
 
+    // URL centralizada (con fallback)
+    const MINRULES_URL = window.ADMIN_MINRULES_URL || 'admin-minrules.php';
+
     const calendars = new Map();
 
     // Modal
     const modalEl = document.getElementById('minRuleModal');
-    const modal   = bootstrap.Modal.getOrCreateInstance(modalEl, { backdrop:true, focus:true });
-    const fCamper = document.getElementById('minRuleCamper');
-    const fStart  = document.getElementById('minRuleStart');
-    const fEnd    = document.getElementById('minRuleEnd');
-    const fMin    = document.getElementById('minRuleValue');
-    const fNote   = document.getElementById('minRuleNote');
-    const fReplace= document.getElementById('minRuleReplace');
-    const btnSave = document.getElementById('minRuleSave');
+    const modal   = bootstrap.Modal.getOrCreateInstance(modalEl, { backdrop: true, focus: true });
+
+    const fCamper  = document.getElementById('minRuleCamper');
+    const fStart   = document.getElementById('minRuleStart');
+    const fEnd     = document.getElementById('minRuleEnd');
+    const fMin     = document.getElementById('minRuleValue');
+    const fNote    = document.getElementById('minRuleNote');
+    const fReplace = document.getElementById('minRuleReplace');
+    const btnSave  = document.getElementById('minRuleSave');
 
     const ymd = (d) => {
         const y = d.getFullYear();
@@ -22,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const monthBounds = (date) => ({
         first: new Date(date.getFullYear(), date.getMonth(), 1),
-        last:  new Date(date.getFullYear(), date.getMonth()+1, 0)
+        last:  new Date(date.getFullYear(), date.getMonth() + 1, 0)
     });
     const dateOnly = (iso) => (iso || '').slice(0, 10); // YYYY-MM-DD
 
@@ -43,25 +47,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!calendars.has(camperId)) {
                 const cal = new FullCalendar.Calendar(container, {
-                    // Si te quedas más tranquilo, registra explícitamente el plugin de interacción
+                    // (opcional) interacción explícita si estuviera disponible
                     plugins: (FullCalendar.interactionPlugin ? [ FullCalendar.interactionPlugin ] : []),
                     initialView: 'dayGridMonth',
                     height: 'auto',
                     firstDay: 1,
-                    headerToolbar: { left:'prev,next', center:'title', right:'' },
+                    headerToolbar: { left: 'prev,next', center: 'title', right: '' },
                     weekNumbers: true,
                     selectable: true,
                     selectMirror: true,
 
-                    // Cargar reglas existentes (¡fechas saneadas y encodeadas!)
+                    // Cargar reglas existentes
                     events: (info, success, failure) => {
                         const start = encodeURIComponent(dateOnly(info.startStr));
-                        const end   = encodeURIComponent(dateOnly(info.endStr)); // exclusivo
-                        const url = `${window.ADMIN_MINRULES_URL}`
-                            + `&action=list&camper_id=${encodeURIComponent(camperId)}`
-                            + `&start=${start}&end=${end}`;
+                        const end   = encodeURIComponent(dateOnly(info.endStr)); // exclusivo en FC
+                        const join  = MINRULES_URL.includes('?') ? '&' : '?';
+                        const url   = `${MINRULES_URL}${join}action=list&camper_id=${encodeURIComponent(camperId)}&start=${start}&end=${end}`;
 
-                        fetch(url)
+                        fetch(url, { credentials: 'same-origin' })
                             .then(parseJsonOrThrow)
                             .then(data => {
                                 if (!data.ok) throw new Error(data.error || 'Error');
@@ -70,26 +73,27 @@ document.addEventListener('DOMContentLoaded', () => {
                             .catch(err => failure(err));
                     },
 
-                    // ARRÁSTRALO para rango
+                    // Selección de rango
                     select: (info) => {
-                        const endInc = new Date(info.endStr + 'T00:00:00'); // end exclusivo -> inclusivo
+                        // end exclusivo -> inclusivo
+                        const endInc = new Date(info.endStr + 'T00:00:00');
                         endInc.setDate(endInc.getDate() - 1);
-                        fCamper.value = camperId;
-                        fStart.value  = dateOnly(info.startStr);
-                        fEnd.value    = ymd(endInc);
-                        fMin.value    = '';
-                        fNote.value   = '';
+                        fCamper.value  = camperId;
+                        fStart.value   = dateOnly(info.startStr);
+                        fEnd.value     = ymd(endInc);
+                        fMin.value     = '';
+                        fNote.value    = '';
                         fReplace.checked = false;
                         modal.show();
                     },
 
-                    // CLIC en un día -> rango de 1 día
+                    // Click en día -> un solo día
                     dateClick: (info) => {
-                        fCamper.value = camperId;
-                        fStart.value  = info.dateStr;
-                        fEnd.value    = info.dateStr; // un solo día
-                        fMin.value    = '';
-                        fNote.value   = '';
+                        fCamper.value  = camperId;
+                        fStart.value   = info.dateStr;
+                        fEnd.value     = info.dateStr;
+                        fMin.value     = '';
+                        fNote.value    = '';
                         fReplace.checked = false;
                         modal.show();
                     },
@@ -101,11 +105,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         info.jsEvent.preventDefault();
                         if (!confirm('¿Eliminar esta regla?')) return;
 
-                        fetch('admin-minrules.php', {
+                        fetch(MINRULES_URL, {
                             method: 'POST',
+                            credentials: 'same-origin',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                             body: new URLSearchParams({
-                                action:'delete', key: window.ADMIN_KEY, id: id.replace('mr-','')
+                                action: 'delete',
+                                id: id.replace('mr-', '')
                             })
                         })
                             .then(parseJsonOrThrow)
@@ -124,11 +130,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnMonth?.addEventListener('click', () => {
                     const current = cal.getDate();
                     const { first, last } = monthBounds(current);
-                    fCamper.value = camperId;
-                    fStart.value  = ymd(first);
-                    fEnd.value    = ymd(last); // inclusivo
-                    fMin.value    = '';
-                    fNote.value   = '';
+                    fCamper.value  = camperId;
+                    fStart.value   = ymd(first);
+                    fEnd.value     = ymd(last); // inclusivo
+                    fMin.value     = '';
+                    fNote.value    = '';
                     fReplace.checked = false;
                     modal.show();
                 });
@@ -151,12 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        fetch('admin-minrules.php', {
+        fetch(MINRULES_URL, {
             method: 'POST',
-            headers: { 'Content-Type':'application/x-www-form-urlencoded' },
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
                 action: 'set_range',
-                key: window.ADMIN_KEY,
                 camper_id: camperId,
                 start_date: startStr,
                 end_date: endStr,
