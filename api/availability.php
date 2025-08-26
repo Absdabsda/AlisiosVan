@@ -1,85 +1,155 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../config/bootstrap_env.php';
-
-ini_set('display_errors', '1');
+ini_set('display_errors','1'); // pon a 0 en prod
 error_reporting(E_ALL);
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
-//require __DIR__ . '/../vendor/autoload.php';
-
-//$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-//$dotenv->safeLoad();
-
-require __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/bootstrap_env.php';
+require_once __DIR__ . '/../config/db.php';
 $pdo = get_pdo();
 
-$start    = $_GET['start'] ?? null;      // Y-m-d
-$end      = $_GET['end']   ?? null;      // Y-m-d
-$series   = trim($_GET['series'] ?? ''); // T3/T4
-$maxPrice = isset($_GET['maxPrice']) && $_GET['maxPrice'] !== ''
-    ? (float)$_GET['maxPrice']
-    : null;
+$start    = $_GET['start'] ?? null;      // YYYY-MM-DD (incl.)
+$end      = $_GET['end']   ?? null;      // YYYY-MM-DD (excl.)
+$series   = trim((string)($_GET['series']   ?? ''));
+$maxPrice = isset($_GET['maxPrice']) && $_GET['maxPrice'] !== '' ? (float)$_GET['maxPrice'] : null;
 
 try {
-    if (!$start || !$end) {
-        throw new Exception('Faltan start y end (Y-m-d).');
-    }
-
+    if (!$start || !$end) throw new RuntimeException('Faltan start y end.');
     $d1 = DateTime::createFromFormat('Y-m-d', $start);
     $d2 = DateTime::createFromFormat('Y-m-d', $end);
-    if (!$d1 || !$d2) throw new Exception('Formato de fecha inválido (usa Y-m-d).');
-    if ($d1 >= $d2) throw new Exception('end debe ser posterior a start.');
+    if (!$d1 || !$d2) throw new RuntimeException('Formato de fecha inválido.');
+    if ($d1 >= $d2)   throw new RuntimeException('end debe ser posterior a start.');
+    $nights = (int)$d1->diff($d2)->days;
 
-    //WHERE opcional
+    // Filtros opcionales
     $where = [];
-    if ($series !== '') {
-        $where[] = 'c.series = :series';
-    }
-    if ($maxPrice !== null && $maxPrice > 0) {
-        $where[] = 'c.price_per_night <= :maxPrice';
-    }
+    if ($series !== '')                           $where[] = 'c.series = :series';
+    if ($maxPrice !== null && $maxPrice > 0)      $where[] = 'c.price_per_night <= :maxPrice';
     $whereSql = $where ? ' AND ' . implode(' AND ', $where) : '';
 
-    // IMPORTANTE: c.image y price_per_night
-    $sql = "
-        SELECT c.id, c.name, c.series, c.price_per_night, c.image
-        FROM campers c
-        WHERE 1=1 $whereSql
-          AND NOT EXISTS (
-            SELECT 1
-            FROM reservations r
-            WHERE r.camper_id = c.id
-              AND r.start_date < :end
-              AND r.end_date   > :start
-              AND (
-                    r.status = 'paid'
-                 OR (r.status = 'pending' AND r.created_at > NOW() - INTERVAL 30 MINUTE)
-              )
-          )
-        ORDER BY c.price_per_night ASC, c.name ASC
+    // Requisito de mínimo de noches (base y reglas)
+    $requiredExpr = "
+      GREATEST(
+        COALESCE(c.min_nights, 2),
+        COALESCE((
+          SELECT MAX(mr.min_nights)
+          FROM camper_min_rules mr
+          WHERE mr.camper_id = c.id
+            AND mr.start_date < :end_rules
+            AND DATE_ADD(mr.end_date, INTERVAL 1 DAY) > :start_rules
+        ), 0)
+      )
     ";
 
+    // Consulta principal (aplica mínimo + ocupa/bloquea)
+    $sql = "
+      SELECT c.id, c.name, c.series, c.price_per_night, c.image
+      FROM campers c
+      WHERE 1=1
+        $whereSql
+        AND :nights >= ($requiredExpr)
+
+        AND NOT EXISTS (
+          SELECT 1 FROM reservations r
+          WHERE r.camper_id = c.id
+            AND r.start_date < :end_res
+            AND r.end_date   > :start_res
+            AND ( r.status='paid'
+               OR (r.status='pending' AND r.created_at > NOW() - INTERVAL 30 MINUTE))
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM blackout_dates b
+          WHERE b.camper_id = c.id
+            AND b.start_date < :end_blk
+            AND DATE_ADD(b.end_date, INTERVAL 1 DAY) > :start_blk
+        )
+      ORDER BY c.price_per_night ASC, c.name ASC
+    ";
     $st = $pdo->prepare($sql);
 
-    // Bind obligatorios
-    $st->bindValue(':start', $start);
-    $st->bindValue(':end',   $end);
+    // Binds comunes
+    $st->bindValue(':nights', $nights, PDO::PARAM_INT);
+    $st->bindValue(':start_rules', $start);
+    $st->bindValue(':end_rules',   $end);
+    $st->bindValue(':start_res',   $start);
+    $st->bindValue(':end_res',     $end);
+    $st->bindValue(':start_blk',   $start);
+    $st->bindValue(':end_blk',     $end);
 
-    // Bind opcionales SOLO si están en el SQL
-    if ($series !== '') {
-        $st->bindValue(':series', $series);
-    }
-    if ($maxPrice !== null && $maxPrice > 0) {
-        $st->bindValue(':maxPrice', $maxPrice);
-    }
+    // Filtros opcionales
+    if ($series !== '')                      $st->bindValue(':series',   $series);
+    if ($maxPrice !== null && $maxPrice > 0) $st->bindValue(':maxPrice', $maxPrice);
 
     $st->execute();
     $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode(['ok' => true, 'count' => count($rows), 'campers' => $rows], JSON_UNESCAPED_UNICODE);
+    // Si hay resultados, devolvemos normal
+    if ($rows) {
+        echo json_encode([
+            'ok'      => true,
+            'count'   => count($rows),
+            'campers' => $rows,
+            'meta'    => ['nights' => $nights]
+        ], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    // Sin resultados: ¿es por mínimo de noches o por ocupación?
+    // Hacemos una consulta IGNORANDO el mínimo, pero con reservas/bloqueos,
+    // y calculamos el required_min por camper.
+    $sql2 = "
+      SELECT
+        c.id, c.name,
+        ($requiredExpr) AS required_min
+      FROM campers c
+      WHERE 1=1
+        $whereSql
+        AND NOT EXISTS (
+          SELECT 1 FROM reservations r
+          WHERE r.camper_id = c.id
+            AND r.start_date < :end_res
+            AND r.end_date   > :start_res
+            AND ( r.status='paid'
+               OR (r.status='pending' AND r.created_at > NOW() - INTERVAL 30 MINUTE))
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM blackout_dates b
+          WHERE b.camper_id = c.id
+            AND b.start_date < :end_blk
+            AND DATE_ADD(b.end_date, INTERVAL 1 DAY) > :start_blk
+        )
+    ";
+    $st2 = $pdo->prepare($sql2);
+    $st2->bindValue(':start_rules', $start);
+    $st2->bindValue(':end_rules',   $end);
+    $st2->bindValue(':start_res',   $start);
+    $st2->bindValue(':end_res',     $end);
+    $st2->bindValue(':start_blk',   $start);
+    $st2->bindValue(':end_blk',     $end);
+    if ($series !== '')                      $st2->bindValue(':series',   $series);
+    if ($maxPrice !== null && $maxPrice > 0) $st2->bindValue(':maxPrice', $maxPrice);
+    $st2->execute();
+    $ignMin = $st2->fetchAll(PDO::FETCH_ASSOC);
+
+    $meta = ['nights'=>$nights];
+
+    if ($ignMin) {
+        // hay campers libres pero la estancia no alcanza el mínimo
+        $mins = array_map(fn($r)=>(int)$r['required_min'], $ignMin);
+        $minRequiredGlobal = min($mins);
+        $suggestedEnd = (clone $d1)->modify("+$minRequiredGlobal day")->format('Y-m-d'); // end exclusivo
+
+        $meta['no_results_reason'] = 'min_nights';
+        $meta['min_required']      = $minRequiredGlobal;
+        $meta['suggested_end']     = $suggestedEnd;
+    } else {
+        // no hay campers libres (ocupación/bloqueos)
+        $meta['no_results_reason'] = 'occupied';
+    }
+
+    echo json_encode(['ok'=>true, 'count'=>0, 'campers'=>[], 'meta'=>$meta], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
     http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+    echo json_encode(['ok'=>false, 'error'=>$e->getMessage()], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
 }

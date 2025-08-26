@@ -5,13 +5,7 @@ ini_set('display_errors','0');
 
 try {
     require_once __DIR__ . '/../config/bootstrap_env.php';
-    // --- Autoload & env ----------------------------------------------------
-    //$autoload = __DIR__ . '/../vendor/autoload.php';
-    //if (!file_exists($autoload)) throw new Exception("No autoload");
-    //require $autoload;
-
-    //Dotenv\Dotenv::createImmutable(__DIR__.'/..')->safeLoad();
-    //if (empty($_ENV['STRIPE_SECRET'])) throw new Exception('STRIPE_SECRET missing');
+    require_once __DIR__ . '/../config/i18n-lite.php';
 
     $stripeSecret = env('STRIPE_SECRET');
     if (!$stripeSecret) throw new Exception('STRIPE_SECRET missing');
@@ -19,31 +13,33 @@ try {
     require __DIR__ . '/../config/db.php';
     $pdo = get_pdo();
 
-    // ---- INPUT -------------------------------------------------------------
+    // ---- INPUT ----
     $input    = json_decode(file_get_contents('php://input'), true) ?? [];
     $camperId = (int)($input['camper_id'] ?? 0);
     $start    = $input['start'] ?? '';
     $end      = $input['end'] ?? '';
     if (!$camperId || !$start || !$end) throw new Exception('Missing data');
 
-    // ---- CAMPER ------------------------------------------------------------
+    // ---- CAMPER ----
     $st = $pdo->prepare("SELECT * FROM campers WHERE id=?");
     $st->execute([$camperId]);
     $camper = $st->fetch(PDO::FETCH_ASSOC);
     if (!$camper) throw new Exception('Camper not found');
 
-    // ---- NIGHTS / PRICES ---------------------------------------------------
+    // ---- NIGHTS / PRICES ----
     $d1 = new DateTime($start);
     $d2 = new DateTime($end);
     $nights = (int)$d1->diff($d2)->format('%a');
     if ($nights < 1) throw new Exception('Invalid date range');
 
-    $unit         = (float)$camper['price_per_night'];
-    $depositCents = (int) round($unit * 100);           // deposit = first night
-    $totalCents   = (int) round($unit * 100 * $nights); // estimated total
+    $unit = (float)$camper['price_per_night'];
 
-    // ---- RESERVATION (pending) + manage token ------------------------------
-    $token = bin2hex(random_bytes(24)); // 48 chars
+    $depositPercent = max(1, min(100, (int)env('DEPOSIT_PERCENT', 20))); // ← usa 20 por defecto
+    $totalCents     = (int) round($unit * 100 * $nights);                 // total estimado
+    $depositCents   = (int) max(1, round($totalCents * $depositPercent / 100));
+
+    // ---- RESERVATION ----
+    $token = bin2hex(random_bytes(24));
     $hasManage = false;
     try {
         $chk = $pdo->prepare("SHOW COLUMNS FROM `reservations` LIKE 'manage_token'");
@@ -66,32 +62,46 @@ try {
     }
     $reservationId = (int)$pdo->lastInsertId();
 
-    // ---- BASE URL ----------------------------------------------------------
-    // Use PUBLIC_BASE_URL in production; fallback to localhost in dev
-    //$base = rtrim($_ENV['PUBLIC_BASE_URL'] ?? 'http://localhost/CanaryVanGit/AlisiosVan/src', '/');
+    // ---- BASE URL ----
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $base   = rtrim(env('PUBLIC_BASE_URL', "$scheme://$host/src"), '/');
 
     $manageUrl = $base . '/manage.php?rid=' . $reservationId . '&t=' . $token;
 
-    // ---- STRIPE ------------------------------------------------------------
-    //$stripe = new \Stripe\StripeClient($_ENV['STRIPE_SECRET']);
-    // ---- STRIPE ------------------------------------------------------------
+    // ---- STRIPE ----
     $stripe = new \Stripe\StripeClient($stripeSecret);
 
+    // Locale para Stripe (mapa sencillo)
+    $lang = strtolower(substr($GLOBALS['LANG'] ?? 'en', 0, 2));
+    $stripeLocale = [
+        'es'=>'es','en'=>'en','de'=>'de','fr'=>'fr','it'=>'it','pt'=>'pt','nl'=>'nl'
+    ][$lang] ?? 'en'; // o 'auto' si prefieres que Stripe detecte
 
-    // Shortened copies for strings
+    // Cadenas traducibles
     $nameLine = sprintf(
-        '%s (%s) – Booking deposit (first night) · %d nights total',
+        __('%s (%s) – Booking deposit (%d%% of total) · %d nights total'),
         $camper['name'],
         $camper['series'],
+        $depositPercent,
         $nights
     );
+
     $descLine = sprintf(
-        'Reservation #%d · Dates %s → %s · Estimated total €%0.2f • You are paying only the booking deposit (first night) now; remaining balance at pick-up (cash or PayPal).',
-        $reservationId, $start, $end, $totalCents / 100
+        __('Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only a %d%% deposit now; remaining balance at pick-up (cash or PayPal).'),
+        $reservationId, $start, $end, number_format($totalCents / 100, 2, '.', ''), $depositPercent
     );
+
+    $submitMsg = sprintf(
+        __('You are paying a %d%% booking deposit now. The remaining balance is paid in person at pick-up (cash or PayPal).'),
+        $depositPercent
+    );
+
+    $tosMsg = sprintf(
+        __('I accept the [Terms & Cancellation Policy](%s). Company cancellations: full refund. Customer cancellations: deposit is non-refundable.'),
+        'https://alisiosvan.com/terms'
+    );
+    $invoiceFooter = __('Alisios Van · Canary Islands · alisios.van@gmail.com · Cancellation: company cancellations → full refund; customer cancellations → deposit non-refundable.');
 
     $session = $stripe->checkout->sessions->create([
         'mode'        => 'payment',
@@ -99,10 +109,9 @@ try {
         'success_url' => $base . '/thanks.php?session_id={CHECKOUT_SESSION_ID}',
         'cancel_url'  => $base . '/cancel.php?rid=' . $reservationId . '&t=' . $token,
 
-        // Force Stripe Checkout UI language to English
-        'locale'      => 'en',
+        //en el idioma del sitio
+        'locale'      => $stripeLocale,
 
-        // Line item: deposit (first night)
         'line_items' => [[
             'price_data' => [
                 'currency' => 'eur',
@@ -115,14 +124,10 @@ try {
             'quantity' => 1,
         ]],
 
-        // Collect details for the invoice
         'billing_address_collection' => 'required',
         'tax_id_collection'          => ['enabled' => true],
+        'customer_creation'          => 'always',
 
-        // Create/save the Customer
-        'customer_creation' => 'always',
-
-        // Create invoice after payment
         'invoice_creation' => [
             'enabled' => true,
             'invoice_data' => [
@@ -138,26 +143,18 @@ try {
                     'deposit_type'          => 'first_night',
                     'manage_url'            => $manageUrl,
                 ],
-                // Put cancellation info in the invoice footer too
-                'footer' => "Alisios Van · Canary Islands · alisios.van@gmail.com · Cancellation: company cancellations → full refund; customer cancellations → deposit non-refundable.",
+                'footer' => $invoiceFooter,
             ],
         ],
 
-        // Terms & custom text on Checkout
         'consent_collection' => [
             'terms_of_service' => 'required',
         ],
         'custom_text' => [
-            'submit' => [
-                'message' => 'You are paying the booking deposit (first night). The remaining balance is paid in person at pick-up (cash or PayPal).'
-            ],
-            'terms_of_service_acceptance' => [
-                // Keep it short; link to your full policy
-                'message' => 'I accept the [Terms & Cancellation Policy](https://alisiosvan.com/terms). Company cancellations: full refund. Customer cancellations: deposit is non-refundable.'
-            ],
+            'submit' => [ 'message' => $submitMsg ],
+            'terms_of_service_acceptance' => [ 'message' => $tosMsg ],
         ],
 
-        // Metadata useful for backoffice
         'metadata' => [
             'reservation_id'        => (string)$reservationId,
             'camper_id'             => (string)$camperId,
@@ -173,7 +170,6 @@ try {
         ],
     ]);
 
-    // Save the checkout id for webhooks/confirmation
     $st = $pdo->prepare("UPDATE reservations SET stripe_session_id=? WHERE id=?");
     $st->execute([$session->id, $reservationId]);
 
