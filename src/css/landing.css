@@ -283,3 +283,76 @@ label {                 /* refuerza color de labels sobre fondos claros */
         max-width: calc(100svw - 24px);
     }
 }
+
+/* ============ CALENDARIO (Flatpickr) ============ */
+/* Popup siempre visible por encima y adaptado al viewport */
+.flatpickr-calendar {
+    z-index: 11050 !important;                   /* por encima de header/chat */
+    max-width: calc(100svw - 24px);              /* 12px margen a cada lado */
+    border-radius: 14px;
+    box-shadow: var(--box-shadow-medium);
+}
+@supports not (width: 1svw){
+    .flatpickr-calendar { max-width: calc(100vw - 24px); }
+}
+
+/* Centrado del popup en viewports estrechos (sin depender del contenedor) */
+@media (max-width: 768px){
+    .flatpickr-calendar{
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%);
+    }
+}
+
+/* (Opcional) escalar tipografía del calendario en pantallas muy pequeñas */
+@media (max-width: 480px){
+    .flatpickr-calendar{ font-size: .95rem; }
+}
+
+/* ==== Reset dentro del calendario: no heredar estilos globales de buttons ==== */
+.flatpickr-calendar,
+.flatpickr-calendar * {
+    box-sizing: border-box;
+    line-height: normal;
+}
+.flatpickr-day {
+    padding: 0 !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    border-radius: 4px;
+    background: transparent;
+    box-shadow: none !important;
+}
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+/* ==== Alt input: mismo ancho que .form-control y sin parpadeo ==== */
+.flatpickr-alt-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    visibility: hidden;          /* oculto hasta que Flatpickr termine */
+}
+.fp-ready .flatpickr-alt-input { visibility: visible; }
+
+/* Oculta el input original cuando el altInput está listo */
+.fp-ready input#date-range,
+.fp-ready input#dateRange {
+    position: absolute !important;
+    width: 1px !important; height: 1px !important;
+    padding: 0 !important; margin: 0 !important; border: 0 !important;
+    clip: rect(0 0 0 0); overflow: hidden; white-space: nowrap;
+}
+
+/* Por si no usas altInput en alguna página */
+.search-form input.flatpickr-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
