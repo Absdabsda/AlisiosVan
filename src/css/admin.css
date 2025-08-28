@@ -3,10 +3,612 @@
 .fc .fc-button-primary:hover { background: var(--color-mar-oscuro); border-color: var(--color-mar-oscuro); }
 .fc-event.ev-cancelled { opacity:.75; text-decoration: line-through; }
 
-.form-select-sm{ width:50% }
 .legend { display:flex; gap:.75rem; flex-wrap:wrap; font-size:.9rem }
 .legend i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:.35rem; vertical-align:-2px }
 
 .mini-cal .fc { font-size:12px; }
 .mini-cal .fc-daygrid-day { cursor:pointer; }
 .mini-cal .fc-daygrid-block-event .fc-event-title { font-weight:600; }
+
+/* ========== Admin shell (sidebar + main) ========== */
+body.admin-shell { background: #f7f9fc; }
+.admin-grid {
+    display: grid;
+    grid-template-columns: 264px 1fr;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    background: #ffffff;
+    border-right: 1px solid #e9edf3;
+    padding: 18px 14px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.admin-brand {
+    display: flex; align-items: center; gap: .5rem;
+    font-weight: 700; color: #1f2937; font-size: 1.05rem;
+    padding: 8px 10px; margin-bottom: 8px;
+}
+.admin-brand i { font-size: 1.15rem; color: var(--color-mar-oscuro); }
+
+.admin-nav { margin-top: 8px; }
+.admin-nav .nav-link {
+    display: flex; align-items: center; gap: .55rem;
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: #374151;
+    font-weight: 600;
+}
+.admin-nav .nav-link i { font-size: 1rem; opacity: .9; }
+.admin-nav .nav-link:hover { background: #f3f6fb; color: #111827; text-decoration: none; }
+.admin-nav .nav-link.active {
+    background: #ecf6fa;
+    color: #0f6a82;
+    position: relative;
+}
+.admin-nav .nav-link.active::before{
+    content:""; position:absolute; left:-14px; top:8px; bottom:8px;
+    width: 4px; border-radius: 4px; background: var(--color-mar);
+}
+
+.admin-nav-footer {
+    margin-top: auto; padding: 8px 2px;
+    border-top: 1px dashed #eef2f6; margin-left: 8px; margin-right: 8px; margin-top: 16px;
+}
+
+/* MAIN */
+.admin-main {
+    padding: 28px clamp(16px, 2vw, 32px);
+}
+
+.admin-pagehead {
+    margin-bottom: 18px;
+}
+.admin-pagehead h1 {
+    font-family: 'Quicksand', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; /* más “UI” */
+    font-weight: 700;
+    font-size: 1.45rem;
+    margin: 0 0 4px 0;
+    color: #0f172a;
+}
+
+/* Tarjetas “blancas y suaves” */
+.cardy {
+    background: #ffffff;
+    border: 1px solid #e9edf3;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .05);
+    padding: 16px;
+}
+
+/* Tablas más “app” */
+.table {
+    --tbl-border: #eef2f6;
+    border-color: var(--tbl-border);
+}
+.table thead th {
+    background: #fbfdff;
+    border-bottom: 1px solid var(--tbl-border);
+    color: #475569;
+    font-weight: 700;
+}
+.table > :not(caption) > * > * {
+    border-bottom: 1px solid var(--tbl-border);
+}
+.table tbody tr:hover { background: #fafcff; }
+
+/* Selects y botones pequeños consistentes */
+.form-select-sm, .btn-sm, .form-control-sm {
+    border-radius: 10px;
+}
+
+/* Leyenda compacta */
+.legend { font-size: .9rem; gap: .6rem; }
+.legend i { border: 1px solid #e6eaf0; }
+
+/* FullCalendar sobre tarjeta */
+#adminCalendar { background:#fff; border-radius:12px; box-shadow: var(--box-shadow-medium); padding:12px; }
+.fc .fc-toolbar-title { font-size: 1.05rem; }
+.fc .fc-button-primary { background: var(--color-mar); border-color: var(--color-mar); }
+.fc .fc-button-primary:hover { background: var(--color-mar-oscuro); border-color: var(--color-mar-oscuro); }
+.fc-event.ev-cancelled { opacity:.75; text-decoration: line-through; }
+
+/* Responsive: sidebar colapsa arriba */
+@media (max-width: 991.98px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-sidebar { height: auto; position: static; border-right: 0; border-bottom: 1px solid #e9edf3; border-radius: 0 0 12px 12px; }
+    .admin-nav .nav-link.active::before{ display:none; }
+}
+
+/* Responsive: en < LG el grid pasa a 1 columna y usamos offcanvas */
+@media (max-width: 991.98px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-pagehead { padding-top: 8px; }
+}
+
+/* Pulido del offcanvas para que se vea como el sidebar */
+#mobileNav .offcanvas-header {
+    border-bottom: 1px solid #e9edf3;
+}
+#mobileNav .admin-nav .nav-link {
+    border-radius: 10px;
+    margin: 6px 8px;
+}
+#mobileNav .admin-nav .nav-link.active {
+    background: #ecf6fa;
+    color: #0f6a82;
+}
+
+/* ---- Mantener escala estable en iOS (no “agrandes” texto) ---- */
+html { -webkit-text-size-adjust: 100%; }
+
+/* iOS hace zoom si inputs <16px. Sube fuente en móvil y evita zoom al enfocar */
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 575.98px) {
+        input, select, textarea,
+        .form-control, .form-control-sm,
+        .form-select, .form-select-sm { font-size: 16px !important; }
+    }
+}
+
+/* ---- Tablas: que NUNCA rompan el layout; dar scroll horizontal ---- */
+/* Por defecto, SIN scroll lateral */
+.table-responsive{
+    overflow-x: visible;
+    -webkit-overflow-scrolling: touch;
+}
+/* Solo Reservas puede hacer scroll lateral */
+#tab-res .table-responsive,
+#resTableWrap{
+    overflow-x: auto !important;
+}
+
+
+/* La de Reservas tiene muchas columnas: fija un mínimo para forzar scroll */
+#tab-res .table { min-width: 860px; }    /* ajusta 780–980 según prefieras */
+
+/* Por si Bootstrap “exprime” demasiado celdas en XS */
+#tab-res .table th,
+#tab-res .table td { white-space: nowrap; }
+
+/* Contenido centrado y ancho controlado */
+.admin-container{
+    width: min(100%, 1080px);          /* máximo en desktop */
+    margin-inline: auto;
+}
+
+/* En móvil: un poco más estrecho visualmente */
+@media (max-width: 575.98px){
+    .admin-container{ width: min(100%, 720px); }
+}
+
+/* Header fijo arriba en móvil (con fondo y borde) */
+@media (max-width: 991.98px){
+    .admin-pagehead{
+        position: sticky;
+        top: 0;
+        z-index: 1050;                   /* por encima del contenido; offcanvas usa más */
+        background: #f7f9fc;             /* mismo fondo de la página */
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #e9edf3;
+    }
+    .admin-pagehead h1{ font-size: 1.1rem; margin: 0; }
+    .admin-pagehead p{ font-size: .9rem; margin: 0; }
+}
+
+/* Evitar scroll horizontal global de la página */
+html, body { max-width: 100%; } /* sin overflow-x hidden global */
+
+/* ---- SOLO el listado de Reservas tiene scroll lateral ---- */
+#resTableWrap{
+    overflow-x: auto;                  /* scroll lateral */
+    overflow-y: visible;               /* no atrapes scroll vertical */
+    -webkit-overflow-scrolling: touch; /* suavidad iOS */
+    padding-bottom: 2px;               /* evita que tape la sombra */
+}
+
+/* Forzar ancho mínimo para provocar ese scroll en la tabla, no en la página */
+#resTableWrap > table{ min-width: 900px; }  /* ajusta 820–980 a tu gusto */
+#resTableWrap th, #resTableWrap td{ white-space: nowrap; }
+
+/* (Ya lo tienes) Estabilidad tipográfica iOS y tamaño mínimo de inputs en móvil */
+html{ -webkit-text-size-adjust: 100%; }
+@supports (-webkit-touch-callout: none){
+    @media (max-width: 575.98px){
+        input, select, textarea,
+        .form-control, .form-control-sm,
+        .form-select, .form-select-sm{ font-size:16px !important; }
+    }
+}
+
+/* --- Evitar overflow horizontal del grid --- */
+.admin-main,
+.admin-container,
+.tab-content {
+    min-width: 0;   /* ¡imprescindible en layouts con CSS Grid! */
+}
+@media (max-width: 991.98px){
+    .admin-sidebar{ display: none !important; }  /* cinturón y tirantes */
+}
+@media (max-width: 991.98px){
+    .admin-pagehead{ z-index: 1010; } /* por debajo de offcanvas (1045) y modal (1055) */
+}
+.form-select-sm{ width:auto; min-width:0; }
+
+@media (max-width: 575.98px){
+    /* Cualquier .cardy con cabecera .d-flex */
+    .cardy > .d-flex{ flex-wrap: wrap; gap: .5rem; }
+    .cardy > .d-flex > *{ min-width: 0; }
+
+    /* El select grande del calendario que llene fila si hace falta */
+    #blockCamper{ min-width: 0 !important; width: 100%; }
+}
+@media (max-width: 575.98px){
+    .admin-shell .btn{
+        --bs-btn-padding-y: .3rem;
+        --bs-btn-padding-x: .55rem;
+        --bs-btn-font-size: .875rem;
+    }
+    .admin-shell .btn.btn-sm{
+        --bs-btn-padding-y: .25rem;
+        --bs-btn-padding-x: .45rem;
+        --bs-btn-font-size: .82rem;
+    }
+}
+#adminCalendar { background:#fff; border-radius:12px; box-shadow: var(--box-shadow-medium); padding:12px; }
+.fc .fc-button-primary { background: var(--color-mar); border-color: var(--color-mar); }
+.fc .fc-button-primary:hover { background: var(--color-mar-oscuro); border-color: var(--color-mar-oscuro); }
+.fc-event.ev-cancelled { opacity:.75; text-decoration: line-through; }
+
+.legend { display:flex; gap:.75rem; flex-wrap:wrap; font-size:.9rem }
+.legend i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:.35rem; vertical-align:-2px }
+
+.mini-cal .fc { font-size:12px; }
+.mini-cal .fc-daygrid-day { cursor:pointer; }
+.mini-cal .fc-daygrid-block-event .fc-event-title { font-weight:600; }
+
+/* ========== Admin shell (sidebar + main) ========== */
+body.admin-shell { background: #f7f9fc; }
+.admin-grid {
+    display: grid;
+    grid-template-columns: 264px 1fr;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    background: #ffffff;
+    border-right: 1px solid #e9edf3;
+    padding: 18px 14px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.admin-brand {
+    display: flex; align-items: center; gap: .5rem;
+    font-weight: 700; color: #1f2937; font-size: 1.05rem;
+    padding: 8px 10px; margin-bottom: 8px;
+}
+.admin-brand i { font-size: 1.15rem; color: var(--color-mar-oscuro); }
+
+.admin-nav { margin-top: 8px; }
+.admin-nav .nav-link {
+    display: flex; align-items: center; gap: .55rem;
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: #374151;
+    font-weight: 600;
+}
+.admin-nav .nav-link i { font-size: 1rem; opacity: .9; }
+.admin-nav .nav-link:hover { background: #f3f6fb; color: #111827; text-decoration: none; }
+.admin-nav .nav-link.active {
+    background: #ecf6fa;
+    color: #0f6a82;
+    position: relative;
+}
+.admin-nav .nav-link.active::before{
+    content:""; position:absolute; left:-14px; top:8px; bottom:8px;
+    width: 4px; border-radius: 4px; background: var(--color-mar);
+}
+
+.admin-nav-footer {
+    margin-top: auto; padding: 8px 2px;
+    border-top: 1px dashed #eef2f6; margin-left: 8px; margin-right: 8px; margin-top: 16px;
+}
+
+/* MAIN */
+.admin-main {
+    padding: 28px clamp(16px, 2vw, 32px);
+}
+
+.admin-pagehead {
+    margin-bottom: 18px;
+}
+.admin-pagehead h1 {
+    font-family: 'Quicksand', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; /* más “UI” */
+    font-weight: 700;
+    font-size: 1.45rem;
+    margin: 0 0 4px 0;
+    color: #0f172a;
+}
+
+/* Tarjetas “blancas y suaves” */
+.cardy {
+    background: #ffffff;
+    border: 1px solid #e9edf3;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .05);
+    padding: 16px;
+}
+
+/* Tablas más “app” */
+.table {
+    --tbl-border: #eef2f6;
+    border-color: var(--tbl-border);
+}
+.table thead th {
+    background: #fbfdff;
+    border-bottom: 1px solid var(--tbl-border);
+    color: #475569;
+    font-weight: 700;
+}
+.table > :not(caption) > * > * {
+    border-bottom: 1px solid var(--tbl-border);
+}
+.table tbody tr:hover { background: #fafcff; }
+
+/* Selects y botones pequeños consistentes */
+.form-select-sm, .btn-sm, .form-control-sm {
+    border-radius: 10px;
+}
+
+/* Leyenda compacta */
+.legend { font-size: .9rem; gap: .6rem; }
+.legend i { border: 1px solid #e6eaf0; }
+
+/* FullCalendar sobre tarjeta */
+#adminCalendar { background:#fff; border-radius:12px; box-shadow: var(--box-shadow-medium); padding:12px; }
+.fc .fc-toolbar-title { font-size: 1.05rem; }
+.fc .fc-button-primary { background: var(--color-mar); border-color: var(--color-mar); }
+.fc .fc-button-primary:hover { background: var(--color-mar-oscuro); border-color: var(--color-mar-oscuro); }
+.fc-event.ev-cancelled { opacity:.75; text-decoration: line-through; }
+
+/* Responsive: sidebar colapsa arriba */
+@media (max-width: 991.98px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-sidebar { height: auto; position: static; border-right: 0; border-bottom: 1px solid #e9edf3; border-radius: 0 0 12px 12px; }
+    .admin-nav .nav-link.active::before{ display:none; }
+}
+
+/* Responsive: en < LG el grid pasa a 1 columna y usamos offcanvas */
+@media (max-width: 991.98px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-pagehead { padding-top: 8px; }
+}
+
+/* Pulido del offcanvas para que se vea como el sidebar */
+#mobileNav .offcanvas-header {
+    border-bottom: 1px solid #e9edf3;
+}
+#mobileNav .admin-nav .nav-link {
+    border-radius: 10px;
+    margin: 6px 8px;
+}
+#mobileNav .admin-nav .nav-link.active {
+    background: #ecf6fa;
+    color: #0f6a82;
+}
+
+/* ---- Mantener escala estable en iOS (no “agrandes” texto) ---- */
+html { -webkit-text-size-adjust: 100%; }
+
+/* iOS hace zoom si inputs <16px. Sube fuente en móvil y evita zoom al enfocar */
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 575.98px) {
+        input, select, textarea,
+        .form-control, .form-control-sm,
+        .form-select, .form-select-sm { font-size: 16px !important; }
+    }
+}
+
+/* ---- Tablas: que NUNCA rompan el layout; dar scroll horizontal ---- */
+/* Por defecto, SIN scroll lateral */
+.table-responsive{
+    overflow-x: visible;
+    -webkit-overflow-scrolling: touch;
+}
+/* Solo Reservas puede hacer scroll lateral */
+#tab-res .table-responsive,
+#resTableWrap{
+    overflow-x: auto !important;
+}
+
+
+/* La de Reservas tiene muchas columnas: fija un mínimo para forzar scroll */
+#tab-res .table { min-width: 860px; }    /* ajusta 780–980 según prefieras */
+
+/* Por si Bootstrap “exprime” demasiado celdas en XS */
+#tab-res .table th,
+#tab-res .table td { white-space: nowrap; }
+
+/* Contenido centrado y ancho controlado */
+.admin-container{
+    width: min(100%, 1080px);          /* máximo en desktop */
+    margin-inline: auto;
+}
+
+/* En móvil: un poco más estrecho visualmente */
+@media (max-width: 575.98px){
+    .admin-container{ width: min(100%, 720px); }
+}
+
+/* Header fijo arriba en móvil (con fondo y borde) */
+@media (max-width: 991.98px){
+    .admin-pagehead{
+        position: sticky;
+        top: 0;
+        z-index: 1050;                   /* por encima del contenido; offcanvas usa más */
+        background: #f7f9fc;             /* mismo fondo de la página */
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #e9edf3;
+    }
+    .admin-pagehead h1{ font-size: 1.1rem; margin: 0; }
+    .admin-pagehead p{ font-size: .9rem; margin: 0; }
+}
+
+/* Evitar scroll horizontal global de la página */
+html, body { max-width: 100%; } /* sin overflow-x hidden global */
+
+/* ---- SOLO el listado de Reservas tiene scroll lateral ---- */
+#resTableWrap{
+    overflow-x: auto;                  /* scroll lateral */
+    overflow-y: visible;               /* no atrapes scroll vertical */
+    -webkit-overflow-scrolling: touch; /* suavidad iOS */
+    padding-bottom: 2px;               /* evita que tape la sombra */
+}
+
+/* Forzar ancho mínimo para provocar ese scroll en la tabla, no en la página */
+#resTableWrap > table{ min-width: 900px; }  /* ajusta 820–980 a tu gusto */
+#resTableWrap th, #resTableWrap td{ white-space: nowrap; }
+
+/* (Ya lo tienes) Estabilidad tipográfica iOS y tamaño mínimo de inputs en móvil */
+html{ -webkit-text-size-adjust: 100%; }
+@supports (-webkit-touch-callout: none){
+    @media (max-width: 575.98px){
+        input, select, textarea,
+        .form-control, .form-control-sm,
+        .form-select, .form-select-sm{ font-size:16px !important; }
+    }
+}
+
+/* --- Evitar overflow horizontal del grid --- */
+.admin-main,
+.admin-container,
+.tab-content {
+    min-width: 0;   /* ¡imprescindible en layouts con CSS Grid! */
+}
+@media (max-width: 991.98px){
+    .admin-sidebar{ display: none !important; }  /* cinturón y tirantes */
+}
+@media (max-width: 991.98px){
+    .admin-pagehead{ z-index: 1010; } /* por debajo de offcanvas (1045) y modal (1055) */
+}
+.form-select-sm{ width:auto; min-width:0; }
+
+@media (max-width: 575.98px){
+    /* Cualquier .cardy con cabecera .d-flex */
+    .cardy > .d-flex{ flex-wrap: wrap; gap: .5rem; }
+    .cardy > .d-flex > *{ min-width: 0; }
+
+    /* El select grande del calendario que llene fila si hace falta */
+    #blockCamper{ min-width: 0 !important; width: 100%; }
+}
+@media (max-width: 575.98px){
+    .admin-shell .btn{
+        --bs-btn-padding-y: .3rem;
+        --bs-btn-padding-x: .55rem;
+        --bs-btn-font-size: .875rem;
+    }
+    .admin-shell .btn.btn-sm{
+        --bs-btn-padding-y: .25rem;
+        --bs-btn-padding-x: .45rem;
+        --bs-btn-font-size: .82rem;
+    }
+}
+
+@media (min-width:1200px){
+    .admin-container{ width: min(100%, 1200px); }
+}
+@media (min-width:1440px){
+    .admin-container{ width: min(100%, 1320px); }
+}
+
+/* CAMPERS: compactar columna de Acciones y botones en móvil */
+@media (max-width: 575.98px){
+    /* 1) Quita anchos fijos de los <th> (sobrescribe los style="width:…") */
+    #tab-campers thead th[style]{ width: auto !important; }
+
+    /* 2) La celda de Acciones se adapta y no empuja */
+    #tab-campers td:last-child{ width: auto; }
+
+    /* 3) Apila los botones y hazlos más pequeños */
+    #tab-campers .btn-group{
+        display: grid;                /* en móvil, grid = permite apilar */
+        grid-template-columns: 1fr;   /* 1 por fila */
+        gap: .45rem;
+        width: 100%;
+    }
+    #tab-campers .btn-group .btn{
+        width: 100%;                  /* ocupan el ancho de la celda */
+        padding: .35rem .55rem;       /* más compacto que el default */
+        font-size: .875rem;           /* un poco más pequeño */
+        white-space: nowrap;          /* evita que “Reglas por fechas” parta mal */
+    }
+}
+
+/* Oculta la celda de acciones en móvil; muestra el bloque duplicado debajo */
+@media (max-width: 575.98px){
+    #tab-campers td.actions-cell{ display:none; }
+
+    /* quita anchos fijos del thead */
+    #tab-campers thead th[style]{ width:auto !important; }
+
+    /* bloque de botones debajo del row */
+    #tab-campers .row-actions-mobile{ display:block; padding:.4rem 0 .6rem; }
+
+    /* 2 botones por fila (o 1 si cambias a 1fr) */
+    #tab-campers .row-actions-mobile .btn-group{
+        display:grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap:.5rem;
+    }
+    #tab-campers .row-actions-mobile .btn{
+        padding:.4rem .6rem;
+        font-size:.875rem;
+        white-space:nowrap;
+    }
+}
+
+/* En ≥576px, no mostramos el bloque duplicado (se usa la celda normal) */
+@media (min-width: 576px){
+    #tab-campers .row-actions-mobile{ display:none; }
+}
+
+/* Guardar junto al input de mín. noches */
+#tab-campers .cell-inline-actions{
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    justify-content:flex-end;
+}
+#tab-campers .cell-inline-actions input{ min-width: 84px; }
+
+/* Columna de reglas y versión móvil */
+@media (max-width: 575.98px){
+    /* Oculta la columna de 'Reglas por fechas' en la tabla */
+    #tab-campers th.rules-col,
+    #tab-campers td.rules-cell{ display:none; }
+
+    /* El botón de Reglas aparece debajo, ancho completo */
+    #tab-campers .row-actions-mobile{ display:block; padding:.4rem 0 .6rem; }
+
+    /* El bloque de mín. noches + guardar se apila (más cómodo en móvil) */
+    #tab-campers .cell-inline-actions{
+        display:grid;
+        grid-template-columns: 1fr;
+        gap:.45rem;
+        justify-items:stretch;
+    }
+}
+
+/* En ≥576px, no mostramos el botón duplicado de móvil */
+@media (min-width: 576px){
+    #tab-campers .row-actions-mobile{ display:none; }
+}

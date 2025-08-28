@@ -1,16 +1,19 @@
 <?php
 declare(strict_types=1);
 
-ini_set('display_errors','1'); // pon a 0 en prod
+ini_set('display_errors','1'); // pon a '0' en prod
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 
 require_once __DIR__ . '/../config/bootstrap_env.php';
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../src/inc/pricing.php'; // ← precios por reglas
 $pdo = get_pdo();
 
-$start    = $_GET['start'] ?? null;      // YYYY-MM-DD (incl.)
-$end      = $_GET['end']   ?? null;      // YYYY-MM-DD (excl.)
+$start    = $_GET['start'] ?? null; // YYYY-MM-DD (incl.)
+$end      = $_GET['end']   ?? null; // YYYY-MM-DD (excl.)
 $series   = trim((string)($_GET['series']   ?? ''));
 $maxPrice = isset($_GET['maxPrice']) && $_GET['maxPrice'] !== '' ? (float)$_GET['maxPrice'] : null;
 
@@ -24,8 +27,8 @@ try {
 
     // Filtros opcionales
     $where = [];
-    if ($series !== '')                           $where[] = 'c.series = :series';
-    if ($maxPrice !== null && $maxPrice > 0)      $where[] = 'c.price_per_night <= :maxPrice';
+    if ($series !== '')                      $where[] = 'c.series = :series';
+    if ($maxPrice !== null && $maxPrice > 0) $where[] = 'c.price_per_night <= :maxPrice';
     $whereSql = $where ? ' AND ' . implode(' AND ', $where) : '';
 
     // Requisito de mínimo de noches (base y reglas)
@@ -84,20 +87,31 @@ try {
     $st->execute();
     $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
-    // Si hay resultados, devolvemos normal
-    if ($rows) {
+    // Inyectar precios calculados por reglas
+    $campers = [];
+    foreach ($rows as $r) {
+        $cid = (int)$r['id'];
+        $r['price_label'] = nightly_price($pdo, $cid, $start);             // primera noche efectiva
+        $r['total_price'] = sum_price_range($pdo, $cid, $start, $end);     // total del rango (opcional)
+        $campers[] = $r;
+    }
+
+    // (Opcional) ordenar por precio efectivo y luego nombre
+    if ($campers) {
+        usort($campers, fn($a,$b) =>
+        ($a['price_label'] <=> $b['price_label']) ?: strcmp((string)$a['name'], (string)$b['name'])
+        );
+
         echo json_encode([
             'ok'      => true,
-            'count'   => count($rows),
-            'campers' => $rows,
+            'count'   => count($campers),
+            'campers' => $campers,
             'meta'    => ['nights' => $nights]
         ], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
         exit;
     }
 
-    // Sin resultados: ¿es por mínimo de noches o por ocupación?
-    // Hacemos una consulta IGNORANDO el mínimo, pero con reservas/bloqueos,
-    // y calculamos el required_min por camper.
+    // -------- Sin resultados: ¿mínimo de noches o ocupado? --------
     $sql2 = "
       SELECT
         c.id, c.name,
@@ -135,7 +149,6 @@ try {
     $meta = ['nights'=>$nights];
 
     if ($ignMin) {
-        // hay campers libres pero la estancia no alcanza el mínimo
         $mins = array_map(fn($r)=>(int)$r['required_min'], $ignMin);
         $minRequiredGlobal = min($mins);
         $suggestedEnd = (clone $d1)->modify("+$minRequiredGlobal day")->format('Y-m-d'); // end exclusivo
@@ -144,7 +157,6 @@ try {
         $meta['min_required']      = $minRequiredGlobal;
         $meta['suggested_end']     = $suggestedEnd;
     } else {
-        // no hay campers libres (ocupación/bloqueos)
         $meta['no_results_reason'] = 'occupied';
     }
 

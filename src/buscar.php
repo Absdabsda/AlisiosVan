@@ -3,6 +3,7 @@
 
 require_once __DIR__ . '/../config/bootstrap_env.php';
 require_once __DIR__ . '/../config/i18n-lite.php';
+require_once __DIR__.'/inc/pricing.php';
 
 ?><!doctype html>
 <html lang="<?= htmlspecialchars($lang ?? 'en') ?>">

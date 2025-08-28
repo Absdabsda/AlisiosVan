@@ -6,6 +6,7 @@ ini_set('display_errors','0');
 try {
     require_once __DIR__ . '/../config/bootstrap_env.php';
     require_once __DIR__ . '/../config/i18n-lite.php';
+    require_once __DIR__.'/../src/inc/pricing.php';
 
     $stripeSecret = env('STRIPE_SECRET');
     if (!$stripeSecret) throw new Exception('STRIPE_SECRET missing');
