@@ -3,6 +3,7 @@
 
 require_once __DIR__ . '/../config/bootstrap_env.php';
 require_once __DIR__ . '/../config/i18n-lite.php';
+require_once __DIR__.'/inc/pricing.php';
 
 ?><!doctype html>
 <html lang="<?= htmlspecialchars($lang ?? 'en') ?>">
@@ -100,6 +101,52 @@ require_once __DIR__ . '/../config/i18n-lite.php';
         }
     };
 </script>
+
+
+<!-- Mini Chat WhatsApp – Alisios Van -->
+<div id="wa-widget" aria-live="polite">
+    <!-- Lanzador flotante -->
+    <button id="wa-launcher" aria-label="<?= __('Open WhatsApp chat') ?>" title="WhatsApp">
+        <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+    </button>
+
+    <!-- Ventana del chat -->
+    <div id="wa-panel" hidden>
+        <div class="wa-header">
+            <div class="wa-identity">
+                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                <div>
+                    <strong>Alisios Van</strong>
+                    <div class="wa-status"><?= __('WhatsApp') ?></div>
+                </div>
+            </div>
+            <button id="wa-close" aria-label="<?= __('Close chat') ?>" title="<?= __('Close') ?>">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <div class="wa-messages" id="wa-messages"></div>
+
+        <div class="wa-quick" id="wa-quick" aria-label="<?= __('Quick options') ?>">
+            <button type="button" data-text="<?= htmlspecialchars(__('Hello, I’d like to check availability.')) ?>">
+                <?= __('Availability') ?>
+            </button>
+            <button type="button" data-text="<?= htmlspecialchars(__('Could you send me prices and terms?')) ?>">
+                <?= __('Prices') ?>
+            </button>
+            <button type="button" data-text="<?= htmlspecialchars(__('I have another question.')) ?>">
+                <?= __('Other') ?>
+            </button>
+        </div>
+
+        <div class="wa-input">
+            <input type="text" id="wa-input" placeholder="<?= __('Type and open WhatsApp…') ?>" />
+            <button id="wa-send" aria-label="<?= __('Open WhatsApp') ?>">
+                <i class="bi bi-send-fill" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- HERO idéntico al de campers -->
 <main>

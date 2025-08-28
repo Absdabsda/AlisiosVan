@@ -1,39 +1,43 @@
 // js/datepicker-init.js
 (function () {
-    const input = document.getElementById('date-range') || document.getElementById('dateRange');
-    if (!window.flatpickr || !input) return;
-
-    const raw = (window.APP_LANG || 'en').toLowerCase();
-    const key = raw.split('-')[0];
-    // Usa la tabla de locales de flatpickr si está; si no, default
+    const lang = (window.APP_LANG || 'es').toLowerCase().split('-')[0];
     const l10nTable = (window.flatpickr && window.flatpickr.l10ns) || {};
-    const locale = l10nTable[key] || l10nTable[raw] || l10nTable.default || {};
+    const locale = l10nTable[lang] || l10nTable.default || {};
+    if (!window.flatpickr) return;
 
-    const isMobile = () => window.matchMedia('(max-width: 576px)').matches;
+    // Soporta ambos IDs (index y buscar)
+    const inputs = document.querySelectorAll('#dateRange, #date-range');
+    if (!inputs.length) return;
 
-    const fp = flatpickr(input, {
-        mode: 'range',
-        minDate: 'today',
-        dateFormat: 'Y-m-d',     // para URL/backend
-        altInput: true,
-        altFormat: key === 'es' ? "j \\de F Y" : 'j M Y', // visible
-        disableMobile: true,
-        showMonths: isMobile() ? 1 : 2,
-        static: isMobile(),
-        appendTo: isMobile() ? undefined : document.body,
-        position: 'auto',
-        locale,
-        onOpen(_, __, inst){ if (!isMobile()) inst.calendarContainer.style.zIndex = '10010'; }
-    });
+    const mqDesktop = window.matchMedia('(min-width: 768px)');
 
-    // Deja la instancia accesible para landing.js
-    window.__fp = fp;
+    inputs.forEach((el) => {
+        const wrap = el.closest('.date-chip') || el.parentElement;
 
-    // Ajusta meses/anchaje al cambiar viewport
-    window.addEventListener('resize', () => {
-        const mob = isMobile();
-        fp.set('showMonths', mob ? 1 : 2);
-        fp.set('static', mob);
-        fp.set('appendTo', mob ? undefined : document.body);
+        const fp = flatpickr(el, {
+            mode: 'range',
+            minDate: 'today',
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: lang === 'es' ? "j \\de F Y" : 'j M Y',
+            // Mismo widget en todos los dispositivos (evita saltos)
+            disableMobile: true,
+            // Siempre pegado al <body> para que nada lo recorte
+            appendTo: document.body,
+            position: 'auto center',
+            // Solo cambiamos showMonths según breakpoint
+            showMonths: mqDesktop.matches ? 2 : 1,
+            locale,
+            // Haz que el alt-input herede Bootstrap (+ nuestra clase)
+            altInputClass: 'form-control flatpickr-alt-input',
+            onReady() {
+                if (wrap) wrap.classList.add('fp-ready');
+            }
+        });
+
+        // Solo reajusta el número de meses; NO toques appendTo/static
+        mqDesktop.addEventListener('change', (e) => {
+            fp.set('showMonths', e.matches ? 2 : 1);
+        });
     });
 })();

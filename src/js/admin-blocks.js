@@ -1,9 +1,9 @@
+// admin-blocks.js (reemplazo completo)
 document.addEventListener('DOMContentLoaded', function () {
     const btnRefresh = document.getElementById('btnRefreshCal');
     const calendarEl = document.getElementById('adminCalendar');
     if (!calendarEl || typeof FullCalendar === 'undefined') return;
 
-    // URLs centralizadas (con fallback)
     const EVENTS_URL = window.ADMIN_EVENTS_URL || 'admin-events.php';
     const BLOCKS_URL = window.ADMIN_BLOCKS_URL || 'admin-blocks.php';
 
@@ -16,10 +16,10 @@ document.addEventListener('DOMContentLoaded', function () {
         blkModal.show();
     }
 
-    const fCamper  = document.getElementById('blkCamper');
-    const fStart   = document.getElementById('blkStart');
-    const fEnd     = document.getElementById('blkEnd');
-    const fReason  = document.getElementById('blkReason');
+    const fCamper   = document.getElementById('blkCamper');
+    const fStart    = document.getElementById('blkStart');
+    const fEnd      = document.getElementById('blkEnd');
+    const fReason   = document.getElementById('blkReason');
     const btnCreate = document.getElementById('blkCreate');
 
     const addDays = (dStr, n) => {
@@ -28,63 +28,104 @@ document.addEventListener('DOMContentLoaded', function () {
         return d.toISOString().slice(0, 10);
     };
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        height: 'auto',
-        firstDay: 1,
-        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' },
-        selectable: true,
-        selectMirror: true,
-        selectOverlap: true,
-        events: {
-            url: EVENTS_URL,
-            extraParams: () => ({ _ts: Date.now() }),
-            failure: () => alert('No se pudieron cargar los eventos.')
-        },
-        select(info) {
-            // end de FC es exclusivo → restamos 1 día
-            const endInc = addDays(info.endStr, -1);
+    let calendar = null;
 
-            // Prefijar camper con el selector superior
-            const selectTop = document.getElementById('blockCamper');
-            if (selectTop && selectTop.value) fCamper.value = selectTop.value;
+    function buildCalendar() {
+        if (calendar) return calendar;
 
-            fStart.value  = info.startStr;
-            fEnd.value    = endInc;
-            fReason.value = '';
-            openBlkModal();
-        },
-        eventClick: async function (info) {
-            const id = String(info.event.id || '');
-            if (id.startsWith('blk-')) {
-                info.jsEvent.preventDefault();
-                if (!confirm('¿Eliminar este bloqueo?')) return;
-                try {
-                    const res = await fetch(BLOCKS_URL, {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            action: 'delete',
-                            id: id.replace('blk-', '')
-                        })
-                    });
-                    const data = await res.json();
-                    if (!data.ok) throw new Error(data.error || 'Error');
-                    calendar.refetchEvents();
-                } catch (e) {
-                    alert('No se pudo eliminar: ' + e.message);
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            firstDay: 1,
+            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' },
+            selectable: true,
+            selectMirror: true,
+            selectOverlap: true,
+            eventDisplay: 'block',
+            events: {
+                url: EVENTS_URL,
+                extraParams: () => ({ _ts: Date.now() }),
+                failure: () => alert('No se pudieron cargar los eventos.')
+            },
+            select(info) {
+                // end exclusivo → restamos 1 día
+                const endInc = addDays(info.endStr, -1);
+
+                // Prefijar camper con el selector superior
+                const selectTop = document.getElementById('blockCamper');
+                if (selectTop && selectTop.value) fCamper.value = selectTop.value;
+
+                fStart.value  = info.startStr;
+                fEnd.value    = endInc;
+                fReason.value = '';
+                openBlkModal();
+            },
+            async eventClick(info) {
+                const id = String(info.event.id || '');
+                // Bloqueo: permitir eliminar al click
+                if (id.startsWith('blk-')) {
+                    info.jsEvent.preventDefault();
+                    if (!confirm('¿Eliminar este bloqueo?')) return;
+                    try {
+                        const res = await fetch(BLOCKS_URL, {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({ action: 'delete', id: id.replace('blk-','') })
+                        });
+                        const data = await res.json();
+                        if (!data.ok) throw new Error(data.error || 'Error');
+                        calendar.refetchEvents();
+                    } catch (e) {
+                        alert('No se pudo eliminar: ' + e.message);
+                    }
+                    return;
                 }
-                return;
+                // Evento normal con URL
+                if (info.event.url) {
+                    info.jsEvent.preventDefault();
+                    window.open(info.event.url, '_blank', 'noopener');
+                }
             }
-            if (info.event.url) {
-                info.jsEvent.preventDefault();
-                window.open(info.event.url, '_blank', 'noopener');
-            }
-        },
-        eventDisplay: 'block'
+        });
+
+        calendar.on('loading', (isLoading) => {
+            if (!btnRefresh) return;
+            btnRefresh.disabled = isLoading;
+            btnRefresh.classList.toggle('disabled', isLoading);
+        });
+
+        calendar.render();
+        btnRefresh?.addEventListener('click', () => calendar.refetchEvents());
+        return calendar;
+    }
+
+    // Helpers de visibilidad del tab
+    function tabCalIsVisible() {
+        const pane = document.getElementById('tab-cal');
+        return pane && pane.classList.contains('show') && pane.classList.contains('active');
+    }
+    function ensureCalendar() {
+        if (!calendar && tabCalIsVisible()) buildCalendar();
+        if (calendar) calendar.updateSize();
+    }
+
+    // Inicial: si ya está visible, crearlo
+    ensureCalendar();
+
+    // Cuando se muestre la pestaña del calendario, crearlo/ajustarlo
+    document.addEventListener('shown.bs.tab', (e) => {
+        if (e.target.getAttribute('data-bs-target') === '#tab-cal') {
+            // esperar a que Bootstrap quite display:none
+            setTimeout(ensureCalendar, 0);
+        }
     });
 
+    // Ajustes extra
+    window.addEventListener('load', ensureCalendar);
+    window.addEventListener('resize', () => calendar?.updateSize());
+
+    // Crear bloqueo
     btnCreate?.addEventListener('click', async () => {
         const camperId = fCamper.value;
         const startStr = fStart.value;
@@ -110,19 +151,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await res.json();
             if (!data.ok) throw new Error(data.error || 'Error');
             blkModal && blkModal.hide();
-            calendar.unselect();
-            calendar.refetchEvents();
+            calendar?.unselect();
+            calendar?.refetchEvents();
         } catch (e) {
             alert('Error creando el bloqueo: ' + e.message);
         }
     });
-
-    calendar.on('loading', (isLoading) => {
-        if (!btnRefresh) return;
-        btnRefresh.disabled = isLoading;
-        btnRefresh.classList.toggle('disabled', isLoading);
-    });
-
-    calendar.render();
-    btnRefresh?.addEventListener('click', () => calendar.refetchEvents());
 });
