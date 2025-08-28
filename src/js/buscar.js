@@ -188,7 +188,7 @@
           </a>
           <div class="camper-info">
             <h3>"${c.name}"</h3>
-            <p>${Number(c.price_per_night).toFixed(0)}€ ${t('per_night')}.</p>
+            <p>${Number(c.price_label ?? c.price_per_night).toFixed(0)}€ ${t('per_night')}.</p>
             <div class="d-flex align-items-center mt-2">
               <button class="btn btn-primary btn-sm js-reserve" data-id="${c.id}">${t('reserve')}</button>
               <a class="btn btn-outline-secondary btn-sm ms-auto" href="${detailsHref}">${t('view_camper')}</a>
@@ -217,6 +217,7 @@
         url.searchParams.set('start', start);
         url.searchParams.set('end', end);
         if (seriesFilter) url.searchParams.set('series', seriesFilter);
+        url.searchParams.set('_ts', Date.now()); // evita caché
 
         try {
             const res = await fetch(url);
