@@ -1,23 +1,24 @@
+<?php
+declare(strict_types=1);
+ini_set('display_errors','1'); error_reporting(E_ALL);
+require __DIR__ . '/../config/i18n-lite.php';
+?>
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Terms of Service | Alisios Van</title>
+    <title><?= __('Terms of Service | Alisios Van') ?></title>
 
-    <!-- evita traducción automática de Chrome -->
     <meta name="google" content="notranslate">
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
     <link rel="stylesheet" href="css/estilos.css">
@@ -31,7 +32,7 @@
     </style>
 </head>
 <body>
-<?php include 'inc/header.inc'; ?>
+<?php include __DIR__ . '/inc/header.inc'; ?>
 
 <main>
     <!-- HERO -->
@@ -44,22 +45,21 @@
     <section class="container py-4 py-md-5">
         <article class="legal-article">
             <p class="lead">
-                <?= __('These Terms of Service (“Terms”) govern the booking and rental of camper vans from Alisios Van. By submitting a booking request or using our services, you agree to these Terms.') ?>
+                <?= __('These Terms of Service (“Terms”) govern the booking and rental of campervan experiences from Alisios Van. By submitting a booking request or using our services, you agree to these Terms.') ?>
             </p>
 
             <h2><?= __('1. Who we are') ?></h2>
             <ul>
-                <li><strong><?= __('Owner:') ?></strong> Carlos Enrique Rodríguez Pérez (<?= __('trade name: Alisios Van') ?>)</li>
-                <li><strong><?= __('Tax ID (NIF):') ?></strong> 39492536H</li>
-                <li><strong><?= __('Address:') ?></strong> Calle Barcelona 50, Puerto del Rosario, 35600, Las Palmas, Spain</li>
+                <li><strong><?= __('Owner:') ?></strong> <?= __('Alisios Experience S.L (in formation)') ?></li>
+                <li><strong><?= __('Address:') ?></strong> <?= __('Calle Sevilla 11, Puerto del Rosario, 35600, Las Palmas, Spain') ?></li>
                 <li><strong><?= __('Email:') ?></strong> <a href="mailto:alisios.van@gmail.com">alisios.van@gmail.com</a></li>
                 <li><strong><?= __('Phone:') ?></strong> <a href="tel:+34610136383">+34 610 136 383</a></li>
             </ul>
 
             <h2><?= __('2. Eligibility & drivers') ?></h2>
             <ul>
-                <li><strong><?= __('Minimum age:') ?></strong> <?= __('24+ years. We may accept younger drivers on a case-by-case basis with prior communication and approval.') ?></li>
-                <li><strong><?= __('Experience:') ?></strong> <?= __('at least 2 years of valid driving experience.') ?></li>
+                <li><strong><?= __('Minimum age:') ?></strong> <?= __('26+ years. We may accept younger drivers case by case with prior communication and approval; an extra fee may apply.') ?></li>
+                <li><strong><?= __('Experience:') ?></strong> <?= __('at least 3 years of valid driving experience.') ?></li>
                 <li><strong><?= __('Licence:') ?></strong> <?= __('Category B (car). Bring your physical driving licence and ID/passport.') ?></li>
                 <li><?= __('Additional drivers are allowed if identified and approved before pickup (bring their documents too).') ?></li>
             </ul>
@@ -75,7 +75,7 @@
             <ul>
                 <li><strong><?= __('Mileage:') ?></strong> <?= __('150 km per day included. Extra kilometres can be purchased for a small fee — ask us if you plan a long route.') ?></li>
                 <li><strong><?= __('Fuel policy:') ?></strong> <?= __('full-to-full. We deliver with a full tank; return it full and keep the receipt if requested.') ?></li>
-                <li><strong><?= __('Roads:') ?></strong> <?= __('light, well-maintained tracks at low speed are fine. Off-road, beaches, dunes or risky terrain are not allowed and may void coverage.') ?></li>
+                <li><strong><?= __('Roads:') ?></strong> <?= __('only authorised paved roads are allowed. Driving on dirt tracks, sand, beaches or countryside areas is not permitted. If this rule is breached, the security deposit will be fully retained.') ?></li>
                 <li><?= __('Traffic fines, tolls and penalties during the rental are the renter’s responsibility.') ?></li>
             </ul>
 
@@ -88,7 +88,7 @@
 
             <h2><?= __('6. Pickup & return') ?></h2>
             <ul>
-                <li><strong><?= __('Pickup:') ?></strong> <?= __('from 15:00 ·') ?> <strong><?= __('Return:') ?></strong> <?= __('by 11:00 (flexible when possible). Late returns may incur a fee.') ?></li>
+                <li><strong><?= __('Pickup:') ?></strong> <?= __('from 15:00 ·') ?> <strong><?= __('Return:') ?></strong> <?= __('by 12:00 (flexible when possible). Unscheduled late returns incur a €40 fee per extra hour.') ?></li>
                 <li><?= __('Pickup and return are usually in Puerto del Rosario (Fuerteventura). Alternative locations may be available on request.') ?></li>
             </ul>
 
@@ -103,7 +103,7 @@
             <p><?= __('Well-behaved pets are welcome. Please notify us when booking and return the camper clean and in good condition.') ?></p>
 
             <h2><?= __('9. Ferries & inter-island travel') ?></h2>
-            <p><?= __('Ferry travel between islands is usually allowed with prior notice and approval. Ferry tickets and extra insurance may apply.') ?></p>
+            <p><?= __('Ferry travel between islands is usually allowed with prior notice and approval. Failure to notify in advance will result in total loss of the security deposit.') ?></p>
 
             <h2><?= __('10. What’s included') ?></h2>
             <p><?= __('Each camper includes, at minimum:') ?></p>
@@ -121,6 +121,7 @@
 
             <h2><?= __('12. Prohibited uses') ?></h2>
             <p><?= __('The camper must not be used for illegal activities, races, towing, sub-rental or any purpose not covered by the insurance. Do not carry more passengers than seats or exceed load limits.') ?></p>
+            <p><?= __('Note: under current regulations, all sand tracks have a 30 km/h speed limit and are monitored by drones to prevent access to protected areas. Our campers have a location and driving control system to help ensure compliance. If speed limits are repeatedly exceeded or restricted areas are accessed, the security deposit will be fully retained and any resulting legal penalties will be the driver’s sole responsibility.') ?></p>
 
             <h2><?= __('13. Liability & limitation') ?></h2>
             <p><?= __('To the extent permitted by law, Alisios Van is not liable for indirect, incidental or consequential losses. Nothing in these Terms excludes liability that cannot be excluded by law.') ?></p>
@@ -128,7 +129,7 @@
             <h2><?= __('14. Personal data') ?></h2>
             <p>
                 <?= __('We process personal data in accordance with our') ?>
-                <a href="privacy.php"><?= __('Privacy Policy') ?></a>.
+                <a href="politica.php"><?= __('Privacy Policy') ?></a>.
                 <?= __('You can manage cookie preferences at any time from') ?>
                 <a href="#" onclick="cookieConsent?.openSettings();return false;"><?= __('Cookie settings') ?></a>.
             </p>
@@ -139,13 +140,11 @@
             <h2><?= __('16. Changes to these terms') ?></h2>
             <p><?= __('We may update these Terms to reflect changes in our service or legal requirements. The version published on this website is the one in force.') ?></p>
 
-            <p class="small text-muted mt-4">
-                <?= __('Last updated:') ?> <?= date('F Y') ?>
-            </p>
+            <p class="small text-muted mt-4"><?= __('Last updated:') ?> <?= date('F Y') ?></p>
         </article>
     </section>
 </main>
 
-<?php include 'inc/footer.inc'; ?>
+<?php include __DIR__ . '/inc/footer.inc'; ?>
 </body>
 </html>

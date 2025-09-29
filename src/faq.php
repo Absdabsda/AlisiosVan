@@ -1,11 +1,14 @@
+<?php
+declare(strict_types=1);
+require __DIR__ . '/../config/i18n-lite.php';
+?>
 <!doctype html>
 <html lang="<?= htmlspecialchars($LANG ?? 'en') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>FAQ | Alisios Van</title>
+    <title><?= __('FAQ | Alisios Van') ?></title>
 
-    <!-- evita traducción automática de Chrome -->
     <meta name="google" content="notranslate">
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
@@ -15,7 +18,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
     <link rel="stylesheet" href="css/estilos.css">
@@ -41,7 +43,7 @@
         </div>
     </section>
 
-    <!-- Tools: search + chips + open/close all -->
+    <!-- Tools -->
     <section class="container py-4">
         <div class="faq-tools">
             <div class="faq-search">
@@ -95,7 +97,7 @@
                 <details class="faq-item" id="faq-age" data-tags="drivers">
                     <summary><?= __('What is the minimum driver age?') ?></summary>
                     <div class="content">
-                        <?= __('24+ with at least 2 years of driving experience. Exceptions may be considered case-by-case with prior notice—please contact us in advance. Extra drivers can be added (bring their documents too).') ?>
+                        <?= __('26+ with at least 3 years of valid driving experience. Case-by-case exceptions may be considered with prior notice—please contact us in advance. An extra fee may apply depending on the case. Additional drivers can be added (bring their documents too).') ?>
                     </div>
                 </details>
 
@@ -108,12 +110,18 @@
 
                 <details class="faq-item" id="faq-pets" data-tags="rules,vehicle">
                     <summary><?= __('Are pets allowed?') ?></summary>
-                    <div class="content"><?= __('Yes, well-behaved pets are welcome. Please notify us when booking and return the camper clean.') ?></div>
+                    <div class="content">
+                        <ul>
+                            <li><?= __('Yes, well-behaved pets are welcome. You must notify us when booking.') ?></li>
+                            <li><?= __('Return the camper clean and in good condition.') ?></li>
+                            <li><?= __('If you do not notify us in advance, the full security deposit will be retained.') ?></li>
+                        </ul>
+                    </div>
                 </details>
 
                 <details class="faq-item" id="faq-times" data-tags="pickup">
                     <summary><?= __('What are the pickup and return times?') ?></summary>
-                    <div class="content"><?= __('Pickup from 15:00 and return by 11:00 (flexible when possible). Late returns may incur a fee.') ?></div>
+                    <div class="content"><?= __('Pickup from 15:00 and return by 12:00 (flexible when possible). Late returns may incur a fee.') ?></div>
                 </details>
 
                 <details class="faq-item" id="faq-fuel" data-tags="vehicle">
@@ -123,7 +131,14 @@
 
                 <details class="faq-item" id="faq-cleaning" data-tags="rules,vehicle">
                     <summary><?= __('What cleaning is expected on return?') ?></summary>
-                    <div class="content"><?= __('Please return dishes clean, interior tidy, and tanks emptied (if applicable). Extra cleaning may be charged otherwise.') ?></div>
+                    <div class="content">
+                        <ul>
+                            <li><?= __('Return dishes clean, interior tidy, and grey/dirty water tanks emptied.') ?></li>
+                            <li><?= __('If this is not done, an additional cleaning fee may be charged.') ?></li>
+                            <li><?= __('You do not need to fill the clean water tanks or wash the exterior — we do it to protect windows and the solar panel.') ?></li>
+                            <li><?= __('If you wash the exterior yourself, do not use high-pressure water directly on windows or the solar panel.') ?></li>
+                        </ul>
+                    </div>
                 </details>
             </div>
 
@@ -152,12 +167,27 @@
 
                 <details class="faq-item" id="faq-sleep" data-tags="camping,rules">
                     <summary><?= __('Where can I sleep/camp?') ?></summary>
-                    <div class="content"><?= __('Respect local regulations. Rules vary by municipality and in protected areas.') ?></div>
+                    <div class="content">
+                        <ul>
+                            <li><?= __('Respect local regulations: only stay overnight in authorised areas and campsites.') ?></li>
+                            <li><?= __('Do not access protected areas or private land; penalties can be high.') ?></li>
+                            <li><?= __('Our geolocation systems help ensure your adventure is safe and responsible.') ?></li>
+                        </ul>
+                    </div>
                 </details>
 
                 <details class="faq-item" id="faq-dirt" data-tags="vehicle,rules">
                     <summary><?= __('Can I drive on dirt roads?') ?></summary>
-                    <div class="content"><?= __('Light, well-maintained tracks are fine at low speed. Off-road or risky terrain is not allowed and voids coverage.') ?></div>
+                    <div class="content">
+                        <p><?= __('All these rules are monitored by our geolocation systems.') ?></p>
+                        <ul>
+                            <li><?= __('With our retro campers and vans it is forbidden to drive on dirt roads, sand, beaches or off-road areas.') ?></li>
+                            <li><?= __('Exception: 4x4 models may use light, well-maintained tracks at low speed.') ?></li>
+                            <li><?= __('Maximum speed: 30 km/h on dirt roads or authorised areas.') ?></li>
+                            <li><?= __('Prohibited: leaving the track or accessing protected areas.') ?></li>
+                            <li><?= __('Consequences: repeatedly exceeding the speed limit or entering restricted areas will result in full retention of the deposit; any legal penalties will be the driver’s sole responsibility.') ?></li>
+                        </ul>
+                    </div>
                 </details>
 
                 <details class="faq-item" id="faq-power" data-tags="vehicle">
@@ -167,13 +197,36 @@
 
                 <details class="faq-item" id="faq-breakdown" data-tags="insurance,vehicle">
                     <summary><?= __('What if I have a breakdown?') ?></summary>
-                    <div class="content"><?= __('24/7 roadside assistance is included. Call us first and we will help you and coordinate everything to make it easier for you.') ?></div>
+                    <div class="content">
+                        <p><?= __('Always contact us first.') ?></p>
+                        <ul>
+                            <li><?= __('24/7 roadside assistance is included.') ?></li>
+                            <li><?= __('Some breakdowns may prevent the trip from continuing.') ?></li>
+                            <li><?= __('If it is not your responsibility, you may:') ?>
+                                <ul>
+                                    <li><?= __('Get a refund for the unused days, or') ?></li>
+                                    <li><?= __('Continue with a replacement vehicle.') ?></li>
+                                </ul>
+                            </li>
+                            <li><?= __('Failure to follow our instructions or acting on your own will result in the retention of the security deposit.') ?></li>
+                        </ul>
+                    </div>
                 </details>
 
                 <details class="faq-item" id="faq-payment-cancel" data-tags="payments,booking">
                     <summary><?= __('Payments and cancellation policy') ?></summary>
                     <div class="content">
-                        <?= __('We accept major cards. A booking deposit confirms the reservation; the balance is due before pickup. Cancellation terms depend on notice/season—see your booking confirmation.') ?>
+                        <ul>
+                            <li><?= __('We accept major credit and debit cards.') ?></li>
+                            <li><?= __('A deposit confirms your reservation; the balance is paid before pickup.') ?></li>
+                            <li><?= __('Cancellation policy:') ?>
+                                <ul>
+                                    <li><?= __('If we cancel, you receive 100% of your reservation back, and we are released from any further liability.') ?></li>
+                                    <li><?= __('If you cancel more than 1 month in advance, 50% of the booking deposit is refunded (to cover admin and payment processing costs).') ?></li>
+                                    <li><?= __('If you cancel less than 1 month in advance, the reservation is non-refundable.') ?></li>
+                                </ul>
+                            </li>
+                        </ul>
                     </div>
                 </details>
             </div>
