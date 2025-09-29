@@ -166,3 +166,25 @@ mark{
     padding: 0 0 1rem 0;
 }
 
+.chip {
+    padding:.45rem .8rem;
+    border:1px solid var(--color-mar);
+    border-radius:999px;
+    background:#fff;
+    cursor:pointer;
+    font-weight:600;
+    color: var(--color-piedra);
+}
+
+/* Hover: fondo azul, texto blanco */
+.chip:hover {
+    background: var(--color-mar);
+    color: var(--color-blanco);
+    border-color: var(--color-mar);
+}
+
+.chip.active {
+    background: var(--color-mar);
+    color: var(--color-blanco);
+    border-color: var(--color-mar);
+}
