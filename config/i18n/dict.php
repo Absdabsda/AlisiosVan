@@ -10,6 +10,8 @@ return [
         "We need your email to verify it's you." => 'Necesitamos tu email para verificar que eres tú.',
         'We’ll verify and take you to your booking.' => 'Verificaremos y te llevaremos a tu reserva.',
 
+        'From €%s per night' => 'Desde €%s por noche',
+
 
         'Available campers' => 'Campers disponibles',
         'Travel dates' => 'Fechas de viaje',
@@ -674,6 +676,8 @@ return [
         'Manage your booking' => 'Buchung verwalten',
         'Continue' => 'Weiter',
 
+        'From €%s per night' => 'Ab €%s pro Nacht',
+
         'Available campers' => 'Verfügbare Camper',
         'Travel dates' => 'Reisedaten',
         'Back' => 'Zurück',
@@ -1327,6 +1331,8 @@ return [
         'Manage your booking' => 'Gérer votre réservation',
         'Continue' => 'Continuer',
 
+        'From €%s per night' => 'À partir de €%s par nuit',
+
         'Available campers' => 'Vans disponibles',
         'Travel dates' => 'Dates de voyage',
         'Back' => 'Retour',
@@ -1979,6 +1985,8 @@ return [
         'Manage Booking' => 'Gestisci prenotazione',
         'Manage your booking' => 'Gestisci la tua prenotazione',
         'Continue' => 'Continua',
+
+        'From €%s per night' => 'Da €%s a notte',
 
         'Available campers' => 'Camper disponibili',
         'Travel dates' => 'Date di viaggio',
