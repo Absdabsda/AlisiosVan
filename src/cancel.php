@@ -3,7 +3,7 @@ declare(strict_types=1);
 ini_set('display_errors','1'); error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config/bootstrap_env.php';
-require_once __DIR__ . '/../config/i18n-lite.php';   // ← AÑADIDO
+require_once __DIR__ . '/../config/i18n-lite.php';
 require __DIR__ . '/../config/db.php';
 
 use Stripe\StripeClient;
@@ -44,6 +44,7 @@ try {
     $changed = false;
     $message = '';
 
+    // --- Cancelar si estaba pendiente ---
     if ($status === 'pending') {
         $up = $pdo->prepare("
             UPDATE reservations
@@ -89,22 +90,19 @@ $title        = __($titleKey);
 $icon         = $isCancelled ? 'check-circle' : 'info-circle';
 $accentClass  = $isCancelled ? 'ok' : 'warn';
 ?>
-
 <!doctype html>
 <html lang="<?= htmlspecialchars($GLOBALS['LANG'] ?? 'en') ?>">
 <head>
     <meta charset="utf-8">
     <title><?= $title ?> | Alisios Van</title>
 
-    <!-- evita traducción automática de Chrome -->
     <meta name="google" content="notranslate">
-
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
     <link rel="stylesheet" href="css/estilos.css">
@@ -159,9 +157,6 @@ $accentClass  = $isCancelled ? 'ok' : 'warn';
             <a class="btn" href="index.php"><i class="bi bi-house-door"></i> <?= __('Back to Home') ?></a>
             <a class="btn btn-outline-secondary" href="campers.php"><i class="bi bi-search"></i> <?= __('Browse campers') ?></a>
             <a class="btn btn-outline-secondary" href="contact.php"><i class="bi bi-envelope"></i> <?= __('Contact us') ?></a>
-            <?php if(!$isCancelled && $status === 'pending'): ?>
-                <a class="btn btn-danger" href="/checkout/retry.php?rid=<?= (int)$rid ?>"><i class="bi bi-arrow-repeat"></i> <?= __('Retry payment') ?></a>
-            <?php endif; ?>
         </div>
     </div>
 </main>

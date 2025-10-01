@@ -9,7 +9,6 @@ require_once __DIR__ . '/../config/i18n-lite.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alisios Van</title>
 
-    <!-- evita traducción automática de Chrome -->
     <meta name="google" content="notranslate">
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
@@ -17,46 +16,36 @@ require_once __DIR__ . '/../config/i18n-lite.php';
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
 
-    <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
-    <!-- Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js" defer></script>
-    <!-- Locales desde /assets para que nunca fallen -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/de.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/it.js" defer></script>
 
-
-    <!-- Idioma activo de la web para JS -->
     <script defer>
         window.APP_LANG = "<?= htmlspecialchars($LANG ?? 'es') ?>".split('-')[0];
     </script>
-
-    <!-- Init común de Flatpickr -->
     <script defer src="js/datepicker-init.js"></script>
 
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/landing.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/cookies.css">
+
     <script src="js/header.js" defer></script>
     <script src="js/landing.js" defer></script>
     <script src="js/cookies.js" defer></script>
+    <script src="js/estado-busqueda.js" defer></script>
     <style>
         :root{ --header-bg-rgb: 167,176,183; }
     </style>
@@ -72,7 +61,6 @@ require_once __DIR__ . '/../config/i18n-lite.php';
 
         <div class="search-wrapper">
             <form class="search-form row align-items-center justify-content-center" id="searchForm">
-                <!-- Ubicación -->
                 <div class="col-md-4">
                     <label for="location" class="form-label"><?= __('Where are you going?') ?></label>
                     <input type="text" class="form-control" id="location" placeholder="<?= __('Fuerteventura') ?>" readonly>
@@ -83,12 +71,34 @@ require_once __DIR__ . '/../config/i18n-lite.php';
                     <input type="text" id="date-range" class="form-control" placeholder="<?= __('Choose your travel dates') ?>" readonly />
                 </div>
 
-                <!-- Botón de búsqueda -->
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary btn-lg mt-3"><?= __('Search') ?></button>
                 </div>
             </form>
         </div>
+    </div>
+</div>
+
+<!-- banner reserva pendiente -->
+<div id="pendingBanner" class="banner" style="display:none; background:#fff2cc; padding:.75rem 1rem; border-radius:10px; margin:12px 0;">
+    <strong>¡Tienes una reserva pendiente!</strong>
+    <div class="mt-1">
+        <a id="btnResumePay" class="btn btn-primary btn-sm">Reanudar pago</a>
+        <button id="btnDismissPending" class="btn btn-outline-secondary btn-sm">Ocultar</button>
+    </div>
+</div>
+
+<!-- banner última búsqueda -->
+<div
+        id="searchBanner"
+        class="banner text-center"
+        data-tpl="<?= htmlspecialchars(__('Do you want to continue your search from %s to %s?'), ENT_QUOTES, 'UTF-8') ?>"
+        style="display:none; background:#e8f5e9; padding:.75rem 1rem; border-radius:10px; margin:12px 0;"
+>
+    <strong id="searchText"></strong>
+    <div class="mt-1">
+        <a id="btnResumeSearch" class="btn btn-success btn-sm"><?= __('Resume search') ?></a>
+        <button id="btnDismissSearch" class="btn btn-outline-secondary btn-sm"><?= __('Dismiss') ?></button>
     </div>
 </div>
 

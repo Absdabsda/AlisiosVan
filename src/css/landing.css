@@ -356,3 +356,7 @@ label {                 /* refuerza color de labels sobre fondos claros */
     width: 100%;
     box-sizing: border-box;
 }
+
+.banner {
+    text-align: center;
+}
