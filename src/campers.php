@@ -1,5 +1,24 @@
+<?php
+// campers.php — listado de campers con precio desde BD + i18n
+
+require_once __DIR__ . '/../config/bootstrap_env.php';
+require_once __DIR__ . '/../config/i18n-lite.php';
+require_once __DIR__ . '/../config/db.php';
+
+$pdo = get_pdo();
+/* Cargamos precios actuales por id */
+$prices = [];
+try {
+    $st = $pdo->query("SELECT id, price_per_night FROM campers");
+    while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
+        $prices[(int)$row['id']] = (float)$row['price_per_night'];
+    }
+} catch (Throwable $e) {
+    // En caso de error, dejamos $prices vacío (fallback visual)
+}
+?>
 <!doctype html>
-<html lang="en">
+<html lang="<?= htmlspecialchars($LANG ?? 'en') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -111,36 +130,51 @@
             <div class="row g-4">
                 <!-- Camper 1 -->
                 <div class="col-md-4 camper-col">
-                    <div class="camper-card" data-id="1" data-name="Matcha" data-series="T3" data-price="115">
+                    <div class="camper-card" data-id="1" data-name="Matcha" data-series="T3" data-price="<?= htmlspecialchars((string)($prices[1] ?? 0)) ?>">
                         <img src="img/carousel/matcha-surf.34.32.jpeg"
                              alt="<?= __('Volkswagen T3 “Matcha” by the beach') ?>" loading="lazy">
                         <div class="camper-info">
                             <h3>“Matcha”</h3>
-                            <p>€115 <?= __('per night') ?></p>
+                            <p>
+                                <?= sprintf(
+                                    __('From €%s per night'),
+                                    number_format((float)($prices[1] ?? 0), 0)
+                                ) ?>
+                            </p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Camper 2 -->
                 <div class="col-md-4 camper-col">
-                    <div class="camper-card" data-id="2" data-name="Skye" data-series="T3" data-price="100">
+                    <div class="camper-card" data-id="2" data-name="Skye" data-series="T3" data-price="<?= htmlspecialchars((string)($prices[2] ?? 0)) ?>">
                         <img src="img/carousel/t3-azul-playa.webp"
                              alt="<?= __('“Skye” parked near the sea') ?>" loading="lazy">
                         <div class="camper-info">
                             <h3>“Skye”</h3>
-                            <p>€100 <?= __('per night') ?></p>
+                            <p>
+                                <?= sprintf(
+                                    __('From €%s per night'),
+                                    number_format((float)($prices[2] ?? 0), 0)
+                                ) ?>
+                            </p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Camper 3 -->
                 <div class="col-md-4 camper-col">
-                    <div class="camper-card" data-id="3" data-name="Rusty" data-series="T4" data-price="85">
+                    <div class="camper-card" data-id="3" data-name="Rusty" data-series="T4" data-price="<?= htmlspecialchars((string)($prices[3] ?? 0)) ?>">
                         <img src="img/carousel/t4-sol.webp"
                              alt="<?= __('“Rusty” at sunset') ?>" loading="lazy">
                         <div class="camper-info">
                             <h3>“Rusty”</h3>
-                            <p>€85 <?= __('per night') ?></p>
+                            <p>
+                                <?= sprintf(
+                                    __('From €%s per night'),
+                                    number_format((float)($prices[3] ?? 0), 0)
+                                ) ?>
+                            </p>
                         </div>
                     </div>
                 </div>

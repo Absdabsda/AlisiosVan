@@ -1,5 +1,11 @@
 <?php
-// ficha-camper.php
+// ficha-camper.php — ficha con precio “desde …” leído de BD + i18n
+
+require_once __DIR__ . '/../config/bootstrap_env.php';
+require_once __DIR__ . '/../config/i18n-lite.php';
+require_once __DIR__ . '/../config/db.php';
+$pdo = get_pdo();
+
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 $campers = [
@@ -74,6 +80,16 @@ $campers = [
 
 $camper = $campers[$id] ?? $campers[1];
 $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
+
+/* Precio base actual desde BD para este camper */
+$price = null;
+try {
+    $st = $pdo->prepare("SELECT price_per_night FROM campers WHERE id = ? LIMIT 1");
+    $st->execute([$id ?: 1]);
+    $price = (float)$st->fetchColumn();
+} catch (Throwable $e) {
+    $price = null;
+}
 ?>
 <!doctype html>
 <html lang="<?= htmlspecialchars($LANG ?? 'en') ?>">
@@ -213,6 +229,15 @@ $hero   = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
 
                         <p class="lead mb-0"><?= htmlspecialchars(__($camper['desc'])) ?></p>
                     </div>
+
+                    <?php if ($price !== null && $price > 0): ?>
+                        <div class="mt-3">
+                            <p class="h5 mb-0">
+                                <?= sprintf(__('From €%s per night'), number_format($price, 0)) ?>
+                            </p>
+                            <small class="text-muted"><?= __('Base price. Final price may vary by dates.') ?></small>
+                        </div>
+                    <?php endif; ?>
 
                     <hr>
 

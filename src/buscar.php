@@ -47,6 +47,7 @@ require_once __DIR__.'/inc/pricing.php';
     <link rel="stylesheet" href="css/cookies.css">
 
     <script src="js/header.js" defer></script>
+    <script src="js/estado-busqueda.js" defer></script>
     <script src="js/buscar.js" defer></script>
     <script src="js/cookies.js" defer></script>
 
