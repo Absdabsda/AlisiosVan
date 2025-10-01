@@ -1,3 +1,6 @@
+/* ==========================================================================
+   TOKENS / DESIGN SYSTEM
+   ========================================================================== */
 :root {
     /* Colores base */
     --color-arena: #e8e6e4;
@@ -5,10 +8,12 @@
     --color-cielo: #B3DDE5;
     --color-piedra: #7D7D7D;
     --color-blanco: #FFFFFF;
+
+    /* Auxiliares */
     --color-arena-rgb: 248, 236, 212;
     --color-blanco-claro: 252, 250, 249;
 
-    /* Variantes para hover y acentos */
+    /* Variantes */
     --color-mar-oscuro: #5698A6;
     --color-arena-oscura: #CBB49E;
     --color-piedra-claro: #A0A0A0;
@@ -22,42 +27,55 @@
     --box-shadow-light: 0 2px 10px rgba(0, 0, 0, 0.05);
     --box-shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.15);
 
-    /* Border radius general */
+    /* Radii y spacing */
     --border-radius: 12px;
-
-    /* Espaciados */
     --spacing-s: 0.5rem;
     --spacing-m: 1rem;
     --spacing-l: 2rem;
 
+    /* Paleta extendida */
     --color-niebla: var(--color-arena);
-
     --color-dunas: #6A4E3B;
     --color-atardecer: #EF476F;
-
     --color-arena-soft: #E8DCCF;
     --color-mar-soft: #A0C4FF;
 
-    --color-texto: var(--text-principal);  /* alias */
+    /* Alias */
+    --color-texto: var(--text-principal);
 
+    /* Accentos footer */
+    --footer-accent: #80C1D0;
+
+    /* UI: hovers específicos */
+    --btn-outline-secondary-hover: #E3F2F6;
 }
 
-body {
-    background-color: var(--color-arena);
-    color: var(--text-principal);
+/* ==========================================================================
+   BASE / RESETS
+   ========================================================================== */
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-niebla);
+    color: var(--color-texto);
     font-family: 'Quicksand', sans-serif;
 }
 
-/* Títulos */
+/* Tipografía */
 h1, h2, h3, .custom-title {
     font-family: 'Playfair Display', cursive;
     font-weight: 700;
     letter-spacing: 1px;
 }
-
 h4 {
     font-family: 'Playfair Display', cursive;
     font-size: 2rem;
+}
+
+/* Labels */
+label {
+    color: var(--color-texto);
+    font-weight: 500;
 }
 
 /* Inputs */
@@ -68,18 +86,37 @@ input, select, textarea {
     color: var(--text-principal);
     background-color: var(--color-blanco);
 }
-
 input::placeholder, textarea::placeholder {
     color: var(--text-placeholder);
 }
-
 input:focus, select:focus, textarea:focus {
     border-color: var(--color-mar-oscuro);
     outline: none;
     box-shadow: 0 0 0 3px rgba(128, 193, 208, 0.3);
 }
 
-/* Botones */
+/* Formularios (contenedor) */
+form {
+    background-color: var(--color-blanco);
+    padding: var(--spacing-l);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-medium);
+}
+
+/* Links */
+a {
+    color: var(--color-mar);
+    text-decoration: none;
+}
+a:hover {
+    color: var(--color-mar-oscuro);
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   BOTONES
+   ========================================================================== */
+/* Base */
 button, .btn {
     background-color: var(--color-mar);
     color: var(--color-blanco);
@@ -87,46 +124,88 @@ button, .btn {
     border-radius: var(--border-radius);
     padding: var(--spacing-s) var(--spacing-l);
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.2s ease;
 }
 
-button:hover, .btn:hover {
+/* Hover genérico (excluye outline secundario) */
+button:hover:not(.btn-outline-secondary),
+.btn:hover:not(.btn-outline-secondary) {
     background-color: var(--color-mar-oscuro);
 }
 
-/* === Variantes de botón === */
-
-/* Accesibilidad foco */
+/* Accesibilidad foco (todos los botones) */
 button:focus, .btn:focus,
 button:focus-visible, .btn:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(128, 193, 208, 0.35); /* usa tu color-mar */
+    box-shadow: 0 0 0 3px rgba(128, 193, 208, 0.35);
 }
 
-/* ---- Secundario: blanco con borde y texto azul ---- */
+/* Tamaños */
+.btn-sm {
+    padding: calc(var(--spacing-s) - 2px) var(--spacing-m);
+    border-radius: calc(var(--border-radius) - 4px);
+}
+.btn-lg {
+    padding: var(--spacing-m) calc(var(--spacing-l) * 1.15);
+}
+
+/* Variantes */
+/* Primario (landing puede sobreescribir) */
+.btn-primary {
+    background-color: var(--color-mar);
+    border-color: var(--color-mar);
+    color: var(--color-blanco);
+}
+.btn-primary:hover {
+    background-color: var(--color-mar-soft);
+    border-color: var(--color-mar-soft);
+}
+
+/* Outline secundario (blanco con borde y hover sólido propio) */
 .btn-outline-secondary {
     background-color: var(--color-blanco) !important;
     color: var(--color-mar-oscuro) !important;
     border: 2px solid var(--color-mar) !important;
+    background-image: none !important;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
 }
-.btn-outline-secondary:hover {
-    background-color: rgba(128, 193, 208, 0.10) !important; /* azul 10% */
+.btn-outline-secondary:hover,
+a.btn.btn-outline-secondary:hover {
+    background-color: var(--btn-outline-secondary-hover) !important;
     color: var(--color-mar-oscuro) !important;
     border-color: var(--color-mar-oscuro) !important;
+    opacity: 1 !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    backdrop-filter: none !important;
 }
+/* Overlay de seguridad para evitar “fugas” visuales */
+.btn-outline-secondary::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--btn-outline-secondary-hover);
+    opacity: 0;
+    transition: opacity .15s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+.btn-outline-secondary:hover::before { opacity: 1; }
 
-/* ---- Danger: rojo para cancelar/eliminar ---- */
+/* Danger */
 .btn-danger {
-    background-color: var(--color-atardecer) !important; /* rojo de tu paleta */
+    background-color: var(--color-atardecer) !important;
     color: var(--color-blanco) !important;
     border: 2px solid var(--color-atardecer) !important;
 }
 .btn-danger:hover {
-    background-color: #D93B61 !important; /* un poco más oscuro */
+    background-color: #D93B61 !important;
     border-color: #D93B61 !important;
 }
 
-/* Opcional: versión enlace discreta */
+/* Link-style */
 .btn-link {
     background: transparent !important;
     border: none !important;
@@ -137,36 +216,9 @@ button:focus-visible, .btn:focus-visible {
 }
 .btn-link:hover { text-decoration: none; }
 
-/* Opcional: tamaños */
-.btn-sm { padding: calc(var(--spacing-s) - 2px) var(--spacing-m); border-radius: calc(var(--border-radius) - 4px); }
-.btn-lg { padding: var(--spacing-m) calc(var(--spacing-l) * 1.15); }
-
-
-/* Formularios */
-form {
-    background-color: var(--color-blanco);
-    padding: var(--spacing-l);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow-medium);
-}
-
-label {
-    color: var(--text-secundario);
-    font-weight: 500;
-}
-
-/* Links */
-a {
-    color: var(--color-mar);
-    text-decoration: none;
-}
-
-a:hover {
-    color: var(--color-mar-oscuro);
-    text-decoration: underline;
-}
-
-/* === HERO PARA PÁGINAS INTERNAS === */
+/* ==========================================================================
+   HERO PÁGINAS INTERNAS
+   ========================================================================== */
 .page-hero {
     position: relative;
     width: 100%;
@@ -181,21 +233,18 @@ a:hover {
     background-position: center;
     background-repeat: no-repeat;
 }
-
 .page-hero::after {
     content: "";
     position: absolute;
     inset: 0;
     background: rgba(0,0,0,.35);
 }
-
 .page-hero__content {
     position: relative;
     z-index: 1;
     text-align: center;
     padding: 0 1rem;
 }
-
 .page-hero__title {
     font-family: 'Playfair Display', cursive;
     font-weight: 700;
@@ -205,11 +254,30 @@ a:hover {
     color: #fff;
 }
 
-/* ===== Paleta Flatpickr a juego ===== */
+/* ==========================================================================
+   FLATPICKR (tema y popup)
+   ========================================================================== */
 .flatpickr-calendar {
+    z-index: 11050 !important;
+    max-width: calc(100svw - 24px);
     border-radius: 14px;
     box-shadow: var(--box-shadow-medium);
 }
+@supports not (width: 1svw) {
+    .flatpickr-calendar { max-width: calc(100vw - 24px); }
+}
+@media (max-width: 768px) {
+    .flatpickr-calendar {
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%);
+    }
+}
+@media (max-width: 480px) {
+    .flatpickr-calendar { font-size: .95rem; }
+}
+
+/* Tema */
 .flatpickr-months .flatpickr-month,
 .flatpickr-weekdays {
     background: var(--color-blanco);
@@ -238,7 +306,57 @@ a:hover {
     border-color: transparent;
 }
 
-/* ===== Footer en blanco sobre fondo oscuro ===== */
+/* Reset interno (evitar herencias indeseadas) */
+.flatpickr-calendar,
+.flatpickr-calendar * {
+    box-sizing: border-box;
+    line-height: normal;
+}
+.flatpickr-day {
+    padding: 0 !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    border-radius: 4px;
+    background: transparent;
+    box-shadow: none !important;
+}
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+/* Alt input */
+.flatpickr-alt-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    visibility: hidden;
+}
+.fp-ready .flatpickr-alt-input { visibility: visible; }
+.fp-ready input#date-range,
+.fp-ready input#dateRange {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    clip: rect(0 0 0 0);
+    overflow: hidden;
+    white-space: nowrap;
+}
+.search-form input.flatpickr-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   FOOTER (tema claro sobre fondo oscuro)
+   ========================================================================== */
 .footer { color: #fff; }
 .footer h4,
 .footer h5,
@@ -249,35 +367,25 @@ a:hover {
 .footer a { color: #fff; text-decoration: none; }
 .footer a:hover { color: #e6f1ff; text-decoration: underline; }
 
-/* Línea divisoria del final más suave en oscuro */
 .footer .border-top { border-top-color: rgba(255,255,255,.25) !important; }
-
-/* Si usas clases "text-muted" dentro del footer, que no se vean grises casi invisibles */
 .footer .text-muted { color: rgba(255,255,255,.75) !important; }
 
-.footer-logo-img{
-    height: 100px;           /* controla la altura visual del logo */
-    width: auto;            /* mantiene proporción */
+.footer-logo-img {
+    height: 100px;
+    width: auto;
     display: block;
     object-fit: contain;
 }
-.footer.bg-dark{
-    background-color: #0f0f10 !important; /* opcional: un negro más profundo */
-}
+.footer.bg-dark { background-color: #0f0f10 !important; }
 
-/* ==== Footer hovers ==== */
-:root{
-    --footer-accent: #80C1D0; /* puedes usar tu color marca */
-}
-
-/* Enlaces de listas (Quick Links / Legal): subrayado deslizante */
-.footer .list-unstyled a{
+/* Hovers */
+.footer .list-unstyled a {
     position: relative;
     color: rgba(255,255,255,.85);
     text-decoration: none !important;
     transition: color .2s ease, opacity .2s ease;
 }
-.footer .list-unstyled a::after{
+.footer .list-unstyled a::after {
     content: "";
     position: absolute;
     left: 0; bottom: -2px;
@@ -285,22 +393,18 @@ a:hover {
     background: var(--footer-accent);
     transition: width .25s ease;
 }
-.footer .list-unstyled a:hover{
-    color: #fff;
-}
-.footer .list-unstyled a:hover::after{
-    width: 100%;
-}
+.footer .list-unstyled a:hover { color: #fff; }
+.footer .list-unstyled a:hover::after { width: 100%; }
 
-/* Accesible con teclado */
-.footer a:focus-visible{
+/* Accesibilidad */
+.footer a:focus-visible {
     outline: 2px solid rgba(255,255,255,.6);
     outline-offset: 2px;
     border-radius: 4px;
 }
 
-/* Iconos sociales: burbuja + lift */
-.footer .footer-social a{
+/* Iconos sociales */
+.footer .footer-social a {
     display: inline-grid;
     place-items: center;
     width: 40px; height: 40px;
@@ -309,114 +413,237 @@ a:hover {
     color: #fff;
     transition: transform .15s ease, background .2s ease, box-shadow .2s ease, color .2s ease;
 }
-.footer .footer-social a:hover{
+.footer .footer-social a:hover {
     transform: translateY(-2px) scale(1.05);
     background: rgba(255,255,255,.18);
     box-shadow: 0 10px 18px rgba(0,0,0,.25);
     color: #fff;
 }
 
-/* Texto del footer (por si usas clases utilitarias mezcladas) */
-.footer .text-white{
-    color: rgba(255,255,255,.9) !important;
+/* Cookies dentro del footer */
+.footer :is(.cc-banner, .cc-modal) :is(h1,h2,h3,h4,h5,h6,p) {
+    color: #666;
 }
 
-/* ===========================
-   WhatsApp mini-chat (contacto)
-   =========================== */
+/* ==========================================================================
+   WIDGET WHATSAPP (mini-chat)
+   ========================================================================== */
 #wa-widget {
-    position: fixed; right: 16px; bottom: 16px; z-index: 1050;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1050;
     font-family: Quicksand, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
-#wa-panel[hidden]{ display:none; }
+#wa-panel[hidden] { display: none; }
 
-/* Lanzador (icono centrado) */
-#wa-launcher{
-    width:64px;height:64px;border:0;border-radius:50%;
-    background:#25D366;color:var(--color-blanco);
-    box-shadow:0 8px 22px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12);
-    display:grid;place-items:center;cursor:pointer;
-    transition:transform .15s ease,filter .15s ease;
-    outline:3px solid var(--color-blanco);
+/* Lanzador */
+#wa-launcher {
+    width: 64px; height: 64px; border: 0; border-radius: 50%;
+    background: #25D366; color: var(--color-blanco);
+    box-shadow: 0 8px 22px rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.12);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: transform .15s ease, filter .15s ease;
+    outline: 3px solid var(--color-blanco);
+    --wa-nudge-x: -1px;
+    --wa-nudge-y: -1px;
 }
-#wa-launcher:hover{ transform: translateY(-1px); filter: brightness(1.05); }
-#wa-launcher i{
-    font-size:1.8rem; line-height:1; display:block; width:1em; height:1em; /* centra bien FA */
-}
-
-#wa-panel{
-    position:absolute; right:0; bottom:72px;
-    width: min(320px, 100vw - 32px);   /* nunca más ancho que la pantalla - 32px */
-    background:#fff; border-radius:16px; overflow:hidden;
-    box-shadow:0 16px 40px rgba(0,0,0,.2);
-}
-
-.wa-header{ background:#25D366;color:var(--color-blanco);padding:10px 12px;display:flex;align-items:center;justify-content:space-between; }
-.wa-identity{ display:flex;align-items:center;gap:.6rem; }
-.wa-identity i{ font-size:1.25rem; line-height:1; display:block; }
-.wa-status{ font-size:.8rem; opacity:.9; }
-#wa-close{ background:transparent;border:0;color:var(--color-blanco);cursor:pointer; }
-
-.wa-messages{ padding:12px; background:#f7f7f7; max-height:300px; overflow:auto; }
-.msg{ padding:8px 12px; border-radius:14px; margin:6px 0; max-width:85%; line-height:1.3; word-wrap:break-word; }
-.msg.bot{ background:var(--color-blanco); border:1px solid #eee; }
-.msg.user{ margin-left:auto; background:#dcf8c6; }
-
-/* Chips EN NEGRO */
-.wa-quick{ display:flex; flex-wrap:wrap; gap:10px; padding:10px 12px; background:#fff; border-top:1px solid #eee; }
-.wa-quick button{
-    border:1px solid var(--color-piedra); background:var(--color-blanco); color:var(--color-piedra); padding:8px 14px;
-    border-radius:999px; cursor:pointer; font-size:.95rem; transition: background-color .2s ease, transform .05s ease;
-}
-.wa-quick button:hover{ background:#111; }
-.wa-quick button:active{ transform: scale(.98); }
-.wa-quick button:focus-visible{ outline:2px solid #25D36655; outline-offset:2px; }
-
-/* Input + botón enviar (icono centrado) */
-.wa-input{ display:flex; gap:8px; padding:10px 12px; border-top:1px solid #eee; background:#fff; }
-.wa-input input{
-    flex:1; border:1px solid #ddd; border-radius:12px; padding:10px 12px; outline:none; background:#fff;
-}
-.wa-input button{
-    border:0; background:#25D366; color:var(--color-blanco); border-radius:12px; padding:0 14px;
-    display:grid; place-items:center; cursor:pointer;
-}
-.wa-input button i{ line-height:1; display:block; width:1em; height:1em; } /* centra el icono */
-
-@media (max-width:575.98px){
-    #wa-panel{ width:92vw; }
-    .wa-status{ display:none; }
-}
-
-/* Centrado real del launcher de WhatsApp (FA) */
-#wa-launcher{
-    display: flex;                /* en vez de grid */
-    align-items: center;
-    justify-content: center;
-    padding: 0;                   /* por si acaso */
-}
-
-/* Nudge óptico del glifo (ajustable con variables) */
-#wa-launcher{
-    --wa-nudge-x: -1px;           /* mueve a la IZQ */
-    --wa-nudge-y: -1px;           /* mueve ARRIBA */
-}
-
-#wa-launcher i{
-    font-size: 1.9rem;            /* tamaño estable */
-    line-height: 1;               /* sin alturas raras */
-    display: block;               /* evita inline gaps */
+#wa-launcher:hover { transform: translateY(-1px); filter: brightness(1.05); }
+#wa-launcher i {
+    font-size: 1.9rem; line-height: 1; display: block;
     transform: translate(var(--wa-nudge-x), var(--wa-nudge-y));
-    /* si usas Bootstrap Icons en el botón de enviar, centra también: */
 }
 
-.wa-input button i,
-.wa-identity i{
-    line-height: 1;
+/* Panel */
+#wa-panel {
+    position: absolute; right: 0; bottom: 72px;
+    width: min(320px, 100vw - 32px);
+    background: #fff; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0,0,0,.2);
+}
+.wa-header {
+    background: #25D366; color: var(--color-blanco);
+    padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;
+}
+.wa-identity { display: flex; align-items: center; gap: .6rem; }
+.wa-identity i { font-size: 1.25rem; line-height: 1; display: block; }
+.wa-status { font-size: .8rem; opacity: .9; }
+#wa-close { background: transparent; border: 0; color: var(--color-blanco); cursor: pointer; }
+
+.wa-messages {
+    padding: 12px; background: #f7f7f7; max-height: 300px; overflow: auto;
+}
+.msg { padding: 8px 12px; border-radius: 14px; margin: 6px 0; max-width: 85%; line-height: 1.3; word-wrap: break-word; }
+.msg.bot { background: var(--color-blanco); border: 1px solid #eee; }
+.msg.user { margin-left: auto; background: #dcf8c6; }
+
+/* Chips */
+.wa-quick {
+    display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 12px;
+    background: #fff; border-top: 1px solid #eee;
+}
+.wa-quick button {
+    border: 1px solid var(--color-piedra);
+    background: var(--color-blanco);
+    color: var(--color-piedra);
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: .95rem;
+    transition: background-color .2s ease, transform .05s ease;
+}
+.wa-quick button:hover { background: #111; color: #fff; }
+.wa-quick button:active { transform: scale(.98); }
+.wa-quick button:focus-visible { outline: 2px solid #25D36655; outline-offset: 2px; }
+
+/* Input + enviar */
+.wa-input { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid #eee; background: #fff; }
+.wa-input input {
+    flex: 1; border: 1px solid #ddd; border-radius: 12px; padding: 10px 12px; outline: none; background: #fff;
+}
+.wa-input button {
+    border: 0; background: #25D366; color: var(--color-blanco);
+    border-radius: 12px; padding: 0 14px; display: grid; place-items: center; cursor: pointer;
+}
+.wa-input button i { line-height: 1; display: block; width: 1em; height: 1em; }
+
+/* Responsive widget */
+@media (max-width: 575.98px) {
+    #wa-panel { width: 92vw; }
+    .wa-status { display: none; }
+}
+
+/* ==========================================================================
+   LANDING PAGE (home)
+   ========================================================================== */
+/* Hero */
+.landing-hero {
+    position: relative;
+    width: 100%;
+    height: clamp(520px, 70vh, 800px);
+    overflow: visible;
+    background-position: center;
+}
+.landing-hero img {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    z-index: 1;
+}
+.landing-overlay {
+    position: relative; z-index: 3;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    gap: .5rem;
+    padding: clamp(96px, 18vh, 160px) 1rem 2rem;
+    color: var(--color-blanco);
+    text-align: center;
+}
+.landing-title {
+    font-size: clamp(34px, 8.5vw, 64px);
+    line-height: 1.1; margin: 0; color: var(--color-blanco);
+}
+.subheading-title {
+    font-size: clamp(16px, 4.8vw, 26px);
+    line-height: 1.2; margin: .25rem 0 1rem;
+    color: var(--color-blanco); opacity: .95;
+}
+
+/* Buscador (hero) */
+.search-wrapper {
+    width: min(1000px, calc(100% - 64px));
+    margin-top: auto;
+    margin-bottom: 2vh;
+    margin-inline: auto;
+    align-self: center;
+}
+.search-form {
+    width: 100%;
+    background-color: rgba(255,255,255,0.90);
+    padding: 1rem 1.25rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-medium);
+    color: var(--color-texto);
+    box-sizing: border-box;
+}
+.search-form label {
+    color: var(--color-texto) !important;
+    font-weight: 500;
     display: block;
+    margin-bottom: .5rem;
+}
+.search-form input {
+    width: 100%; padding: .5rem; margin-bottom: 1rem;
+    border: 1px solid var(--color-piedra-claro);
+    border-radius: var(--border-radius);
+    color: var(--color-texto);
+    box-sizing: border-box;
 }
 
-/* Cookies: títulos con color del footer */
-.footer :is(.cc-banner, .cc-modal) :is(h1,h2,h3,h4,h5,h6,p){
-    color: #666;
+/* Grid del form (Bootstrap compat) */
+.search-form.row {
+    --bs-gutter-x: 1rem;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Botón submit full-width en móvil */
+.search-form .col-md-2 .btn { width: 100%; }
+
+/* Responsive hero */
+@media (max-width: 576px){
+    .landing-hero { height: auto; }
+    .landing-overlay {
+        height: auto;
+        padding-top: 20vh;
+        padding-bottom: 1rem;
+    }
+    .search-wrapper { margin-top: 1rem; }
+}
+@media (min-width: 768px){
+    .search-wrapper {
+        margin-top: clamp(12px, 5vh, 72px);
+        margin-bottom: auto;
+    }
+}
+
+/* ==========================================================================
+   TESTIMONIOS (Swiper)
+   ========================================================================== */
+.testimonials-section .container { position: relative; }
+.testimonials-swiper {
+    position: relative;
+    padding: 40px 0;
+    width: 100%;
+    overflow: hidden;
+}
+.testimonials-swiper .swiper-wrapper { padding-bottom: 40px; }
+.testimonials-swiper .swiper-slide {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    height: auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,.1);
+    box-sizing: border-box;
+    width: 90%; max-width: 90%;
+    margin: 0 auto;
+    display: flex; flex-direction: column; justify-content: space-between;
+    text-align: left;
+}
+.testimonials-swiper .swiper-button-next,
+.testimonials-swiper .swiper-button-prev {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    z-index: 10; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-mar);
+}
+.testimonials-swiper .swiper-button-prev { left: 10px; }
+.testimonials-swiper .swiper-button-next { right: 10px; }
+.review-stars { display: flex; gap: 4px; margin-top: 8px; }
+.review-stars i { color: #f8b500; font-size: 1.4rem; }
+.nombre {
+    display: flex; flex-direction: row; justify-content: space-between; align-items: center;
 }

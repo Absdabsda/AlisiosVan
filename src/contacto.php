@@ -176,7 +176,7 @@ if (empty($_SESSION['csrf'])) {
                             </div>
 
                             <div class="field field--full">
-                                <button type="submit" class="btn"><?= __('Send request') ?></button>
+                                <button type="submit" class="btn btn-primary"><?= __('Send request') ?></button>
                             </div>
                         </div>
 

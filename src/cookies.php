@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="css/cookies.css">
 
     <script src="js/header.js" defer></script>
+    <script src="js/cookies.js" defer></script>
 
     <style>
         :root { --header-bg-rgb: 133,126,110; } /* #857E6E */

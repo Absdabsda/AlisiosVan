@@ -1,11 +1,14 @@
+<?php
+declare(strict_types=1);
+require __DIR__ . '/../config/i18n-lite.php';
+?>
 <!doctype html>
 <html lang="<?= htmlspecialchars($LANG ?? 'en') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>About Us | Alisios Van</title>
+    <title><?= __('About Us | Alisios Van') ?></title>
 
-    <!-- evita traducción automática de Chrome -->
     <meta name="google" content="notranslate">
 
     <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
@@ -22,7 +25,6 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
     <link rel="stylesheet" href="css/estilos.css">
@@ -52,44 +54,44 @@
     <div class="sobre-nosotros container">
         <div class="contenido">
             <div class="texto">
-                <p>
-                    <?= __('At <strong>Alisios Van</strong>, we believe travel is a way of life. Our love of freedom, nature, and one-of-a-kind experiences inspired us to create a project where every camper reflects our philosophy: comfort, simplicity, and soulful.') ?>
-                </p>
-                <p>
-                    <?= __('We’re a small, coast-based company in love with unhurried routes, sunsets over the sea, and spontaneous getaways. We focus on what matters: offering a warm, transparent and authentic service.') ?>
-                </p>
-                <p>
-                    <?= __('Our campers are designed for people like you who want to live fully, keep things simple, and travel in comfort and style.') ?>
-                </p>
+                <p><?= __('about.lead.1') ?></p>
+                <p><?= __('about.lead.2') ?></p>
+                <p><?= __('about.lead.3') ?></p>
             </div>
         </div>
     </div>
 
-    <!-- Fichas valores corporativos -->
+    <!-- Misión, Visión, Valores -->
     <div class="valores-corporativos container">
         <div class="row justify-content-center text-center g-4">
             <div class="col-md-4">
                 <div class="valor-box">
-                    <h3><?= __('Our Mission') ?></h3>
-                    <p><?= __('To create memorable campervan journeys that connect people with nature and the freedom to explore.') ?></p>
+                    <h3><?= __('about.mission.h') ?></h3>
+                    <p><?= __('about.mission.p') ?></p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="valor-box">
-                    <h3><?= __('Our Vision') ?></h3>
-                    <p><?= __('To be the leading campervan rental in the Canary Islands, championing sustainable, flexible, and mindful travel.') ?></p>
+                    <h3><?= __('about.vision.h') ?></h3>
+                    <p><?= __('about.vision.p') ?></p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="valor-box">
-                    <h3><?= __('Our Values') ?></h3>
-                    <p><?= __('Passion for adventure, commitment to our guests, respect for the environment, and a personal touch in every detail.') ?></p>
+                <div class="valor-box text-center">
+                    <h3><?= __('about.values.h') ?></h3>
+                    <ul class="list-unstyled text-center mx-auto" style="max-width:28rem;">
+                        <li class="mb-2"><?= __('about.values.li1') ?></li>
+                        <li class="mb-2"><?= __('about.values.li2') ?></li>
+                        <li class="mb-2"><?= __('about.values.li3') ?></li>
+                        <li class="mb-0"><?= __('about.values.li4') ?></li>
+                    </ul>
                 </div>
             </div>
+
         </div>
     </div>
 
-    <!-- Bloque final Sobre Nosotros -->
+    <!-- Bloque final -->
     <section class="about-final-block">
         <div class="container about-final-container">
             <div class="about-final-image">

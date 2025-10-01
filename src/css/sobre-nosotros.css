@@ -159,4 +159,5 @@ main {
 .about-final-text .btn {
     display: inline-block;
     margin-top: var(--spacing-m);
+    color: var(--color-blanco);
 }
