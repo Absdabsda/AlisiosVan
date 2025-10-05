@@ -60,8 +60,19 @@ $lang = $GLOBALS['LANG'] ?? 'es';
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="google" content="notranslate">
     <title><?= htmlspecialchars(__('Payment cancelled')) ?> | Alisios Van</title>
+    <<!-- evita traducción automática de Chrome -->
+    <meta name="google" content="notranslate">
+
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
+
     <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/cookies.css">
+    <script src="js/cookies.js" defer></script>
     <style>
         body{background:#f6f6f6}
         .wrap{max-width:820px;margin:40px auto;padding:20px}
