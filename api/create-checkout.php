@@ -11,7 +11,7 @@ try {
     $stripeSecret = env('STRIPE_SECRET');
     if (!$stripeSecret) throw new Exception('STRIPE_SECRET missing');
 
-    // DB para obtener camper
+    // DB
     require __DIR__ . '/../config/db.php';
     $pdo = get_pdo();
 
@@ -23,21 +23,66 @@ try {
     if (!$camperId || !$start || !$end) throw new Exception('Missing data');
 
     // ---- CAMPER ----
-    $st = $pdo->prepare("SELECT * FROM campers WHERE id=?");
+    $st = $pdo->prepare("SELECT id, name, series, price_per_night FROM campers WHERE id=? LIMIT 1");
     $st->execute([$camperId]);
     $camper = $st->fetch(PDO::FETCH_ASSOC);
     if (!$camper) throw new Exception('Camper not found');
 
-    // ---- NIGHTS / PRICES ----
+    // ---- NIGHTS ----
     $d1 = new DateTime($start);
     $d2 = new DateTime($end);
     $nights = (int)$d1->diff($d2)->format('%a');
     if ($nights < 1) throw new Exception('Invalid date range');
 
-    $unit = (float)$camper['price_per_night'];
+    $baseUnit = (float)$camper['price_per_night'];
+
+    // ========= PRECIO CON RULES =========
+    // Cargamos TODAS las rules del rango de una vez
+    $q = $pdo->prepare("
+        SELECT id, start_date, end_date, price_per_night
+          FROM camper_price_rules
+         WHERE camper_id = :cid
+           AND NOT (end_date < :s OR start_date > :e)
+         ORDER BY id DESC
+    ");
+    $q->execute([
+        ':cid' => $camperId,
+        ':s'   => (new DateTime($start))->format('Y-m-d'),
+        ':e'   => (new DateTime($end))->format('Y-m-d'),
+    ]);
+    $rules = $q->fetchAll(PDO::FETCH_ASSOC);
+
+    // Función: precio de una fecha concreta según la última regla que aplique; si no, base
+    $priceFor = function(string $ymd) use ($rules, $baseUnit): float {
+        foreach ($rules as $r) { // ya vienen ordenadas por id DESC (más reciente primero)
+            if ($ymd >= $r['start_date'] && $ymd <= $r['end_date']) {
+                return (float)$r['price_per_night'];
+            }
+        }
+        return (float)$baseUnit;
+    };
+
+    // Sumar noche a noche: desde start (incl) hasta end (excl)
+    $run = new DateTime($start);
+    $last = new DateTime($end);
+    $totalCents = 0;
+    while ($run < $last) {
+        $ymd = $run->format('Y-m-d');
+        $totalCents += (int) round($priceFor($ymd) * 100);
+        $run->modify('+1 day');
+    }
+
+    // Si por lo que sea no pudo calcular, fallback a base
+    if ($totalCents <= 0) {
+        $totalCents = (int) round($baseUnit * 100 * $nights);
+    }
+
+    // Depósito
     $depositPercent = max(1, min(100, (int)env('DEPOSIT_PERCENT', 20)));
-    $totalCents     = (int) round($unit * 100 * $nights);
     $depositCents   = (int) max(1, round($totalCents * $depositPercent / 100));
+
+    // Para textos: “precio por noche” mostrado = media para que cuadre visualmente
+    $avgUnit = ($nights > 0) ? ($totalCents / 100.0 / $nights) : $baseUnit;
 
     // ---- BASE URL ----
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -101,13 +146,15 @@ try {
             'enabled' => true,
             'invoice_data' => [
                 'metadata' => [
-                    'camper_id'   => (string)$camperId,
-                    'start'       => $start,
-                    'end'         => $end,
-                    'nights'      => (string)$nights,
-                    'price_per_night_eur' => (string)$unit,
-                    'total_due_cents'     => (string)$totalCents,
-                    'deposit_cents'       => (string)$depositCents,
+                    'camper_id'            => (string)$camperId,
+                    'start'                => $start,
+                    'end'                  => $end,
+                    'nights'               => (string)$nights,
+                    // usamos media para evitar confusión visual
+                    'price_per_night_eur'  => (string)round($avgUnit, 2),
+                    // TOTAL con rules (clave para thanks.php)
+                    'total_due_cents'      => (string)$totalCents,
+                    'deposit_cents'        => (string)$depositCents,
                 ],
                 'footer' => $invoiceFooter,
             ],
@@ -122,14 +169,14 @@ try {
         ],
 
         'metadata' => [
-            'camper_id'   => (string)$camperId,
-            'start'       => $start,
-            'end'         => $end,
-            'nights'      => (string)$nights,
-            'price_per_night_eur' => (string)$unit,
-            'total_due_cents'     => (string)$totalCents,
-            'deposit_cents'       => (string)$depositCents,
-            'lang'                => $lang,
+            'camper_id'            => (string)$camperId,
+            'start'                => $start,
+            'end'                  => $end,
+            'nights'               => (string)$nights,
+            'price_per_night_eur'  => (string)round($avgUnit, 2),
+            'total_due_cents'      => (string)$totalCents,
+            'deposit_cents'        => (string)$depositCents,
+            'lang'                 => $lang,
         ],
     ]);
 

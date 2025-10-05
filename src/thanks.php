@@ -73,8 +73,6 @@ try {
     if ($session->payment_status === 'paid') {
 
         // ========= 1) Crear/asegurar la reserva en BD =========
-        // Puede que NO exista porque ya no insertamos en create-checkout.
-        // 1a) Intentamos encontrar por session_id (si ya existe de pruebas previas)
         $selRes = $pdo->prepare("SELECT id FROM reservations WHERE stripe_session_id = ? LIMIT 1");
         $selRes->execute([$sessionId]);
         $reservationId = (int)($selRes->fetchColumn() ?: 0);
@@ -91,7 +89,6 @@ try {
 
         // Normaliza fechas por si vienen vacías
         if (!$metaStart || !$metaEnd) {
-            // Último recurso: intentar sacar fechas de la reserva si existiera o del invoice metadata
             if (!empty($session->invoice) && is_object($session->invoice) && !empty($session->invoice->metadata)) {
                 $metaStart = $metaStart ?: (string)($session->invoice->metadata->start ?? '');
                 $metaEnd   = $metaEnd   ?: (string)($session->invoice->metadata->end ?? '');
@@ -109,12 +106,11 @@ try {
 
         // Si aún no existe la reserva, la creamos ahora
         if ($reservationId <= 0) {
-            // ¿tiene manage_token la tabla?
             $hasManage = columnExists($pdo, 'reservations', 'manage_token');
             $hasLang   = columnExists($pdo, 'reservations', 'lang');
             $manageToken = $hasManage ? bin2hex(random_bytes(24)) : null;
 
-            // Asegura precio unitario por si viene vacío
+            // Asegura precio unitario si faltara (no debería)
             if ($metaUnit <= 0 && $metaCamperId > 0) {
                 $stp = $pdo->prepare("SELECT price_per_night FROM campers WHERE id=?");
                 $stp->execute([$metaCamperId]);
@@ -259,8 +255,10 @@ try {
 
         // ========= 4) Cargar datos de la reserva (para página/email) =========
         $hasManage = columnExists($pdo, 'reservations', 'manage_token');
+
         $select = "
         SELECT r.id, r.start_date, r.end_date,
+               r.total_cents,
                c.name AS camper, c.price_per_night,
                DATEDIFF(r.end_date, r.start_date) AS nights";
         if ($hasManage) { $select .= ", r.manage_token"; }
@@ -275,8 +273,17 @@ try {
         if (!$res) { throw new Exception('Reservation not found after payment.'); }
 
         $nights = (int)$res['nights'];
-        $price  = (float)$res['price_per_night'];
-        $total  = $nights * $price;
+        $baseUnit = (float)$res['price_per_night'];
+        $totalCentsDb = (int)($res['total_cents'] ?? 0);
+
+        // Usa total_cents si existe -> total y precio medio/noche
+        if ($totalCentsDb > 0) {
+            $total = $totalCentsDb / 100.0;
+            $price = $nights > 0 ? $total / $nights : $baseUnit;
+        } else {
+            $price = $baseUnit;
+            $total = $nights * $price;
+        }
 
         // Manage URL (si existe manage_token)
         $manageUrl = null;
@@ -290,13 +297,13 @@ try {
 
         $receiptUrl = null;
         try {
-            $pi = $session->payment_intent ?? null; // expandido con charges
+            $pi = $session->payment_intent ?? null; // ya viene expandido con charges
             if ($pi && isset($pi->charges->data[0])) {
                 $receiptUrl = $pi->charges->data[0]->receipt_url ?? null;
             }
         } catch (Throwable $e) { /* ignore */ }
 
-        // Fechas localizadas
+        // Fechas localizadas (fallback a formato simple)
         $startFmt = date('Y-m-d', strtotime($res['start_date']));
         $endFmt   = date('Y-m-d', strtotime($res['end_date']));
 
@@ -306,11 +313,13 @@ try {
         $startHuman = $fmtDate ? $fmtDate->format(new DateTime($res['start_date'])) : date('j M Y', strtotime($res['start_date']));
         $endHuman   = $fmtDate ? $fmtDate->format(new DateTime($res['end_date']))   : date('j M Y', strtotime($res['end_date']));
 
+        // Moneda localizada
         $currency = isset($session->currency) ? strtoupper((string)$session->currency) : 'EUR';
         $fmtMoney = class_exists('NumberFormatter') ? new NumberFormatter(str_replace('_','-',$lang), NumberFormatter::CURRENCY) : null;
         $priceTxt = $fmtMoney ? $fmtMoney->formatCurrency((float)$price, $currency) : ('€'.number_format($price,2));
         $totalTxt = $fmtMoney ? $fmtMoney->formatCurrency((float)$total, $currency) : ('€'.number_format($total,2));
 
+        // .ics (evento de día completo) para adjuntar en el email
         $endExclusive = (new DateTime($endFmt))->modify('+1 day')->format('Ymd');
         $ics = implode("\r\n", [
             'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Alisios Van//EN','BEGIN:VEVENT',
@@ -323,10 +332,7 @@ try {
             'END:VEVENT','END:VCALENDAR'
         ]);
 
-        // (Aquí continúa exactamente tu código de email/HTML como lo tenías)
-
-
-        // Textos localizados para email (mantengo tu plantilla bonita)
+        // Textos localizados para email
         $tPaymentConfirmed = __('Payment confirmed');
         $tHeaderSub        = sprintf(__('Reservation #%d — Thank you for choosing Alisios Van'), (int)$res['id']);
         $tHi               = $customerName
@@ -449,8 +455,7 @@ try {
             return $ok ? $data : null;
         };
 
-        // **Enviar SIEMPRE** si no se ha enviado ya y hay SMTP y email destino,
-        // independientemente de si la factura ya está lista.
+        // **Enviar SIEMPRE** si no se ha enviado ya y hay SMTP y email destino
         $emailAlreadySent = false;
         if (columnExists($pdo, 'reservations', 'confirmation_email_sent_at')) {
             $q = $pdo->prepare("SELECT confirmation_email_sent_at FROM reservations WHERE stripe_session_id = :ssid LIMIT 1");
