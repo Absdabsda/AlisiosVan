@@ -45,7 +45,7 @@ try {
     $message = '';
 
     // --- Cancelar si estaba pendiente ---
-    if ($status === 'pending') {
+    if (in_array($status, ['pending','in_checkout'], true)) {
         $up = $pdo->prepare("
             UPDATE reservations
                SET status='cancelled_by_customer', cancelled_at=NOW()

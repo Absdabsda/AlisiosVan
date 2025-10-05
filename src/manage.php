@@ -1,9 +1,11 @@
 <?php
 declare(strict_types=1);
-ini_set('display_errors','1'); error_reporting(E_ALL);
+ini_set('display_errors','1');
+error_reporting(E_ALL);
 
 // Composer + .env desde /secure
 require_once __DIR__ . '/../config/bootstrap_env.php';
+require_once __DIR__ . '/../config/i18n-lite.php';   // i18n
 require __DIR__.'/../config/db.php';
 $pdo = get_pdo();
 
@@ -30,7 +32,11 @@ function current_locale(): string {
 }
 
 $LC = current_locale();
+if (function_exists('i18n_set_locale')) {
+    i18n_set_locale($LC); // fija el idioma global para __()
+}
 
+/* ---- Strings UI locales (solo para los textos de la página) ---- */
 $STRINGS = [
     'en' => [
         'error.missingRid'  => 'Missing reservation id',
@@ -65,7 +71,6 @@ $STRINGS = [
 
         'footer.questions'  => 'Questions? Email us at',
     ],
-
     'es' => [
         'error.missingRid'  => 'Falta el id de la reserva',
         'error.notfound'    => 'Reserva no encontrada',
@@ -99,7 +104,6 @@ $STRINGS = [
 
         'footer.questions'  => '¿Dudas? Escríbenos a',
     ],
-
     'de' => [
         'error.missingRid'  => 'Reservierungs-ID fehlt',
         'error.notfound'    => 'Reservierung nicht gefunden',
@@ -128,12 +132,11 @@ $STRINGS = [
 
         'section.payment'   => 'Zahlung',
         'label.priceNight'  => 'Preis/Nacht',
-        'label.nights'      => 'Nächte',
+        'label.nights'      => 'Nights',
         'label.depositPaid' => 'Anzahlung bezahlt',
 
         'footer.questions'  => 'Fragen? Schreib uns an',
     ],
-
     'fr' => [
         'error.missingRid'  => 'ID de réservation manquante',
         'error.notfound'    => 'Réservation introuvable',
@@ -167,7 +170,6 @@ $STRINGS = [
 
         'footer.questions'  => 'Des questions ? Écrivez-nous à',
     ],
-
     'it' => [
         'error.missingRid'  => 'ID prenotazione mancante',
         'error.notfound'    => 'Prenotazione non trovata',
@@ -196,7 +198,7 @@ $STRINGS = [
 
         'section.payment'   => 'Pagamento',
         'label.priceNight'  => 'Prezzo/notte',
-        'label.nights'      => 'Notti',
+        'label.nights'      => 'Noches',
         'label.depositPaid' => 'Deposito pagato',
 
         'footer.questions'  => 'Domande? Scrivici a',
@@ -208,8 +210,14 @@ function t(string $key, ...$args): string {
     $base = $STRINGS[$LC][$key] ?? ($STRINGS['en'][$key] ?? $key);
     return $args ? vsprintf($base, $args) : $base;
 }
-
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
+
+// Traducción de estados con i18n global (usa tus claves status.cancelled_by_*)
+function status_label(string $status): string {
+    $k = 'status.' . $status;      // p.ej. status.cancelled_by_customer
+    $txt = __($k);
+    return ($txt !== $k) ? $txt : $status;
+}
 
 /* -----------------------------------------------------------
  * Helpers / DB / Stripe / Mail
@@ -223,13 +231,10 @@ function is_admin_cookie(): bool {
     return $k && hash_equals($envKey, (string)$k);
 }
 $adminCookie = is_admin_cookie();
-
-// Modo de operación / UI
+// Solo es “actor admin” si vienes por manage-admin.php (define MANAGE_FORCE_ADMIN_UI)
 $forceAdminUi = defined('MANAGE_FORCE_ADMIN_UI') && MANAGE_FORCE_ADMIN_UI === true;
-
-// Acciones de admin (refund, lectura sin token) sólo si hay cookie
-$adminACT = $adminCookie;
-$adminUI  = $forceAdminUi ? $adminCookie : $adminACT;
+$adminACT = ($adminCookie && $forceAdminUi);  // actor
+$adminUI  = $forceAdminUi && $adminCookie;    // mostrar UI admin
 
 function columnExists(PDO $pdo, string $table, string $column): bool {
     $sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
@@ -239,9 +244,7 @@ function columnExists(PDO $pdo, string $table, string $column): bool {
     return (bool)$st->fetchColumn();
 }
 
-/**
- * Intenta obtener email y nombre del cliente
- */
+/** Intenta obtener email y nombre del cliente */
 function getReservationContact(PDO $pdo, array $r): array {
     try {
         if (columnExists($pdo, 'reservations', 'customer_email') && !empty($r['customer_email'])) {
@@ -250,7 +253,7 @@ function getReservationContact(PDO $pdo, array $r): array {
         if (columnExists($pdo, 'reservations', 'email') && !empty($r['email'])) {
             return ['email' => (string)$r['email'], 'name' => (string)($r['name'] ?? '')];
         }
-    } catch (Throwable $e) { /* ignore */ }
+    } catch (\Throwable $e) { /* ignore */ }
 
     try {
         if (!empty($r['stripe_payment_intent'])) {
@@ -262,7 +265,7 @@ function getReservationContact(PDO $pdo, array $r): array {
                 if ($email) return ['email'=>(string)$email, 'name'=>(string)$name];
             }
         }
-    } catch (Throwable $e) { /* ignore */ }
+    } catch (\Throwable $e) { /* ignore */ }
 
     try {
         if (!empty($r['stripe_session_id'])) {
@@ -277,10 +280,83 @@ function getReservationContact(PDO $pdo, array $r): array {
                 if ($email) return ['email'=>(string)$email, 'name'=>(string)$name];
             }
         }
-    } catch (Throwable $e) { /* ignore */ }
+    } catch (\Throwable $e) { /* ignore */ }
 
     return ['email'=>'', 'name'=>''];
 }
+
+/**
+ * Si falta stripe_payment_intent, intenta resolverlo desde:
+ * 1) checkout session
+ * 2) invoice
+ * 3) Stripe Search API — priorizando PIs en estado succeeded/requires_capture y con amount==deposit_cents
+ */
+function ensurePaymentIntentId(PDO $pdo, array &$r): ?string {
+    try {
+        if (!empty($r['stripe_payment_intent'])) {
+            return (string)$r['stripe_payment_intent'];
+        }
+        // 1) Desde la sesión de checkout
+        if (!empty($r['stripe_session_id'])) {
+            $sess = CheckoutSession::retrieve($r['stripe_session_id'], ['expand'=>['payment_intent']]);
+            $piId = $sess->payment_intent?->id ?? null;
+            if ($piId) {
+                $r['stripe_payment_intent'] = (string)$piId;
+                if (columnExists($pdo, 'reservations', 'stripe_payment_intent')) {
+                    $pdo->prepare("UPDATE reservations SET stripe_payment_intent = :pi WHERE id = :id LIMIT 1")
+                        ->execute([':pi'=>$piId, ':id'=>(int)$r['id']]);
+                }
+                return (string)$piId;
+            }
+        }
+        // 2) Desde la factura (si existe)
+        if (!empty($r['stripe_invoice_id'])) {
+            $inv = \Stripe\Invoice::retrieve($r['stripe_invoice_id']);
+            $piId = is_object($inv->payment_intent) ? ($inv->payment_intent->id ?? null) : (string)($inv->payment_intent ?? '');
+            if ($piId) {
+                $r['stripe_payment_intent'] = (string)$piId;
+                if (columnExists($pdo, 'reservations', 'stripe_payment_intent')) {
+                    $pdo->prepare("UPDATE reservations SET stripe_payment_intent = :pi WHERE id = :id LIMIT 1")
+                        ->execute([':pi'=>$piId, ':id'=>(int)$r['id']]);
+                }
+                return (string)$piId;
+            }
+        }
+        // 3) Búsqueda por metadata (Stripe Search API) con preferencia
+        try {
+            $q = "metadata['reservation_id']:'" . (int)$r['id'] . "'";
+            $res = \Stripe\PaymentIntent::search(['query' => $q, 'limit' => 10]);
+            $target = null;
+            $wantAmount = null;
+            // intenta usar deposit_cents si existe
+            if (isset($r['deposit_cents']) && is_numeric($r['deposit_cents'])) {
+                $wantAmount = (int)$r['deposit_cents'];
+            }
+            foreach ($res->data as $cand) {
+                $st = $cand->status ?? '';
+                $okStatus = in_array($st, ['succeeded','requires_capture'], true);
+                $okAmount = $wantAmount ? ((int)$cand->amount === $wantAmount) : true;
+                if ($okStatus && $okAmount) { $target = $cand; break; }
+                if (!$target && $okStatus) { $target = $cand; } // fallback si no coincide el amount exacto
+            }
+            if ($target) {
+                $piId = (string)$target->id;
+                $r['stripe_payment_intent'] = $piId;
+                if (columnExists($pdo, 'reservations', 'stripe_payment_intent')) {
+                    $pdo->prepare("UPDATE reservations SET stripe_payment_intent = :pi WHERE id = :id LIMIT 1")
+                        ->execute([':pi'=>$piId, ':id'=>(int)$r['id']]);
+                }
+                return $piId;
+            }
+        } catch (\Throwable $e) {
+            error_log('PI search fallback error: '.$e->getMessage());
+        }
+    } catch (\Throwable $e) {
+        error_log('ensurePaymentIntentId error: '.$e->getMessage());
+    }
+    return null;
+}
+
 
 /** Crea PHPMailer configurado desde variables de entorno o devuelve null si falta config */
 function buildMailerFromEnv(): ?PHPMailer {
@@ -311,6 +387,8 @@ function buildMailerFromEnv(): ?PHPMailer {
     }
     $mail->setFrom($fromEmail ?: $user, $fromName);
     $mail->addReplyTo('alisios.van@gmail.com', 'Alisios Van');
+    // ayuda a los clientes de correo a renderizar en el idioma:
+    $mail->addCustomHeader('Content-Language', $GLOBALS['LANG'] ?? $LC);
     return $mail;
 }
 
@@ -351,78 +429,128 @@ if(!$r){
 // --- Datos útiles -----------------------------------------------------------
 $nights = (int)((new DateTime($r['start_date']))->diff(new DateTime($r['end_date']))->format('%a'));
 $price  = (float)$r['price_per_night'];
-$deposit = $price; // depósito = 1 noche según tu política
+$total  = $price * $nights;
+
+// Usa SIEMPRE el depósito guardado (coherente con la sesión de checkout)
+$depositCents = isset($r['deposit_cents']) ? (int)$r['deposit_cents'] : (int)round($total * 0.20 * 100);
+$deposit      = $depositCents / 100.0;
 
 // --- Cancelación ------------------------------------------------------------
 $msgTop = '';
 $refundNote = '';
 
 if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel'){
-    // si ya estaba cancelada
+    // 1) Ya estaba cancelada
     if (strpos((string)$r['status'],'cancelled') === 0) {
         $qs = 'rid='.$rid.'&lang='.$LC;
         if (!$adminACT && $t) { $qs .= '&t='.urlencode($t); }
-        header('Location: manage.php?'.$qs.'&m=already'); exit;
+        $target = $adminACT ? 'manage-admin.php' : 'manage.php';
+        header('Location: '.$target.'?'.$qs.'&m=already');
+        exit;
     }
 
-    $newStatus = $adminACT ? 'cancelled_by_admin' : 'cancelled_by_customer';
+    // Decide el nuevo estado según quién cancela
+    $newStatus  = $adminACT ? 'cancelled_by_admin' : 'cancelled_by_customer';
+    $refundNote = '';
 
-    // --- Refund: solo si es ADMIN, la reserva está pagada y existe PI ---
-    if ($adminACT && $r['status'] === 'paid' && !empty($r['stripe_payment_intent'])) {
+    // === Reembolso/Anulación: solo ADMIN (versión robusta) ===
+    $piId = $adminACT ? (ensurePaymentIntentId($pdo, $r) ?? $r['stripe_payment_intent'] ?? null) : null;
+
+    if ($adminACT && $piId) {
         try {
-            $pi = PaymentIntent::retrieve($r['stripe_payment_intent']);
+            // Cargamos el PI y calculamos lo que realmente hay para devolver
+            $pi = \Stripe\PaymentIntent::retrieve($piId, ['expand' => ['charges.data']]);
 
-            $alreadyRefunded = false;
-            $canRefund = false;
+            // Mejor que sumar captured: amount_received ya descuenta cosas raras
+            $received = (int)($pi->amount_received ?? 0);
 
-            if ($pi && isset($pi->charges->data[0])) {
-                $ch = $pi->charges->data[0];
-                $amountCaptured = (int)($ch->amount_captured ?? 0);
-                $amountRefunded = (int)($ch->amount_refunded ?? 0);
+            $alreadyRefunded = 0;
+            foreach (($pi->charges->data ?? []) as $ch) {
+                $alreadyRefunded += (int)($ch->amount_refunded ?? 0);
+            }
+            $remaining = max(0, $received - $alreadyRefunded);
 
-                if ($amountCaptured > 0) {
-                    if ($amountRefunded >= $amountCaptured) {
-                        $alreadyRefunded = true;
+            // Refund del depósito (o lo que quede si es menos)
+            $amountToRefund = min($depositCents, $remaining);
+
+            // Si no queda nada, forzamos a que salte al catch de fallback de void
+            if ($amountToRefund <= 0) {
+                throw new \Exception('NO_REMAINING_TO_REFUND');
+            }
+
+            $refund = \Stripe\Refund::create(
+                [
+                    'payment_intent' => $piId,
+                    'amount'         => $amountToRefund,
+                    'metadata'       => [
+                        'reservation_id' => (string)$r['id'],
+                        'reason'         => 'admin_cancel',
+                    ],
+                ],
+                ['idempotency_key' => 'res-'.$r['id'].'-cancel-refund-'.$amountToRefund]
+            );
+
+            $refundNote = 'Refund issued: €'.number_format($amountToRefund/100, 2).' ('.$refund->id.')';
+
+            if (columnExists($pdo, 'reservations', 'stripe_refund_id')) {
+                $pdo->prepare("UPDATE reservations SET stripe_refund_id = :rid WHERE id = :id LIMIT 1")
+                    ->execute([':rid' => (string)$refund->id, ':id' => (int)$r['id']]);
+            }
+
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            // Errores típicos cuando NO hay captura
+            $code = $e->getError()->code ?? '';
+            $msg  = $e->getMessage();
+
+            // Si el problema es que no está capturado o estado inesperado, probamos a anular la autorización
+            if (in_array($code, ['charge_not_captured','payment_intent_unexpected_state'], true)) {
+                try {
+                    $pi2 = \Stripe\PaymentIntent::retrieve($piId);
+                    if (($pi2->status ?? '') === 'requires_capture') {
+                        \Stripe\PaymentIntent::cancel($piId);
+                        $refundNote = 'Authorization voided (requires_capture → cancelled).';
                     } else {
-                        $canRefund = true;
+                        $refundNote = 'No captured funds to refund.';
                     }
+                } catch (\Throwable $e2) {
+                    $refundNote = 'Void attempt failed: '.$e2->getMessage();
                 }
+            } else {
+                $refundNote = 'Refund error: '.$msg;
             }
 
-            if ($alreadyRefunded) {
-                $refundNote = 'Charge has already been refunded.';
-            } elseif ($canRefund) {
-                Refund::create(['payment_intent' => $r['stripe_payment_intent']]); // total
-                $refundNote = 'Refund issued for the deposit.';
-            } else {
-                $refundNote = 'Skipping refund: nothing captured on the charge.';
+        } catch (\Throwable $e) {
+            // NO_REMAINING_TO_REFUND u otros: intentamos void si procede
+            try {
+                $pi3 = \Stripe\PaymentIntent::retrieve($piId);
+                if (($pi3->status ?? '') === 'requires_capture') {
+                    \Stripe\PaymentIntent::cancel($piId);
+                    $refundNote = 'Authorization voided (requires_capture → cancelled).';
+                } else {
+                    $refundNote = 'No captured funds to refund.';
+                }
+            } catch (\Throwable $e3) {
+                $refundNote = 'Refund/void error: '.$e3->getMessage();
             }
-        } catch (Throwable $e) {
-            $refundNote = 'Refund error: ' . $e->getMessage();
         }
     } elseif ($adminACT) {
-        // Admin pero no procede el reembolso (no pagada o sin PI)
-        $refundNote = 'Skipping refund (status not paid or missing payment intent).';
-    } else {
-        // Cliente: sin reembolso por política
-        $refundNote = 'Per policy, the deposit is non-refundable on customer-initiated cancellations.';
+        $refundNote = 'Skipping refund/void: missing PaymentIntent (rid='.(int)$r['id'].').';
     }
 
     // Actualiza estado
     try {
-        $up = $pdo->prepare("UPDATE reservations SET status=?, cancelled_at=NOW() WHERE id=? LIMIT 1");
-        $up->execute([$newStatus, $rid]);
-        // refleja el nuevo estado en $r para el email
-        $r['status'] = $newStatus;
+        $up = $pdo->prepare("UPDATE reservations SET status = :s, cancelled_at = NOW() WHERE id = :id LIMIT 1");
+        $up->execute([':s' => $newStatus, ':id' => $rid]);
+        $r['status']       = $newStatus;
         $r['cancelled_at'] = date('Y-m-d H:i:s');
-    } catch (Throwable $e) {
-        $up = $pdo->prepare("UPDATE reservations SET status='cancelled', cancelled_at=NOW() WHERE id=? LIMIT 1");
-        $up->execute([$rid]);
-        $r['status'] = 'cancelled';
+    } catch (\Throwable $e) {
+        $up = $pdo->prepare("UPDATE reservations SET status = 'cancelled', cancelled_at = NOW() WHERE id = :id LIMIT 1");
+        $up->execute([':id' => $rid]);
+        $r['status']       = 'cancelled';
         $r['cancelled_at'] = date('Y-m-d H:i:s');
     }
 
-    // ======= Email de confirmación de cancelación =======
+    // ======= Email de confirmación de cancelación (traducido con __()) =======
     try {
         $emailSentAlready = false;
         if (columnExists($pdo, 'reservations', 'cancellation_email_sent_at')) {
@@ -441,10 +569,18 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
                 $endHuman   = date('j M Y', strtotime($r['end_date']));
                 $nightsMail = (int)((new DateTime($r['start_date']))->diff(new DateTime($r['end_date']))->format('%a'));
 
-                $subject = "Reservation #{$r['id']} cancelled";
-                $lead    = $adminACT
-                    ? "Your reservation has been cancelled by our team. The deposit has been (or will be) refunded."
-                    : "Your reservation has been cancelled as requested. Per our policy, the deposit is non-refundable.";
+                $subject = sprintf(__('email.cancel.subject'), (int)$r['id']);
+                $header  = __('email.cancel.header');
+                $lead    = $adminACT ? __('email.cancel.lead.admin') : __('email.cancel.lead.customer');
+                $summary = __('email.cancel.summary');
+                $mistake = __('email.cancel.mistake');
+
+                $labelCamper = __('label.camper') !== 'label.camper' ? __('label.camper') : 'Camper';
+                $labelDates  = t('label.dates');
+                $labelNights = t('label.nights');
+                $labelStatus = t('label.status');
+
+                $statusTxt = status_label($r['status']); // etiqueta traducida
 
                 $html = '
 <div style="font-family:Arial,sans-serif;line-height:1.55;color:#333;background:#e8e6e4;padding:24px;">
@@ -454,36 +590,35 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
              style="background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.10);overflow:hidden;border:1px solid rgba(0,0,0,.04);">
         <tr>
           <td style="background:#80C1D0;color:#fff;padding:18px 22px;">
-            <div style="font-size:22px;font-weight:700;">Reservation cancelled</div>
+            <div style="font-size:22px;font-weight:700;">'.h($header).'</div>
             <div style="opacity:.9;margin-top:4px;">#'.(int)$r['id'].' — Alisios Van</div>
           </td>
         </tr>
         <tr>
           <td style="padding:20px 22px;">
-            <p style="margin:0 0 10px 0">'.htmlspecialchars($lead, ENT_QUOTES, 'UTF-8').'</p>
-            <p style="margin:0 0 14px 0">Summary:</p>
+            <p style="margin:0 0 10px 0">'.h($lead).'</p>
+            <p style="margin:0 0 14px 0">'.h($summary).'</p>
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
                    style="border:1px solid rgba(0,0,0,0.06); border-radius:10px; background:#fbfbfb;">
               <tr>
-                <td style="padding:10px 14px;">Camper</td>
-                <td align="right" style="padding:10px 14px;"><strong>'.htmlspecialchars($r['camper'] ?? '', ENT_QUOTES, 'UTF-8').'</strong></td>
+                <td style="padding:10px 14px;">'.h($labelCamper).'</td>
+                <td align="right" style="padding:10px 14px;"><strong>'.h($r['camper'] ?? '').'</strong></td>
               </tr>
               <tr>
-                <td style="padding:10px 14px;border-top:1px dashed #DDD;">Dates</td>
+                <td style="padding:10px 14px;border-top:1px dashed #DDD;">'.h($labelDates).'</td>
                 <td align="right" style="padding:10px 14px;border-top:1px dashed #DDD;">'
-                    .htmlspecialchars($startHuman, ENT_QUOTES, 'UTF-8').' &nbsp;&rarr;&nbsp; '
-                    .htmlspecialchars($endHuman, ENT_QUOTES, 'UTF-8').'</td>
+                    .h($startHuman).' &nbsp;&rarr;&nbsp; '.h($endHuman).'</td>
               </tr>
               <tr>
-                <td style="padding:10px 14px;border-top:1px dashed #DDD;">Nights</td>
+                <td style="padding:10px 14px;border-top:1px dashed #DDD;">'.h($labelNights).'</td>
                 <td align="right" style="padding:10px 14px;border-top:1px dashed #DDD;">'.$nightsMail.'</td>
               </tr>
               <tr>
-                <td style="padding:10px 14px;border-top:1px dashed #DDD;">Status</td>
-                <td align="right" style="padding:10px 14px;border-top:1px dashed #DDD;">'.htmlspecialchars($r['status'], ENT_QUOTES, 'UTF-8').'</td>
+                <td style="padding:10px 14px;border-top:1px dashed #DDD;">'.h($labelStatus).'</td>
+                <td align="right" style="padding:10px 14px;border-top:1px dashed #DDD;">'.h($statusTxt).'</td>
               </tr>
             </table>
-            <p style="margin:14px 0 0 0;color:#555">If this was a mistake, reply to this email and we\'ll help.</p>
+            <p style="margin:14px 0 0 0;color:#555">'.h($mistake).'</p>
           </td>
         </tr>
         <tr><td style="padding:12px 22px;background:#f7f7f7;color:#7D7D7D;font-size:12px;">Alisios Van · Canary Islands</td></tr>
@@ -492,12 +627,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
   </table>
 </div>';
 
-                $alt = "Reservation cancelled\n"
-                    . "Reservation #{$r['id']}\n"
-                    . "Camper: ".($r['camper'] ?? '')."\n"
-                    . "Dates: {$startHuman} -> {$endHuman}\n"
-                    . "Status: {$r['status']}\n"
-                    . ($adminACT ? "Refund: deposit refunded (if applicable)\n" : "Note: deposit non-refundable per policy\n");
+                $alt = h($header)."\n"
+                    . sprintf(__('email.cancel.subject'), (int)$r['id'])."\n"
+                    . ($labelCamper.": ".($r['camper'] ?? '')."\n")
+                    . ($labelDates.": {$startHuman} -> {$endHuman}\n")
+                    . ($labelNights.": {$nightsMail}\n")
+                    . ($labelStatus.": {$statusTxt}\n");
 
                 $mail = buildMailerFromEnv();
                 if ($mail) {
@@ -529,11 +664,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
         error_log('Cancel mail exception: '.$e->getMessage());
     }
 
-    // Redirección post-cancel
+    // 2) Redirección post-cancel (después de mandar email, etc.)
     $qs = 'rid='.$rid.'&lang='.$LC;
     if (!$adminACT && $t) { $qs .= '&t='.urlencode($t); }
-    if ($refundNote) $qs .= '&rn='.urlencode($refundNote);
-    header('Location: manage.php?'.$qs.'&m=cancelled');
+    if ($refundNote) { $qs .= '&rn='.urlencode($refundNote); } // nota técnica, opcional
+    $target = $adminACT ? 'manage-admin.php' : 'manage.php';
+    header('Location: '.$target.'?'.$qs.'&m=cancelled');
     exit;
 }
 
@@ -544,7 +680,7 @@ if (isset($_GET['m']) && $_GET['m']==='cancelled') {
     $msgTop = t('alert.already');
 }
 if (isset($_GET['rn'])) {
-    $refundNote = (string)$_GET['rn']; // nota en inglés tal como viene del proceso de cancelación
+    $refundNote = (string)$_GET['rn']; // nota técnica (solo admin normalmente)
 }
 
 // --- Presentación -----------------------------------------------------------
@@ -556,19 +692,14 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= h(sprintf(t('page.title'), (int)$r['id'])) ?></title>
 
-    <!-- evita traducción automática de Chrome -->
     <meta name="google" content="notranslate">
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
-
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
     <link rel="stylesheet" href="css/estilos.css">
@@ -598,8 +729,17 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
     <?php if ($msgTop): ?>
         <div class="alert alert-success"><?= h($msgTop) ?></div>
     <?php endif; ?>
+
+    <?php if (isset($_GET['m']) && $_GET['m']==='cancelled'): ?>
+        <!-- Mensaje claro según actor -->
+        <div class="alert alert-info small mb-3">
+            <?= h($adminUI ? t('note.admin') : t('note.customer')) ?>
+        </div>
+    <?php endif; ?>
+
     <?php if ($refundNote): ?>
-        <div class="alert alert-info small mb-3"><?= h($refundNote) ?></div>
+        <!-- Nota técnica (solo admin normalmente) -->
+        <div class="alert alert-secondary small mb-3"><?= h($refundNote) ?></div>
     <?php endif; ?>
 
     <div class="cardy mb-3">
@@ -613,7 +753,10 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
                 <p class="mb-1"><strong><?= h(t('label.dates')) ?>:</strong>
                     <span style="white-space:nowrap"><?= h($startHuman) ?>&nbsp;→&nbsp;<?= h($endHuman) ?></span>
                 </p>
-                <p class="mb-2"><strong><?= h(t('label.status')) ?>:</strong> <?= h($r['status']) ?></p>
+                <p class="mb-2">
+                    <strong><?= h(t('label.status')) ?>:</strong>
+                    <?= h(status_label($r['status'])) ?>
+                </p>
 
                 <?php if (strpos((string)$r['status'],'cancelled') !== 0): ?>
                     <form method="post" onsubmit="return confirm('<?= h(t('confirm.cancel')) ?>');">
@@ -637,6 +780,7 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
                 <div class="summary">
                     <div class="rowx"><span><?= h(t('label.priceNight')) ?></span><span>€<?= number_format($price, 2) ?></span></div>
                     <div class="rowx"><span><?= h(t('label.nights')) ?></span><span><?= (int)$nights ?></span></div>
+                    <div class="rowx"><span>Total</span><span>€<?= number_format($total, 2) ?></span></div>
                     <div class="rowx total"><span><?= h(t('label.depositPaid')) ?></span><span>€<?= number_format($deposit, 2) ?></span></div>
                 </div>
             </div>
