@@ -51,13 +51,13 @@ try {
     if ($hasManage) {
         $st = $pdo->prepare("
           INSERT INTO reservations (camper_id, start_date, end_date, status, manage_token, created_at)
-          VALUES (?, ?, ?, 'pending', ?, NOW())
+          VALUES (?, ?, ?, 'in_checkout', ?, NOW())
         ");
         $st->execute([$camperId, $start, $end, $token]);
     } else {
         $st = $pdo->prepare("
           INSERT INTO reservations (camper_id, start_date, end_date, status, created_at)
-          VALUES (?, ?, ?, 'pending', NOW())
+          VALUES (?, ?, ?, 'in_checkout', NOW())
         ");
         $st->execute([$camperId, $start, $end]);
     }
