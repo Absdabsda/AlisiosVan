@@ -68,6 +68,7 @@ $STRINGS = [
         'label.priceNight'  => 'Price/night',
         'label.nights'      => 'Nights',
         'label.depositPaid' => 'Deposit paid',
+        'label.rules'       => 'Rules',
 
         'footer.questions'  => 'Questions? Email us at',
     ],
@@ -101,6 +102,7 @@ $STRINGS = [
         'label.priceNight'  => 'Precio/noche',
         'label.nights'      => 'Noches',
         'label.depositPaid' => 'Depósito pagado',
+        'label.rules'       => 'Reglas',
 
         'footer.questions'  => '¿Dudas? Escríbenos a',
     ],
@@ -134,6 +136,7 @@ $STRINGS = [
         'label.priceNight'  => 'Preis/Nacht',
         'label.nights'      => 'Nights',
         'label.depositPaid' => 'Anzahlung bezahlt',
+        'label.rules'       => 'Regeln',
 
         'footer.questions'  => 'Fragen? Schreib uns an',
     ],
@@ -167,6 +170,7 @@ $STRINGS = [
         'label.priceNight'  => 'Prix/nuit',
         'label.nights'      => 'Nuits',
         'label.depositPaid' => 'Acompte payé',
+        'label.rules'       => 'Règles',
 
         'footer.questions'  => 'Des questions ? Écrivez-nous à',
     ],
@@ -200,6 +204,7 @@ $STRINGS = [
         'label.priceNight'  => 'Prezzo/notte',
         'label.nights'      => 'Noches',
         'label.depositPaid' => 'Deposito pagato',
+        'label.rules'       => 'Regole',
 
         'footer.questions'  => 'Domande? Scrivici a',
     ],
@@ -328,7 +333,6 @@ function ensurePaymentIntentId(PDO $pdo, array &$r): ?string {
             $res = \Stripe\PaymentIntent::search(['query' => $q, 'limit' => 10]);
             $target = null;
             $wantAmount = null;
-            // intenta usar deposit_cents si existe
             if (isset($r['deposit_cents']) && is_numeric($r['deposit_cents'])) {
                 $wantAmount = (int)$r['deposit_cents'];
             }
@@ -337,7 +341,7 @@ function ensurePaymentIntentId(PDO $pdo, array &$r): ?string {
                 $okStatus = in_array($st, ['succeeded','requires_capture'], true);
                 $okAmount = $wantAmount ? ((int)$cand->amount === $wantAmount) : true;
                 if ($okStatus && $okAmount) { $target = $cand; break; }
-                if (!$target && $okStatus) { $target = $cand; } // fallback si no coincide el amount exacto
+                if (!$target && $okStatus) { $target = $cand; }
             }
             if ($target) {
                 $piId = (string)$target->id;
@@ -387,7 +391,6 @@ function buildMailerFromEnv(): ?PHPMailer {
     }
     $mail->setFrom($fromEmail ?: $user, $fromName);
     $mail->addReplyTo('alisios.van@gmail.com', 'Alisios Van');
-    // ayuda a los clientes de correo a renderizar en el idioma:
     $mail->addCustomHeader('Content-Language', $GLOBALS['LANG'] ?? $LC);
     return $mail;
 }
@@ -428,11 +431,27 @@ if(!$r){
 
 // --- Datos útiles -----------------------------------------------------------
 $nights = (int)((new DateTime($r['start_date']))->diff(new DateTime($r['end_date']))->format('%a'));
-$price  = (float)$r['price_per_night'];
-$total  = $price * $nights;
+
+// Precio base (el de la tabla campers) y total base
+$baseUnit   = (float)$r['price_per_night'];
+$baseTotal  = $baseUnit * $nights;
+
+// Precio/total con reglas (si la reserva tiene total_cents calculado en checkout con rules)
+$totalCentsDb = (int)($r['total_cents'] ?? 0);
+if ($totalCentsDb > 0) {
+    $ruleTotal = $totalCentsDb / 100.0;
+    $ruleUnit  = $nights > 0 ? ($ruleTotal / $nights) : $baseUnit;
+} else {
+    $ruleTotal = $baseTotal;
+    $ruleUnit  = $baseUnit;
+}
+
+// Lo que se muestra como “precio actual”
+$price = $ruleUnit;
+$total = $ruleTotal;
 
 // Usa SIEMPRE el depósito guardado (coherente con la sesión de checkout)
-$depositCents = isset($r['deposit_cents']) ? (int)$r['deposit_cents'] : (int)round($total * 0.20 * 100);
+$depositCents = isset($r['deposit_cents']) ? (int)$r['deposit_cents'] : (int)round($ruleTotal * 0.20 * 100);
 $deposit      = $depositCents / 100.0;
 
 // --- Cancelación ------------------------------------------------------------
@@ -458,22 +477,15 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
 
     if ($adminACT && $piId) {
         try {
-            // Cargamos el PI y calculamos lo que realmente hay para devolver
             $pi = \Stripe\PaymentIntent::retrieve($piId, ['expand' => ['charges.data']]);
-
-            // Mejor que sumar captured: amount_received ya descuenta cosas raras
             $received = (int)($pi->amount_received ?? 0);
-
             $alreadyRefunded = 0;
             foreach (($pi->charges->data ?? []) as $ch) {
                 $alreadyRefunded += (int)($ch->amount_refunded ?? 0);
             }
             $remaining = max(0, $received - $alreadyRefunded);
 
-            // Refund del depósito (o lo que quede si es menos)
             $amountToRefund = min($depositCents, $remaining);
-
-            // Si no queda nada, forzamos a que salte al catch de fallback de void
             if ($amountToRefund <= 0) {
                 throw new \Exception('NO_REMAINING_TO_REFUND');
             }
@@ -498,11 +510,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
             }
 
         } catch (\Stripe\Exception\ApiErrorException $e) {
-            // Errores típicos cuando NO hay captura
             $code = $e->getError()->code ?? '';
             $msg  = $e->getMessage();
 
-            // Si el problema es que no está capturado o estado inesperado, probamos a anular la autorización
             if (in_array($code, ['charge_not_captured','payment_intent_unexpected_state'], true)) {
                 try {
                     $pi2 = \Stripe\PaymentIntent::retrieve($piId);
@@ -520,7 +530,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
             }
 
         } catch (\Throwable $e) {
-            // NO_REMAINING_TO_REFUND u otros: intentamos void si procede
             try {
                 $pi3 = \Stripe\PaymentIntent::retrieve($piId);
                 if (($pi3->status ?? '') === 'requires_capture') {
@@ -550,7 +559,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
         $r['cancelled_at'] = date('Y-m-d H:i:s');
     }
 
-    // ======= Email de confirmación de cancelación (traducido con __()) =======
+    // ======= Email de confirmación de cancelación =======
     try {
         $emailSentAlready = false;
         if (columnExists($pdo, 'reservations', 'cancellation_email_sent_at')) {
@@ -565,9 +574,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
             $toName  = $contact['name']  ?? '';
 
             if ($toEmail) {
-                $startHuman = date('j M Y', strtotime($r['start_date']));
-                $endHuman   = date('j M Y', strtotime($r['end_date']));
-                $nightsMail = (int)((new DateTime($r['start_date']))->diff(new DateTime($r['end_date']))->format('%a'));
+                $startHumanMail = date('j M Y', strtotime($r['start_date']));
+                $endHumanMail   = date('j M Y', strtotime($r['end_date']));
+                $nightsMail     = (int)((new DateTime($r['start_date']))->diff(new DateTime($r['end_date']))->format('%a'));
 
                 $subject = sprintf(__('email.cancel.subject'), (int)$r['id']);
                 $header  = __('email.cancel.header');
@@ -580,14 +589,14 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
                 $labelNights = t('label.nights');
                 $labelStatus = t('label.status');
 
-                $statusTxt = status_label($r['status']); // etiqueta traducida
+                $statusTxt = status_label($r['status']);
 
                 $html = '
 <div style="font-family:Arial,sans-serif;line-height:1.55;color:#333;background:#e8e6e4;padding:24px;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
     <tr><td align="center">
       <table role="presentation" width="640" cellspacing="0" cellpadding="0"
-             style="background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.10);overflow:hidden;border:1px solid rgba(0,0,0,.04);">
+             style="background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.10);overflow:hidden;border:1px solid rgba(0,0,0,0.04);">
         <tr>
           <td style="background:#80C1D0;color:#fff;padding:18px 22px;">
             <div style="font-size:22px;font-weight:700;">'.h($header).'</div>
@@ -607,7 +616,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
               <tr>
                 <td style="padding:10px 14px;border-top:1px dashed #DDD;">'.h($labelDates).'</td>
                 <td align="right" style="padding:10px 14px;border-top:1px dashed #DDD;">'
-                    .h($startHuman).' &nbsp;&rarr;&nbsp; '.h($endHuman).'</td>
+                    .h($startHumanMail).' &nbsp;&rarr;&nbsp; '.h($endHumanMail).'</td>
               </tr>
               <tr>
                 <td style="padding:10px 14px;border-top:1px dashed #DDD;">'.h($labelNights).'</td>
@@ -630,7 +639,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
                 $alt = h($header)."\n"
                     . sprintf(__('email.cancel.subject'), (int)$r['id'])."\n"
                     . ($labelCamper.": ".($r['camper'] ?? '')."\n")
-                    . ($labelDates.": {$startHuman} -> {$endHuman}\n")
+                    . ($labelDates.": {$startHumanMail} -> {$endHumanMail}\n")
                     . ($labelNights.": {$nightsMail}\n")
                     . ($labelStatus.": {$statusTxt}\n");
 
@@ -688,30 +697,46 @@ $startHuman = date('j M Y', strtotime($r['start_date']));
 $endHuman   = date('j M Y', strtotime($r['end_date']));
 ?>
 <!doctype html>
-<html lang="<?= h($LC) ?>"><head>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="<?= h($LC) ?>">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= h(sprintf(t('page.title'), (int)$r['id'])) ?></title>
 
+    <!-- evita traducción automática de Chrome -->
     <meta name="google" content="notranslate">
 
+    <!-- Fuentes y CSS globales que ya usas en el sitio -->
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
+    <!-- Bootstrap + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Otros assets que ya tenías -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/manage.css">
     <link rel="stylesheet" href="css/cookies.css">
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
     <script src="js/header.js" defer></script>
     <script src="js/cookies.js" defer></script>
 
     <style>
         :root { --header-bg-rgb: 84,70,62; } /* #54463E */
+        .summary{ background: rgba(255,255,255,.6); border: 1px solid rgba(0,0,0,.06);
+            border-radius: 12px; padding: 12px 14px; }
+        .rowx{ display:flex; justify-content:space-between; padding: 8px 0; }
+        .rowx + .rowx{ border-top: 1px dashed rgba(0,0,0,.08); }
+        .badge-soft{ background: rgba(128,193,208,.15); color: var(--text-principal);
+            border-radius: 999px; padding: .35rem .75rem; font-weight: 600; }
+        .cardy{ background: var(--color-blanco); border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow-medium); border: 1px solid rgba(0,0,0,.04);
+            padding: clamp(1rem, 2vw, 1.5rem); }
+        .total{ font-weight:700; }
     </style>
 </head>
 
@@ -726,19 +751,17 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
 </section>
 
 <main class="wrap">
-    <?php if ($msgTop): ?>
+    <?php if (!empty($msgTop)): ?>
         <div class="alert alert-success"><?= h($msgTop) ?></div>
     <?php endif; ?>
 
     <?php if (isset($_GET['m']) && $_GET['m']==='cancelled'): ?>
-        <!-- Mensaje claro según actor -->
         <div class="alert alert-info small mb-3">
             <?= h($adminUI ? t('note.admin') : t('note.customer')) ?>
         </div>
     <?php endif; ?>
 
-    <?php if ($refundNote): ?>
-        <!-- Nota técnica (solo admin normalmente) -->
+    <?php if (!empty($refundNote)): ?>
         <div class="alert alert-secondary small mb-3"><?= h($refundNote) ?></div>
     <?php endif; ?>
 
@@ -778,11 +801,25 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
             <div style="min-width:260px;max-width:320px;" class="ms-auto">
                 <h3 class="h6 mb-2"><?= h(t('section.payment')) ?></h3>
                 <div class="summary">
-                    <div class="rowx"><span><?= h(t('label.priceNight')) ?></span><span>€<?= number_format($price, 2) ?></span></div>
-                    <div class="rowx"><span><?= h(t('label.nights')) ?></span><span><?= (int)$nights ?></span></div>
-                    <div class="rowx"><span>Total</span><span>€<?= number_format($total, 2) ?></span></div>
-                    <div class="rowx total"><span><?= h(t('label.depositPaid')) ?></span><span>€<?= number_format($deposit, 2) ?></span></div>
+                    <div class="rowx">
+                        <span><?= h(t('label.priceNight')) ?></span>
+                        <span>€<?= number_format($price, 2) ?></span>
+                    </div>
+                    <div class="rowx">
+                        <span><?= h(t('label.nights')) ?></span>
+                        <span><?= (int)$nights ?></span>
+                    </div>
+                    <div class="rowx total">
+                        <span><?= __('Total') ?></span>
+                        <span>€<?= number_format($total, 2) ?></span>
+                    </div>
+                    <div class="rowx" style="border-top:1px dashed rgba(0,0,0,.08); margin-top:6px;"></div>
+                    <div class="rowx total">
+                        <span><?= h(t('label.depositPaid')) ?></span>
+                        <span>€<?= number_format($deposit, 2) ?></span>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -791,6 +828,8 @@ $endHuman   = date('j M Y', strtotime($r['end_date']));
         <?= h(t('footer.questions')) ?> <a href="mailto:alisios.van@gmail.com">alisios.van@gmail.com</a>.
     </p>
 </main>
+
 <?php include 'inc/footer.inc'; ?>
+
 </body>
 </html>
