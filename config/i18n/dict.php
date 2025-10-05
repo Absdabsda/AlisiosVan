@@ -641,7 +641,7 @@ return [
         'Your reservation #%d is confirmed' => 'Tu reserva n.º %d está confirmada',
         'Reservation #%d — Thank you for choosing Alisios Van' => 'Reserva n.º %d — Gracias por elegir Alisios Van',
         'Hi %s,' => 'Hola %s,',
-        'Your reservation is confirmed. Here are your details:' => 'Tu reserva está confirmada. Estos son los detalles:',
+        'Your reservation is <strong>confirmed</strong>. Here are your details:' => 'Tu reserva está <strong>confirmada</strong>. Estos son los detalles:',
 
         'Camper' => 'Camper',
         'Price/night' => 'Precio/noche',
@@ -664,6 +664,7 @@ return [
         '¿Por qué viajar con Alisios Van?' => 'Why travel with Alisios Van?',
         'Estamos aquí' => 'We are here',
         'Reserva ahora' => 'Book Now',
+        'Your reservation is <strong>confirmed</strong>. Here are your details:' => 'Your reservation is <strong>confirmed</strong>. Here are your details:',
     ],
 
     'de' => [
@@ -1310,7 +1311,7 @@ return [
         'Your reservation #%d is confirmed' => 'Deine Reservierung Nr. %d ist bestätigt',
         'Reservation #%d — Thank you for choosing Alisios Van' => 'Reservierung Nr. %d — Danke, dass du Alisios Van gewählt hast',
         'Hi %s,' => 'Hallo %s,',
-        'Your reservation is confirmed. Here are your details:' => 'Deine Reservierung ist bestätigt. Hier sind deine Details:',
+        'Your reservation is <strong>confirmed</strong>. Here are your details:' => 'Ihre Reservierung ist <strong>bestätigt</strong>. Hier sind Ihre Details:',
         'Camper' => 'Camper',
         'Price/night' => 'Preis/Nacht',
         "We've attached a calendar file (.ics) so you can add the trip to your calendar." =>
@@ -1965,7 +1966,7 @@ return [
         'Your reservation #%d is confirmed' => 'Votre réservation n° %d est confirmée',
         'Reservation #%d — Thank you for choosing Alisios Van' => 'Réservation n° %d — Merci d’avoir choisi Alisios Van',
         'Hi %s,' => 'Bonjour %s,',
-        'Your reservation is confirmed. Here are your details:' => 'Votre réservation est confirmée. Voici les détails :',
+        'Your reservation is <strong>confirmed</strong>. Here are your details:' => 'Votre réservation est <strong>confirmée</strong>. Voici les détails :',
         'Camper' => 'Van',
         'Price/night' => 'Prix/nuit',
         "We've attached a calendar file (.ics) so you can add the trip to your calendar." =>
@@ -2620,7 +2621,7 @@ return [
         'Your reservation #%d is confirmed' => 'La tua prenotazione n. %d è confermata',
         'Reservation #%d — Thank you for choosing Alisios Van' => 'Prenotazione n. %d — Grazie per aver scelto Alisios Van',
         'Hi %s,' => 'Ciao %s,',
-        'Your reservation is confirmed. Here are your details:' => 'La tua prenotazione è confermata. Ecco i dettagli:',
+        'Your reservation is <strong>confirmed</strong>. Here are your details:' => 'La tua prenotazione è <strong>confermata</strong>. Ecco i dettagli:',
         'Camper' => 'Camper',
         'Price/night' => 'Prezzo/notte',
         "We've attached a calendar file (.ics) so you can add the trip to your calendar." =>
