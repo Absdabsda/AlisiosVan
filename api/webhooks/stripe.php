@@ -109,14 +109,25 @@ try {
     $piId   = $pi?->id ?? null;
 
     $pdo->prepare("
-    UPDATE reservations
-       SET status               = IF(status='pending', ?, status),
-           stripe_payment_intent= COALESCE(?, stripe_payment_intent),
-           stripe_session_id    = COALESCE(?, stripe_session_id),
-           customer_id          = COALESCE(?, customer_id),
-           updated_at           = NOW()
-     WHERE id=? LIMIT 1
-  ")->execute([$status, $piId, $session->id, $customerId, $reservationId]);
+  UPDATE reservations
+     SET status = CASE 
+                    WHEN status IN ('in_checkout','pending') THEN :st
+                    ELSE status
+                  END,
+         stripe_payment_intent = COALESCE(:pi, stripe_payment_intent),
+         stripe_session_id     = COALESCE(:ssid, stripe_session_id),
+         customer_id           = COALESCE(:cid, customer_id),
+         updated_at            = NOW()
+   WHERE id = :rid
+   LIMIT 1
+")->execute([
+        ':st'   => $status,
+        ':pi'   => $piId,
+        ':ssid' => $session->id,
+        ':cid'  => $customerId,
+        ':rid'  => $reservationId,
+    ]);
+
 
     // 5) Genera manage_token si aún no hay
     $pdo->prepare("

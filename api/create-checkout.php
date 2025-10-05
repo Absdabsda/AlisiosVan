@@ -4,13 +4,16 @@ header('Content-Type: application/json');
 ini_set('display_errors','0');
 
 try {
+    // Carga de entorno, i18n, utilidades de precios
     require_once __DIR__ . '/../config/bootstrap_env.php';
     require_once __DIR__ . '/../config/i18n-lite.php';
     require_once __DIR__.'/../src/inc/pricing.php';
 
+    // Stripe secret
     $stripeSecret = env('STRIPE_SECRET');
     if (!$stripeSecret) throw new Exception('STRIPE_SECRET missing');
 
+    // DB
     require __DIR__ . '/../config/db.php';
     $pdo = get_pdo();
 
@@ -35,7 +38,7 @@ try {
 
     $unit = (float)$camper['price_per_night'];
 
-    $depositPercent = max(1, min(100, (int)env('DEPOSIT_PERCENT', 20))); // ← usa 20 por defecto
+    $depositPercent = max(1, min(100, (int)env('DEPOSIT_PERCENT', 20))); // 20% por defecto
     $totalCents     = (int) round($unit * 100 * $nights);                 // total estimado
     $depositCents   = (int) max(1, round($totalCents * $depositPercent / 100));
 
@@ -50,16 +53,16 @@ try {
 
     if ($hasManage) {
         $st = $pdo->prepare("
-          INSERT INTO reservations (camper_id, start_date, end_date, status, manage_token, created_at)
-          VALUES (?, ?, ?, 'pending', ?, NOW())
+          INSERT INTO reservations (camper_id, start_date, end_date, status, manage_token, created_at, total_cents, deposit_cents)
+          VALUES (?, ?, ?, 'in_checkout', ?, NOW(), ?, ?)
         ");
-        $st->execute([$camperId, $start, $end, $token]);
+        $st->execute([$camperId, $start, $end, $token, $totalCents, $depositCents]);
     } else {
         $st = $pdo->prepare("
-          INSERT INTO reservations (camper_id, start_date, end_date, status, created_at)
-          VALUES (?, ?, ?, 'pending', NOW())
+          INSERT INTO reservations (camper_id, start_date, end_date, status, created_at, total_cents, deposit_cents)
+          VALUES (?, ?, ?, 'in_checkout', NOW(), ?, ?)
         ");
-        $st->execute([$camperId, $start, $end]);
+        $st->execute([$camperId, $start, $end, $totalCents, $depositCents]);
     }
     $reservationId = (int)$pdo->lastInsertId();
 
@@ -68,7 +71,7 @@ try {
     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $base   = rtrim(env('PUBLIC_BASE_URL', "$scheme://$host/src"), '/');
 
-    $manageUrl = $base . '/manage.php?rid=' . $reservationId . '&t=' . $token;
+    $manageUrl = $base . '/manage.php?rid=' . $reservationId . ($hasManage ? ('&t=' . $token) : '');
 
     // ---- STRIPE ----
     $stripe = new \Stripe\StripeClient($stripeSecret);
@@ -77,7 +80,7 @@ try {
     $lang = strtolower(substr($GLOBALS['LANG'] ?? 'en', 0, 2));
     $stripeLocale = [
         'es'=>'es','en'=>'en','de'=>'de','fr'=>'fr','it'=>'it','pt'=>'pt','nl'=>'nl'
-    ][$lang] ?? 'en'; // o 'auto' si prefieres que Stripe detecte
+    ][$lang] ?? 'en';
 
     // Cadenas traducibles
     $nameLine = sprintf(
@@ -102,25 +105,34 @@ try {
         __('I accept the [Terms & Cancellation Policy](%s). Company cancellations: full refund. Customer cancellations: deposit is non-refundable.'),
         'https://alisiosvan.com/terms'
     );
+
     $invoiceFooter = __('Alisios Van · Canary Islands · alisios.van@gmail.com · Cancellation: company cancellations → full refund; customer cancellations → deposit non-refundable.');
 
+    // --- CREATE CHECKOUT SESSION ---
     $session = $stripe->checkout->sessions->create([
-        'mode'        => 'payment',
-        'client_reference_id' => (string)$reservationId,
-        'success_url' => $base . '/thanks.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url'  => $base . '/cancel.php?rid=' . $reservationId . '&t=' . $token,
+        'mode'                 => 'payment',
+        'client_reference_id'  => (string)$reservationId,
+        'success_url'          => $base . '/thanks.php?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url'           => $base . '/cancel.php?rid=' . $reservationId . ($hasManage ? ('&t=' . $token) : ''),
+        'locale'               => $stripeLocale,
 
-        //en el idioma del sitio
-        'locale'      => $stripeLocale,
+        // Fuerza tarjeta y captura inmediata del depósito
+        'payment_method_types' => ['card'],
+        'payment_intent_data'  => [
+            'capture_method' => 'automatic',
+            'metadata' => [
+                'reservation_id' => (string)$reservationId,
+            ],
+        ],
 
         'line_items' => [[
             'price_data' => [
-                'currency' => 'eur',
+                'currency'     => 'eur',
                 'product_data' => [
                     'name'        => $nameLine,
                     'description' => $descLine,
                 ],
-                'unit_amount' => $depositCents,
+                'unit_amount'  => $depositCents,
             ],
             'quantity' => 1,
         ]],
@@ -156,6 +168,7 @@ try {
             'terms_of_service_acceptance' => [ 'message' => $tosMsg ],
         ],
 
+        // También guardamos metadata en la Session por comodidad
         'metadata' => [
             'reservation_id'        => (string)$reservationId,
             'camper_id'             => (string)$camperId,
@@ -167,10 +180,11 @@ try {
             'deposit_cents'         => (string)$depositCents,
             'deposit_type'          => 'first_night',
             'manage_url'            => $manageUrl,
-            'manage_token'          => $token,
+            'manage_token'          => $hasManage ? $token : '',
         ],
     ]);
 
+    // Guarda el id de sesión Stripe
     $st = $pdo->prepare("UPDATE reservations SET stripe_session_id=? WHERE id=?");
     $st->execute([$session->id, $reservationId]);
 
