@@ -49,9 +49,9 @@ function publicBaseUrl(): string {
 function norm($s){ return mb_strtolower(trim((string)$s)); }
 
 try {
-    // Recupera la sesión e incluimos invoice/customer
+    // Recupera la sesión e incluimos charges para poder sacar receipt_url sin otra llamada
     $session = CheckoutSession::retrieve($sessionId, [
-        'expand' => ['payment_intent', 'invoice', 'customer']
+        'expand' => ['payment_intent.charges', 'invoice', 'customer']
     ]);
 
     // ====== Determinar y fijar idioma para esta ejecución ===================
@@ -216,7 +216,7 @@ try {
 
         $receiptUrl = null;
         try {
-            $pi = $session->payment_intent ?? null;
+            $pi = $session->payment_intent ?? null; // ya viene expandido con charges
             if ($pi && isset($pi->charges->data[0])) {
                 $receiptUrl = $pi->charges->data[0]->receipt_url ?? null;
             }
@@ -251,7 +251,7 @@ try {
             'END:VEVENT','END:VCALENDAR'
         ]);
 
-        // Textos localizados para email
+        // Textos localizados para email (mantengo tu plantilla bonita)
         $tPaymentConfirmed = __('Payment confirmed');
         $tHeaderSub        = sprintf(__('Reservation #%d — Thank you for choosing Alisios Van'), (int)$res['id']);
         $tHi               = $customerName
@@ -269,7 +269,7 @@ try {
         $tQuestions        = sprintf(__('Questions? Write us at %s.'), '<a href="mailto:alisios.van@gmail.com" style="color:#5698A6;">alisios.van@gmail.com</a>');
         $tFooter           = __('Alisios Van · Canary Islands');
 
-        // Plantilla email (resumen) -----------------------------------------
+        // Plantilla email (resumen)
         $summaryTable = '
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
        style="border:1px solid rgba(0,0,0,0.06); border-radius:10px; background:#fbfbfb; margin-bottom:14px;">
@@ -374,9 +374,8 @@ try {
             return $ok ? $data : null;
         };
 
-        // Lógica de envío: solo si la factura ya está lista (o marcada paid)
-        $invoiceReady = (bool)($invoicePdf || $invoiceUrl || $invoicePaid);
-
+        // **Enviar SIEMPRE** si no se ha enviado ya y hay SMTP y email destino,
+        // independientemente de si la factura ya está lista.
         $emailAlreadySent = false;
         if (columnExists($pdo, 'reservations', 'confirmation_email_sent_at')) {
             $q = $pdo->prepare("SELECT confirmation_email_sent_at FROM reservations WHERE stripe_session_id = :ssid LIMIT 1");
@@ -386,7 +385,7 @@ try {
 
         $shouldSendEmail = (!$emailAlreadySent && $customerEmail && $host && $user && $pass);
 
-        if ($shouldSendEmail && $invoiceReady) {
+        if ($shouldSendEmail) {
             $sentOk = false;
             try {
                 $mail = new PHPMailer(true);
@@ -447,9 +446,6 @@ try {
                      LIMIT 1
                 ")->execute([':ssid' => $sessionId]);
             }
-        } elseif (!$invoiceReady) {
-            // Lo enviará luego el webhook o un reintento por backend
-            error_log("Invoice not ready yet for session $sessionId; email postponed.");
         }
 
         // ------------------ Página (para navegador) --------------------------
@@ -559,7 +555,7 @@ try {
 
                                 async function check() {
                                     try {
-                                        const r = await fetch('/../api/invoice-status.php?session_id=' + encodeURIComponent(sid) + '&_ts=' + Date.now());
+                                        const r = await fetch('../api/invoice-status.php?session_id=' + encodeURIComponent(sid) + '&_ts=' + Date.now());
                                         const j = await r.json();
                                         if (j.ok && (j.invoice_pdf || j.invoice_url)) {
                                             const btnWrap = document.querySelector('.d-flex.flex-wrap.gap-2');
