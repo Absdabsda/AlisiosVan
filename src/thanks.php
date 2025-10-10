@@ -71,18 +71,88 @@ try {
     }
 
     if ($session->payment_status === 'paid') {
-        // Marca la reserva como pagada
-        $up = $pdo->prepare("
+
+        // ========= 1) Crear/asegurar la reserva en BD =========
+        $selRes = $pdo->prepare("SELECT id FROM reservations WHERE stripe_session_id = ? LIMIT 1");
+        $selRes->execute([$sessionId]);
+        $reservationId = (int)($selRes->fetchColumn() ?: 0);
+
+        // Datos desde metadata de la Session (checkout)
+        $metaCamperId   = (int)($session->metadata->camper_id ?? 0);
+        $metaStart      = (string)($session->metadata->start ?? '');
+        $metaEnd        = (string)($session->metadata->end ?? '');
+        $metaNights     = (int)($session->metadata->nights ?? 0);
+        $metaUnit       = (float)($session->metadata->price_per_night_eur ?? 0);
+        $metaTotalCents = (int)($session->metadata->total_due_cents ?? 0);
+        $metaDepoCents  = (int)($session->metadata->deposit_cents ?? 0);
+        $metaLang       = (string)($session->metadata->lang ?? ($GLOBALS['LANG'] ?? 'en'));
+
+        // Normaliza fechas por si vienen vacías
+        if (!$metaStart || !$metaEnd) {
+            if (!empty($session->invoice) && is_object($session->invoice) && !empty($session->invoice->metadata)) {
+                $metaStart = $metaStart ?: (string)($session->invoice->metadata->start ?? '');
+                $metaEnd   = $metaEnd   ?: (string)($session->invoice->metadata->end ?? '');
+            }
+        }
+
+        // Si no hay nights en metadata, calcúlalos
+        if ($metaStart && $metaEnd && $metaNights <= 0) {
+            try {
+                $d1 = new DateTime($metaStart);
+                $d2 = new DateTime($metaEnd);
+                $metaNights = max(0, (int)$d1->diff($d2)->format('%a'));
+            } catch (Throwable $e) { /* ignore */ }
+        }
+
+        // Si aún no existe la reserva, la creamos ahora
+        if ($reservationId <= 0) {
+            $hasManage = columnExists($pdo, 'reservations', 'manage_token');
+            $hasLang   = columnExists($pdo, 'reservations', 'lang');
+            $manageToken = $hasManage ? bin2hex(random_bytes(24)) : null;
+
+            // Asegura precio unitario si faltara (no debería)
+            if ($metaUnit <= 0 && $metaCamperId > 0) {
+                $stp = $pdo->prepare("SELECT price_per_night FROM campers WHERE id=?");
+                $stp->execute([$metaCamperId]);
+                $metaUnit = (float)($stp->fetchColumn() ?: 0);
+            }
+            if ($metaTotalCents <= 0 && $metaUnit > 0 && $metaNights > 0) {
+                $metaTotalCents = (int)round($metaUnit * 100 * $metaNights);
+            }
+
+            // Inserta la reserva ya como "paid"
+            $cols = "camper_id,start_date,end_date,status,created_at,paid_at,stripe_session_id,stripe_payment_intent,total_cents,deposit_cents";
+            $vals = "?,?,?,?,NOW(),NOW(),?,?,?,?";
+            $args = [
+                $metaCamperId ?: null,
+                $metaStart ?: null,
+                $metaEnd ?: null,
+                'paid',
+                $sessionId,
+                (string)$session->payment_intent,
+                $metaTotalCents ?: null,
+                $metaDepoCents ?: null,
+            ];
+            if ($hasManage) { $cols .= ",manage_token"; $vals .= ",?"; $args[] = $manageToken; }
+            if ($hasLang)   { $cols .= ",lang";         $vals .= ",?"; $args[] = preg_replace('/[^a-zA-Z_-]/','',$metaLang); }
+
+            $ins = $pdo->prepare("INSERT INTO reservations ($cols) VALUES ($vals)");
+            $ins->execute($args);
+            $reservationId = (int)$pdo->lastInsertId();
+        } else {
+            // Si existía, la marcamos pagada y enlazamos PI
+            $up = $pdo->prepare("
             UPDATE reservations
                SET status='paid',
                    stripe_payment_intent=:pi,
-                   paid_at=NOW()
+                   paid_at=COALESCE(paid_at, NOW())
              WHERE stripe_session_id=:ssid
              LIMIT 1
         ");
-        $up->execute([':pi' => (string)$session->payment_intent, ':ssid' => $sessionId]);
+            $up->execute([':pi' => (string)$session->payment_intent, ':ssid' => $sessionId]);
+        }
 
-        // === Vincular reserva con customers ================================
+        // ========= 2) Vincular cliente (customers) =========
         $stripeCustomerId = null;
         $piLink = $session->payment_intent ?? null;
 
@@ -129,18 +199,18 @@ try {
                 $last  = $parts ? implode(' ', array_slice($parts, 1)) : '';
 
                 $ins = $pdo->prepare("INSERT INTO customers (first_name,last_name,email,email_norm,stripe_customer_id,created_at)
-                                      VALUES (?,?,?,?,?,NOW())");
+                                  VALUES (?,?,?,?,?,NOW())");
                 $ins->execute([$first, $last, $customerEmailNorm, $customerEmailNorm, $stripeCustomerId ?? null]);
                 $customerId = (int)$pdo->lastInsertId();
             }
 
             $pdo->prepare("UPDATE reservations
-                  SET customer_id = COALESCE(customer_id, ?)
-                WHERE stripe_session_id = ? LIMIT 1")
-                ->execute([$customerId, $sessionId]);
+              SET customer_id = COALESCE(customer_id, ?)
+            WHERE id = ? LIMIT 1")
+                ->execute([$customerId, $reservationId]);
         }
 
-        // --- Invoice: pequeño intento rápido (máx ~2s) ---------------------
+        // ========= 3) Intento rápido de localizar la Invoice =========
         $invoiceId = null; $invoicePdf = null; $invoiceUrl = null;
         $invoiceStatus = null; $invoicePaid = false;
 
@@ -171,38 +241,49 @@ try {
 
         // Guarda en BD si existen columnas
         if ($invoiceId && columnExists($pdo, 'reservations', 'stripe_invoice_id')) {
-            $pdo->prepare("UPDATE reservations SET stripe_invoice_id=:iid WHERE stripe_session_id=:ssid LIMIT 1")
-                ->execute([':iid'=>$invoiceId, ':ssid'=>$sessionId]);
+            $pdo->prepare("UPDATE reservations SET stripe_invoice_id=:iid WHERE id=:rid LIMIT 1")
+                ->execute([':iid'=>$invoiceId, ':rid'=>$reservationId]);
         }
         if (($invoicePdf || $invoiceUrl)
             && columnExists($pdo,'reservations','stripe_invoice_pdf')
             && columnExists($pdo,'reservations','stripe_invoice_url')) {
             $pdo->prepare("UPDATE reservations
-                              SET stripe_invoice_pdf=:pdf, stripe_invoice_url=:url
-                            WHERE stripe_session_id=:ssid LIMIT 1")
-                ->execute([':pdf'=>$invoicePdf, ':url'=>$invoiceUrl, ':ssid'=>$sessionId]);
+                          SET stripe_invoice_pdf=:pdf, stripe_invoice_url=:url
+                        WHERE id=:rid LIMIT 1")
+                ->execute([':pdf'=>$invoicePdf, ':url'=>$invoiceUrl, ':rid'=>$reservationId]);
         }
 
-        // --- Datos de la reserva --------------------------------------------
+        // ========= 4) Cargar datos de la reserva (para página/email) =========
         $hasManage = columnExists($pdo, 'reservations', 'manage_token');
+
         $select = "
-            SELECT r.id, r.start_date, r.end_date,
-                   c.name AS camper, c.price_per_night,
-                   DATEDIFF(r.end_date, r.start_date) AS nights";
+        SELECT r.id, r.start_date, r.end_date,
+               r.total_cents,
+               c.name AS camper, c.price_per_night,
+               DATEDIFF(r.end_date, r.start_date) AS nights";
         if ($hasManage) { $select .= ", r.manage_token"; }
         $select .= "
-              FROM reservations r
-              JOIN campers c ON c.id = r.camper_id
-             WHERE r.stripe_session_id = :ssid
-             LIMIT 1";
+          FROM reservations r
+          JOIN campers c ON c.id = r.camper_id
+         WHERE r.id = :rid
+         LIMIT 1";
         $st = $pdo->prepare($select);
-        $st->execute([':ssid' => $sessionId]);
+        $st->execute([':rid' => $reservationId]);
         $res = $st->fetch(PDO::FETCH_ASSOC);
         if (!$res) { throw new Exception('Reservation not found after payment.'); }
 
         $nights = (int)$res['nights'];
-        $price  = (float)$res['price_per_night'];
-        $total  = $nights * $price;
+        $baseUnit = (float)$res['price_per_night'];
+        $totalCentsDb = (int)($res['total_cents'] ?? 0);
+
+        // Usa total_cents si existe -> total y precio medio/noche
+        if ($totalCentsDb > 0) {
+            $total = $totalCentsDb / 100.0;
+            $price = $nights > 0 ? $total / $nights : $baseUnit;
+        } else {
+            $price = $baseUnit;
+            $total = $nights * $price;
+        }
 
         // Manage URL (si existe manage_token)
         $manageUrl = null;
@@ -210,7 +291,7 @@ try {
             $manageUrl = publicBaseUrl() . '/manage.php?rid='.(int)$res['id'].'&t='.$res['manage_token'];
         }
 
-        // --- Email -----------------------------------------------------------
+        // ========= 5) Email de confirmación (igual que tenías) =========
         $customerEmail = $session->customer_details->email ?? $session->customer_email ?? '';
         $customerName  = $session->customer_details->name  ?? '';
 
@@ -251,7 +332,7 @@ try {
             'END:VEVENT','END:VCALENDAR'
         ]);
 
-        // Textos localizados para email (mantengo tu plantilla bonita)
+        // Textos localizados para email
         $tPaymentConfirmed = __('Payment confirmed');
         $tHeaderSub        = sprintf(__('Reservation #%d — Thank you for choosing Alisios Van'), (int)$res['id']);
         $tHi               = $customerName
@@ -374,8 +455,7 @@ try {
             return $ok ? $data : null;
         };
 
-        // **Enviar SIEMPRE** si no se ha enviado ya y hay SMTP y email destino,
-        // independientemente de si la factura ya está lista.
+        // **Enviar SIEMPRE** si no se ha enviado ya y hay SMTP y email destino
         $emailAlreadySent = false;
         if (columnExists($pdo, 'reservations', 'confirmation_email_sent_at')) {
             $q = $pdo->prepare("SELECT confirmation_email_sent_at FROM reservations WHERE stripe_session_id = :ssid LIMIT 1");

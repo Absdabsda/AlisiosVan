@@ -93,9 +93,9 @@ $campersAdmin = $pdo->query("SELECT id, name, price_per_night, COALESCE(min_nigh
 
     <script>
         window.ADMIN_EVENTS_URL      = '<?= htmlspecialchars($eventsUrl, ENT_QUOTES, "UTF-8") ?>';
-        window.ADMIN_BLOCKS_URL      = '<?= htmlspecialchars(baseUrl()."/admin-blocks.php", ENT_QUOTES, "UTF-8") ?>';
-        window.ADMIN_MINRULES_URL    = '<?= htmlspecialchars(baseUrl()."/admin-minrules.php", ENT_QUOTES, "UTF-8") ?>';
-        window.ADMIN_PRICERULES_URL  = '<?= htmlspecialchars(baseUrl()."/admin-pricerules.php", ENT_QUOTES, "UTF-8") ?>';
+        window.ADMIN_BLOCKS_URL      = '/admin-blocks.php';
+        window.ADMIN_MINRULES_URL   = 'admin-minrules.php';
+        window.ADMIN_PRICERULES_URL = 'admin-pricerules.php';
     </script>
 </head>
 <body class="admin-shell">

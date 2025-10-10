@@ -4,12 +4,10 @@ header('Content-Type: application/json');
 ini_set('display_errors','0');
 
 try {
-    // Carga de entorno, i18n, utilidades de precios
     require_once __DIR__ . '/../config/bootstrap_env.php';
     require_once __DIR__ . '/../config/i18n-lite.php';
     require_once __DIR__.'/../src/inc/pricing.php';
 
-    // Stripe secret
     $stripeSecret = env('STRIPE_SECRET');
     if (!$stripeSecret) throw new Exception('STRIPE_SECRET missing');
 
@@ -25,79 +23,90 @@ try {
     if (!$camperId || !$start || !$end) throw new Exception('Missing data');
 
     // ---- CAMPER ----
-    $st = $pdo->prepare("SELECT * FROM campers WHERE id=?");
+    $st = $pdo->prepare("SELECT id, name, series, price_per_night FROM campers WHERE id=? LIMIT 1");
     $st->execute([$camperId]);
     $camper = $st->fetch(PDO::FETCH_ASSOC);
     if (!$camper) throw new Exception('Camper not found');
 
-    // ---- NIGHTS / PRICES ----
+    // ---- NIGHTS ----
     $d1 = new DateTime($start);
     $d2 = new DateTime($end);
     $nights = (int)$d1->diff($d2)->format('%a');
     if ($nights < 1) throw new Exception('Invalid date range');
 
-    $unit = (float)$camper['price_per_night'];
+    $baseUnit = (float)$camper['price_per_night'];
 
-    $depositPercent = max(1, min(100, (int)env('DEPOSIT_PERCENT', 20))); // 20% por defecto
-    $totalCents     = (int) round($unit * 100 * $nights);                 // total estimado
+    // ========= PRECIO CON RULES =========
+    // Cargamos TODAS las rules del rango de una vez
+    $q = $pdo->prepare("
+        SELECT id, start_date, end_date, price_per_night
+          FROM camper_price_rules
+         WHERE camper_id = :cid
+           AND NOT (end_date < :s OR start_date > :e)
+         ORDER BY id DESC
+    ");
+    $q->execute([
+        ':cid' => $camperId,
+        ':s'   => (new DateTime($start))->format('Y-m-d'),
+        ':e'   => (new DateTime($end))->format('Y-m-d'),
+    ]);
+    $rules = $q->fetchAll(PDO::FETCH_ASSOC);
+
+    // Función: precio de una fecha concreta según la última regla que aplique; si no, base
+    $priceFor = function(string $ymd) use ($rules, $baseUnit): float {
+        foreach ($rules as $r) { // ya vienen ordenadas por id DESC (más reciente primero)
+            if ($ymd >= $r['start_date'] && $ymd <= $r['end_date']) {
+                return (float)$r['price_per_night'];
+            }
+        }
+        return (float)$baseUnit;
+    };
+
+    // Sumar noche a noche: desde start (incl) hasta end (excl)
+    $run = new DateTime($start);
+    $last = new DateTime($end);
+    $totalCents = 0;
+    while ($run < $last) {
+        $ymd = $run->format('Y-m-d');
+        $totalCents += (int) round($priceFor($ymd) * 100);
+        $run->modify('+1 day');
+    }
+
+    // Si por lo que sea no pudo calcular, fallback a base
+    if ($totalCents <= 0) {
+        $totalCents = (int) round($baseUnit * 100 * $nights);
+    }
+
+    // Depósito
+    $depositPercent = max(1, min(100, (int)env('DEPOSIT_PERCENT', 20)));
     $depositCents   = (int) max(1, round($totalCents * $depositPercent / 100));
 
-    // ---- RESERVATION ----
-    $token = bin2hex(random_bytes(24));
-    $hasManage = false;
-    try {
-        $chk = $pdo->prepare("SHOW COLUMNS FROM `reservations` LIKE 'manage_token'");
-        $chk->execute();
-        $hasManage = (bool)$chk->fetch();
-    } catch (Throwable $e) { /* ignore */ }
-
-    if ($hasManage) {
-        $st = $pdo->prepare("
-          INSERT INTO reservations (camper_id, start_date, end_date, status, manage_token, created_at, total_cents, deposit_cents)
-          VALUES (?, ?, ?, 'in_checkout', ?, NOW(), ?, ?)
-        ");
-        $st->execute([$camperId, $start, $end, $token, $totalCents, $depositCents]);
-    } else {
-        $st = $pdo->prepare("
-          INSERT INTO reservations (camper_id, start_date, end_date, status, created_at, total_cents, deposit_cents)
-          VALUES (?, ?, ?, 'in_checkout', NOW(), ?, ?)
-        ");
-        $st->execute([$camperId, $start, $end, $totalCents, $depositCents]);
-    }
-    $reservationId = (int)$pdo->lastInsertId();
+    // Para textos: “precio por noche” mostrado = media para que cuadre visualmente
+    $avgUnit = ($nights > 0) ? ($totalCents / 100.0 / $nights) : $baseUnit;
 
     // ---- BASE URL ----
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $base   = rtrim(env('PUBLIC_BASE_URL', "$scheme://$host/src"), '/');
 
-    $manageUrl = $base . '/manage.php?rid=' . $reservationId . ($hasManage ? ('&t=' . $token) : '');
-
     // ---- STRIPE ----
     $stripe = new \Stripe\StripeClient($stripeSecret);
 
-    // Locale para Stripe (mapa sencillo)
     $lang = strtolower(substr($GLOBALS['LANG'] ?? 'en', 0, 2));
-    $stripeLocale = [
-        'es'=>'es','en'=>'en','de'=>'de','fr'=>'fr','it'=>'it','pt'=>'pt','nl'=>'nl'
-    ][$lang] ?? 'en';
+    $stripeLocale = ['es'=>'es','en'=>'en','de'=>'de','fr'=>'fr','it'=>'it','pt'=>'pt','nl'=>'nl'][$lang] ?? 'en';
 
-    // Cadenas traducibles
     $nameLine = sprintf(
         __('%s (%s) – Booking deposit (%d%% of total) · %d nights total'),
-        $camper['name'],
-        $camper['series'],
-        $depositPercent,
-        $nights
+        $camper['name'], $camper['series'], $depositPercent, $nights
     );
 
     $descLine = sprintf(
-        __('Reservation #%d · Dates %s → %s · Estimated total €%s • You are paying only a %d%% deposit now; remaining balance at pick-up (cash or PayPal).'),
-        $reservationId, $start, $end, number_format($totalCents / 100, 2, '.', ''), $depositPercent
+        __('Dates %s → %s · Estimated total €%s • You are paying only a %d%% deposit now; remaining balance at pick-up.'),
+        $start, $end, number_format($totalCents / 100, 2, '.', ''), $depositPercent
     );
 
     $submitMsg = sprintf(
-        __('You are paying a %d%% booking deposit now. The remaining balance is paid in person at pick-up (cash or PayPal).'),
+        __('You are paying a %d%% booking deposit now. The remaining balance is paid in person at pick-up.'),
         $depositPercent
     );
 
@@ -108,21 +117,15 @@ try {
 
     $invoiceFooter = __('Alisios Van · Canary Islands · alisios.van@gmail.com · Cancellation: company cancellations → full refund; customer cancellations → deposit non-refundable.');
 
-    // --- CREATE CHECKOUT SESSION ---
     $session = $stripe->checkout->sessions->create([
-        'mode'                 => 'payment',
-        'client_reference_id'  => (string)$reservationId,
-        'success_url'          => $base . '/thanks.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url'           => $base . '/cancel.php?rid=' . $reservationId . ($hasManage ? ('&t=' . $token) : ''),
-        'locale'               => $stripeLocale,
+        'mode'        => 'payment',
+        'success_url' => $base . '/thanks.php?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url'  => $base . '/cancel.php',
+        'locale'      => $stripeLocale,
 
-        // Fuerza tarjeta y captura inmediata del depósito
         'payment_method_types' => ['card'],
         'payment_intent_data'  => [
             'capture_method' => 'automatic',
-            'metadata' => [
-                'reservation_id' => (string)$reservationId,
-            ],
         ],
 
         'line_items' => [[
@@ -138,23 +141,20 @@ try {
         ]],
 
         'billing_address_collection' => 'required',
-        'tax_id_collection'          => ['enabled' => true],
         'customer_creation'          => 'always',
-
         'invoice_creation' => [
             'enabled' => true,
             'invoice_data' => [
                 'metadata' => [
-                    'reservation_id'        => (string)$reservationId,
-                    'camper_id'             => (string)$camperId,
-                    'start'                 => $start,
-                    'end'                   => $end,
-                    'nights'                => (string)$nights,
-                    'price_per_night_eur'   => (string)$unit,
-                    'total_due_cents'       => (string)$totalCents,
-                    'deposit_cents'         => (string)$depositCents,
-                    'deposit_type'          => 'first_night',
-                    'manage_url'            => $manageUrl,
+                    'camper_id'            => (string)$camperId,
+                    'start'                => $start,
+                    'end'                  => $end,
+                    'nights'               => (string)$nights,
+                    // usamos media para evitar confusión visual
+                    'price_per_night_eur'  => (string)round($avgUnit, 2),
+                    // TOTAL con rules (clave para thanks.php)
+                    'total_due_cents'      => (string)$totalCents,
+                    'deposit_cents'        => (string)$depositCents,
                 ],
                 'footer' => $invoiceFooter,
             ],
@@ -168,25 +168,17 @@ try {
             'terms_of_service_acceptance' => [ 'message' => $tosMsg ],
         ],
 
-        // También guardamos metadata en la Session por comodidad
         'metadata' => [
-            'reservation_id'        => (string)$reservationId,
-            'camper_id'             => (string)$camperId,
-            'start'                 => $start,
-            'end'                   => $end,
-            'nights'                => (string)$nights,
-            'price_per_night_eur'   => (string)$unit,
-            'total_due_cents'       => (string)$totalCents,
-            'deposit_cents'         => (string)$depositCents,
-            'deposit_type'          => 'first_night',
-            'manage_url'            => $manageUrl,
-            'manage_token'          => $hasManage ? $token : '',
+            'camper_id'            => (string)$camperId,
+            'start'                => $start,
+            'end'                  => $end,
+            'nights'               => (string)$nights,
+            'price_per_night_eur'  => (string)round($avgUnit, 2),
+            'total_due_cents'      => (string)$totalCents,
+            'deposit_cents'        => (string)$depositCents,
+            'lang'                 => $lang,
         ],
     ]);
-
-    // Guarda el id de sesión Stripe
-    $st = $pdo->prepare("UPDATE reservations SET stripe_session_id=? WHERE id=?");
-    $st->execute([$session->id, $reservationId]);
 
     echo json_encode(['ok'=>true,'url'=>$session->url]);
 
