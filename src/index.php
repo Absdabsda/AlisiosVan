@@ -7,9 +7,26 @@ require_once __DIR__ . '/../config/i18n-lite.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alisios Van</title>
+    <title>Alquiler de furgonetas camper en Fuerteventura | Alisios Van</title>
+    <meta name="google-site-verification" content="1-7OkRZByJKrXOA3Bu6n0h585TCZBAsY-rdHrVHx4PY" />
+    <meta name="description" content="Alquila tu furgoneta camper en Fuerteventura con Alisios Van. Entrega en aeropuerto, opciones 4x4, seguro incluido y asistencia. Reserva fácil para descubrir Canarias a tu ritmo.">
+
+    <!-- Indexación -->
+    <link rel="canonical" href="https://alisiosvan.com/es/">
+    <meta name="robots" content="index,follow,max-snippet:-1,max-video-preview:-1,max-image-preview:large">
+
+    <!-- i18n -->
+    <link rel="alternate" href="https://alisiosvan.com/es/" hreflang="es">
+    <link rel="alternate" href="https://alisiosvan.com/en/" hreflang="en">
+    <link rel="alternate" href="https://alisiosvan.com/de/" hreflang="de">
+    <link rel="alternate" href="https://alisiosvan.com/fr/" hreflang="fr">
+    <link rel="alternate" href="https://alisiosvan.com/it/" hreflang="it">
+    <link rel="alternate" href="https://alisiosvan.com/" hreflang="x-default">
 
     <meta name="google" content="notranslate">
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
@@ -56,8 +73,9 @@ require_once __DIR__ . '/../config/i18n-lite.php';
 <div class="landing-hero" style="--header-bg-rgb: 129,193,208;">
     <img src="img/matcha-landing-page.jpeg" alt="Landscape Camper Landing Image">
     <div class="landing-overlay">
-        <h1 class="landing-title"><?= __('Freedom is not a place') ?></h1>
-        <p class="subheading-title"><?= __('It’s the journey you choose') ?></p>
+        <p class="landing-title"><?= __('Freedom is not a place') ?></p>
+
+        <h1 class="subheading-title"><?= __('Camper van rental in Fuerteventura') ?></h1>
 
         <div class="search-wrapper">
             <form class="search-form row align-items-center justify-content-center" id="searchForm">
@@ -106,6 +124,7 @@ require_once __DIR__ . '/../config/i18n-lite.php';
 <section class="info-section py-5">
     <div class="container text-center">
         <h2 class="section-title"><?= __('Why travel with Alisios Van?') ?></h2>
+        <h3 class="visually-hidden"><?= __('Camper van rental in Fuerteventura with airport pickup and insurance included') ?></h3>
         <div class="row mt-4">
             <div class="col-md-4">
                 <i class="fas fa-map-marked-alt fa-2x mb-2"></i>
@@ -195,7 +214,7 @@ require_once __DIR__ . '/../config/i18n-lite.php';
 <!-- GALERÍA -->
 <section class="gallery-section py-5">
     <div class="container text-center">
-        <h2 class="section-title"><?= __('Vanlife in the Canary Islands') ?></h2>
+        <h2 class="section-title"><?= __('Our gallery of camper van rental in Fuerteventura') ?></h2>
         <div class="row mt-4">
             <div class="col-md-4 mb-3">
                 <img src="img/carousel/matcha.34.32 (1).jpeg" class="img-fluid rounded" alt="Camper 1">
@@ -213,7 +232,7 @@ require_once __DIR__ . '/../config/i18n-lite.php';
 <!-- MAPA -->
 <section class="map-section py-5 bg-light">
     <div class="container text-center">
-        <h2 class="section-title"><?= __('We are here') ?></h2>
+        <h2 class="section-title"><?= __('Find us in Fuerteventura') ?></h2>
         <div class="map-container mt-4">
             <iframe
                     src="https://www.google.com/maps?q=Puerto+del+Rosario,+Fuerteventura&hl=<?= $LANG==='es'?'es':'en' ?>&z=13&output=embed"
@@ -227,7 +246,7 @@ require_once __DIR__ . '/../config/i18n-lite.php';
 <!-- CTA final -->
 <section class="cta-section text-center py-5">
     <div class="container">
-        <h2 class="section-title"><?= __('Ready for your van adventure?') ?></h2>
+        <h2 class="section-title"><?= __('Ready to rent your camper van?') ?></h2>
         <button id="ctaBook" class="btn btn-primary btn-lg mt-3"><?= __('Book Now') ?></button>
     </div>
 </section>

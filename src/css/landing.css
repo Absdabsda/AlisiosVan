@@ -62,14 +62,16 @@ label {                 /* refuerza color de labels sobre fondos claros */
 }
 
 /* Título y subtítulo del hero (fluidos y jerárquicos) */
-.landing-title{
-    font-size: clamp(34px, 8.5vw, 64px);
+.subheading-title{
+    font-family: 'Quicksand', sans-serif;
+    font-size: clamp(16px, 4.8vw, 26px);
     line-height: 1.1;
     margin: 0;
     color: var(--color-blanco);
 }
-.subheading-title{
-    font-size: clamp(16px, 4.8vw, 26px);
+.landing-title{
+    font-family: 'Playfair Display', cursive;
+    font-size: clamp(34px, 8.5vw, 64px);
     line-height: 1.2;
     margin: .25rem 0 1rem;
     color: var(--color-blanco);
@@ -259,7 +261,6 @@ label {                 /* refuerza color de labels sobre fondos claros */
     .landing-hero{ height: auto; }
     .landing-overlay{
         height: auto;
-        padding-top: 20vh;      /* bajo el header fijo */
         padding-bottom: 1rem;
     }
     .search-wrapper{ margin-top: 1rem; }
