@@ -1,15 +1,41 @@
 <?php
 require_once __DIR__ . '/../config/bootstrap_env.php';
 require_once __DIR__ . '/../config/i18n-lite.php';
+// Helpers mínimos
+$SUPPORTED_LANGS = ['es','en','de','fr','it'];
+$lang = strtolower($LANG ?? ($_GET['lang'] ?? 'es'));
+if (!in_array($lang, $SUPPORTED_LANGS, true)) $lang = 'es';
+$path = trim($_GET['path'] ?? '', '/');
+
+function abs_url(string $lang, string $path=''): string {
+    $clean = trim($path, '/');
+    $suffix = $clean !== '' ? $clean.'/' : '';
+    return "https://alisiosvan.com/$lang/$suffix";
+}
+$currentUrl = abs_url($lang, $path);
+
+function flatpickr_locale_file(string $lang): string {
+    // mapear lang → fichero
+    return [
+        'es'=>'es.js', 'en'=>'', 'de'=>'de.js', 'fr'=>'fr.js', 'it'=>'it.js'
+    ][$lang] ?? '';
+}
 ?>
 <!doctype html>
-<html lang="<?= htmlspecialchars($LANG ?? 'en') ?>">
+<html lang="<?= htmlspecialchars($lang) ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alquiler de furgonetas camper en Fuerteventura | Alisios Van</title>
     <meta name="google-site-verification" content="1-7OkRZByJKrXOA3Bu6n0h585TCZBAsY-rdHrVHx4PY" />
     <meta name="description" content="Alquila tu furgoneta camper en Fuerteventura con Alisios Van. Entrega en aeropuerto, opciones 4x4, seguro incluido y asistencia. Reserva fácil para descubrir Canarias a tu ritmo.">
+
+    <!-- Canonical / hreflang dinámicos -->
+    <link rel="canonical" href="<?= htmlspecialchars($currentUrl) ?>">
+    <?php foreach ($SUPPORTED_LANGS as $l): ?>
+        <link rel="alternate" hreflang="<?= $l ?>" href="<?= htmlspecialchars(abs_url($l, $path)) ?>">
+    <?php endforeach; ?>
+    <link rel="alternate" hreflang="x-default" href="<?= htmlspecialchars(abs_url('es', $path)) ?>">
 
     <!-- Indexación -->
     <link rel="canonical" href="https://alisiosvan.com/es/">
