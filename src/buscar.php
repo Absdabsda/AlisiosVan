@@ -1,9 +1,33 @@
 <?php
 // src/buscar.php
-
 require_once __DIR__ . '/../config/bootstrap_env.php';
 require_once __DIR__ . '/../config/i18n-lite.php';
-require_once __DIR__.'/inc/pricing.php';
+require_once __DIR__ . '/inc/pricing.php';
+
+$lang  = htmlspecialchars($LANG ?? 'es');
+$start = $_GET['start'] ?? '';
+$end   = $_GET['end'] ?? '';
+
+// Valida formato YYYY-MM-DD
+$re = '~^\d{4}-\d{2}-\d{2}$~';
+if (!preg_match($re, $start) || !preg_match($re, $end)) {
+    header('Location: /' . $lang . '/?err=bad-dates', true, 302);
+    exit;
+}
+
+// Valida orden y rango
+try {
+    $ds = new DateTimeImmutable($start);
+    $de = new DateTimeImmutable($end);
+    if ($de <= $ds) {
+        header('Location: /' . $lang . '/?err=range', true, 302);
+        exit;
+    }
+} catch (Throwable $e) {
+    header('Location: /' . $lang . '/?err=invalid', true, 302);
+    exit;
+}
+
 
 ?><!doctype html>
 <html lang="<?= htmlspecialchars($lang ?? 'en') ?>">
@@ -40,16 +64,16 @@ require_once __DIR__.'/inc/pricing.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
-    <link rel="stylesheet" href="css/estilos.css">
-    <link rel="stylesheet" href="css/header.css">
-    <link rel="stylesheet" href="css/campers.css">
-    <link rel="stylesheet" href="css/buscar.css">
-    <link rel="stylesheet" href="css/cookies.css">
+    <link rel="stylesheet" href="/src/css/estilos.css">
+    <link rel="stylesheet" href="/src/css/header.css">
+    <link rel="stylesheet" href="/src/css/campers.css">
+    <link rel="stylesheet" href="/src/css/buscar.css">
+    <link rel="stylesheet" href="/src/css/cookies.css">
+    <script src="/src/js/header.js" defer></script>
+    <script src="/src/js/estado-busqueda.js" defer></script>
+    <script src="/src/js/buscar.js" defer></script>
+    <script src="/src/js/cookies.js" defer></script>
 
-    <script src="js/header.js" defer></script>
-    <script src="js/estado-busqueda.js" defer></script>
-    <script src="js/buscar.js" defer></script>
-    <script src="js/cookies.js" defer></script>
 
     <style>
         :root { --header-bg-rgb: 131,115,100; } /* #837364 */
@@ -160,8 +184,8 @@ require_once __DIR__.'/inc/pricing.php';
     <!-- Barra: Volver + selector de fechas -->
     <section class="py-3 border-top">
         <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <a id="backLink" class="btn btn-outline-secondary btn-sm" href="index.php">
-                <i class="bi bi-arrow-left"></i> <?= __('Back') ?>
+            <a id="backLink" class="btn btn-outline-secondary btn-sm" href="/<?= htmlspecialchars($lang) ?>/">
+            <i class="bi bi-arrow-left"></i> <?= __('Back') ?>
             </a>
 
             <div class="d-flex align-items-center gap-2">

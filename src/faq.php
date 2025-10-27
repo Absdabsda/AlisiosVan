@@ -20,13 +20,13 @@ require __DIR__ . '/../config/i18n-lite.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
-    <link rel="stylesheet" href="css/estilos.css">
-    <link rel="stylesheet" href="css/header.css">
-    <link rel="stylesheet" href="css/faq.css">
-    <link rel="stylesheet" href="css/cookies.css">
-    <script src="js/header.js" defer></script>
-    <script src="js/faq.js" defer></script>
-    <script src="js/cookies.js" defer></script>
+    <link rel="stylesheet" href="/src/css/estilos.css">
+    <link rel="stylesheet" href="/src/css/header.css">
+    <link rel="stylesheet" href="/src/css/faq.css">
+    <link rel="stylesheet" href="/src/css/cookies.css">
+    <script src="/src/js/header.js" defer></script>
+    <script src="/src/js/faq.js" defer></script>
+    <script src="/src/js/cookies.js" defer></script>
 
     <style>
         :root { --header-bg-rgb: 82,118,159; } /* #52769F */

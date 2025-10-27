@@ -84,10 +84,22 @@ try {
     // Para textos: “precio por noche” mostrado = media para que cuadre visualmente
     $avgUnit = ($nights > 0) ? ($totalCents / 100.0 / $nights) : $baseUnit;
 
-    // ---- BASE URL ----
+    // ---- BASE pública para DEV/PROD (sin /src al final) ----
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $base   = rtrim(env('PUBLIC_BASE_URL', "$scheme://$host/src"), '/');
+
+// Cuando sirves con php -S y dev-router.php, SCRIPT_NAME será /api/create-checkout.php
+    $scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/'); // p.ej. /api
+    $appBase   = preg_replace('~/api$~i', '', $scriptDir);           // -> '' (raíz del host)
+
+// Usa .env si existe; si no, construye con host + subcarpeta
+    $publicRoot = rtrim(env('PUBLIC_BASE_URL', "$scheme://$host$appBase"), '/');
+
+// Defensivo: si alguien dejó /src al final por error, quítalo
+    $publicRoot = preg_replace('~/src/?$~i', '', $publicRoot);
+
+// Idioma 2 letras
+    $lang = strtolower(substr($GLOBALS['LANG'] ?? 'es', 0, 2));
 
     // ---- STRIPE ----
     $stripe = new \Stripe\StripeClient($stripeSecret);
@@ -119,8 +131,8 @@ try {
 
     $session = $stripe->checkout->sessions->create([
         'mode'        => 'payment',
-        'success_url' => $base . '/thanks.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url'  => $base . '/cancel.php',
+        'success_url' => $publicRoot . '/' . rawurlencode($lang) . '/thanks/?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url'  => $publicRoot . '/' . rawurlencode($lang) . '/cancel/',
         'locale'      => $stripeLocale,
 
         'payment_method_types' => ['card'],

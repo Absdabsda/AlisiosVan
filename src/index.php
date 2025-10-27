@@ -86,15 +86,15 @@ function flatpickr_locale_file(string $lang): string {
     </script>
     <script defer src="js/datepicker-init.js"></script>
 
-    <link rel="stylesheet" href="css/estilos.css">
-    <link rel="stylesheet" href="css/landing.css">
-    <link rel="stylesheet" href="css/header.css">
-    <link rel="stylesheet" href="css/cookies.css">
+    <link rel="stylesheet" href="/src/css/estilos.css">
+    <link rel="stylesheet" href="/src/css/landing.css">
+    <link rel="stylesheet" href="/src/css/header.css">
+    <link rel="stylesheet" href="/src/css/cookies.css">
 
-    <script src="js/header.js" defer></script>
-    <script src="js/landing.js" defer></script>
-    <script src="js/cookies.js" defer></script>
-    <script src="js/estado-busqueda.js" defer></script>
+    <script src="/src/js/header.js" defer></script>
+    <script src="/src/js/landing.js" defer></script>
+    <script src="/src/js/cookies.js" defer></script>
+    <script src="/src/js/estado-busqueda.js" defer></script>
     <style>
         :root{ --header-bg-rgb: 167,176,183; }
     </style>
@@ -249,13 +249,13 @@ function flatpickr_locale_file(string $lang): string {
         <h2 class="section-title"><?= __('Our gallery of camper van rental in Fuerteventura') ?></h2>
         <div class="row mt-4">
             <div class="col-md-4 mb-3">
-                <img src="img/carousel/matcha.34.32 (1).jpeg" class="img-fluid rounded" alt="Camper 1">
+                <img src="/src/img/carousel/matcha.34.32 (1).jpeg" class="img-fluid rounded" alt="Camper 1">
             </div>
             <div class="col-md-4 mb-3">
-                <img src="img/carousel/t3-azul-mar.webp" class="img-fluid rounded" alt="Camper 2">
+                <img src="/src/img/carousel/t3-azul-mar.webp" class="img-fluid rounded" alt="Camper 2">
             </div>
             <div class="col-md-4 mb-3">
-                <img src="img/carousel/t4-sol.webp" class="img-fluid rounded" alt="Camper 3">
+                <img src="/src/img/carousel/t4-sol.webp" class="img-fluid rounded" alt="Camper 3">
             </div>
         </div>
     </div>

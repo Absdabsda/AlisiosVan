@@ -148,6 +148,7 @@ $curFlag = $flagOf[$lang] ?? 'gb';
 <!-- =========================================== -->
 <!-- MODAL: Manage Booking -->
 <!-- =========================================== -->
+<!-- MODAL: Manage Booking -->
 <div class="modal fade" id="manageBookingModal" tabindex="-1"
      aria-labelledby="manageBookingTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -159,9 +160,24 @@ $curFlag = $flagOf[$lang] ?? 'gb';
                         aria-label="<?= __('Close') ?>"></button>
             </div>
 
-            <form action="/find-reservation.php" method="get"
-                  class="needs-validation" novalidate>
-                <div class="modal-body">
+            <?php
+            $manageSlugByLang = [
+            'es' => 'gestionar-reserva',
+            'en' => 'manage-booking',
+            'de' => 'buchung-verwalten',
+            'fr' => 'gerer-reservation',
+            'it' => 'gestisci-prenotazione',
+            ];
+            $manageSlug = $manageSlugByLang[$lang] ?? 'gestionar-reserva';
+            ?>
+
+            <!-- IMPORTANTE: ahora POST y a la ruta bonita por idioma -->
+            <form method="post"
+                  action="/<?= htmlspecialchars($lang) ?>/<?= htmlspecialchars($manageSlug) ?>/"
+                  class="needs-validation"
+                  novalidate>
+
+            <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label"><?= __('Reservation #') ?></label>
                         <input type="number" name="rid" class="form-control"

@@ -27,14 +27,14 @@ require __DIR__ . '/../config/i18n-lite.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
-    <link rel="stylesheet" href="css/estilos.css">
-    <link rel="stylesheet" href="css/header.css">
-    <link rel="stylesheet" href="css/sobre-nosotros.css">
-    <link rel="stylesheet" href="css/cookies.css">
+    <link rel="stylesheet" href="/src/css/estilos.css">
+    <link rel="stylesheet" href="/src/css/header.css">
+    <link rel="stylesheet" href="/src/css/sobre-nosotros.css">
+    <link rel="stylesheet" href="/src/css/cookies.css">
 
-    <script src="js/header.js" defer></script>
-    <script src="js/campers.js" defer></script>
-    <script src="js/cookies.js" defer></script>
+    <script src="/src/js/header.js" defer></script>
+    <script src="/src/js/campers.js" defer></script>
+    <script src="/src/js/cookies.js" defer></script>
 
     <style>
         :root { --header-bg-rgb: 37,50,48; } /* #253230 */
@@ -95,7 +95,7 @@ require __DIR__ . '/../config/i18n-lite.php';
     <section class="about-final-block">
         <div class="container about-final-container">
             <div class="about-final-image">
-                <img src="img/carlos-recogiendo-skye.jpeg" alt="<?= __('Preparing our camper van') ?>">
+                <img src="/src/img/carlos-recogiendo-skye.jpeg" alt="<?= __('Preparing our camper van') ?>">
             </div>
             <div class="about-final-text">
                 <h4><?= __('Made with care, made for you.') ?></h4>

@@ -26,14 +26,14 @@ if (empty($_SESSION['csrf'])) {
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
-    <link rel="stylesheet" href="css/estilos.css">
-    <link rel="stylesheet" href="css/header.css">
-    <link rel="stylesheet" href="css/contacto.css">
-    <link rel="stylesheet" href="css/cookies.css">
-    <script src="js/header.js" defer></script>
+    <link rel="stylesheet" href="/src/css/estilos.css">
+    <link rel="stylesheet" href="/src/css/header.css">
+    <link rel="stylesheet" href="/src/css/contacto.css">
+    <link rel="stylesheet" href="/src/css/cookies.css">
+    <script src="/src/js/header.js" defer></script>
 
-    <script src="js/contacto.js" defer></script>
-    <script src="js/cookies.js" defer></script>
+    <script src="/src/js/contacto.js" defer></script>
+    <script src="/src/js/cookies.js" defer></script>
 
     <style>
         :root { --header-bg-rgb: 84,70,62; } /* #54463E */

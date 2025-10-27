@@ -547,12 +547,12 @@ try {
 
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
-            <link rel="stylesheet" href="css/estilos.css">
-            <link rel="stylesheet" href="css/cookies.css">
-            <script src="js/cookies.js" defer></script>
+            <link rel="stylesheet" href="/src/css/estilos.css">
+            <link rel="stylesheet" href="/src/css/cookies.css">
+            <script src="/src/js/cookies.js" defer></script>
 
             <style>
-                .page-hero{ background-image:url('img/matcha-landing-page.jpeg'); }
+                .page-hero{ background-image:url('/src/img/matcha-landing-page.jpeg'); }
                 .wrap{ max-width: 1000px; margin-inline:auto; padding: var(--spacing-l); }
                 .cardy{ background: var(--color-blanco); border-radius: var(--border-radius);
                     box-shadow: var(--box-shadow-medium); border: 1px solid rgba(0,0,0,.04);
@@ -592,8 +592,13 @@ try {
                         <p class="mb-3 text-muted"><?= __('We’ve emailed you the booking details and next steps.') ?></p>
 
                         <div class="d-flex flex-wrap gap-2">
-                            <a class="btn" href="index.php"><i class="bi bi-house-door"></i> <?= __('Back to Home') ?></a>
-                            <a class="btn btn-outline-secondary" href="campers.php"><i class="bi bi-truck"></i> <?= __('Browse campers') ?></a>
+                            <a class="btn" href="/<?= htmlspecialchars($lang) ?>/">
+                                <i class="bi bi-house-door"></i> <?= __('Back to Home') ?>
+                            </a>
+                            <a class="btn btn-outline-secondary" href="/<?= htmlspecialchars($lang) ?>/campers/">
+                                <i class="bi bi-truck"></i> <?= __('Browse campers') ?>
+                            </a>
+
                             <button id="btnIcs" class="btn btn-outline-secondary"><i class="bi bi-calendar-event"></i> <?= __('Add to calendar') ?></button>
 
                             <?php if ($invoicePdf): ?>

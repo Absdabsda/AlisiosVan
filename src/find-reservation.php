@@ -22,12 +22,28 @@ function columnExists(PDO $pdo, string $table, string $column): bool {
     return (bool)$st->fetchColumn();
 }
 
-/** Enviar correo con enlace de gestión */
+/** Enviar correo con enlace de gestión (apunta a manage.php con rid + t) */
 function send_manage_link(string $toEmail, int $rid, string $token): bool {
+    // Idioma actual (lo setea el router; por si acaso, cae a 'en')
+    $lang = $GLOBALS['LANG'] ?? 'en';
+
+    // Slug bonito por idioma para la página de MANAGE (manage.php)
+    $PREFERRED_MANAGE = [
+        'es' => 'gestion-reserva-link',
+        'en' => 'manage-booking-link',
+        'de' => 'verwaltung-link',
+        'fr' => 'gestion-lien',
+        'it' => 'gestisci-link',
+    ];
+
+    // Base pública SIN /src
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $base   = rtrim(env('PUBLIC_BASE_URL', "$scheme://$host/src"), '/');
-    $url    = $base . '/manage.php?rid='.(int)$rid.'&t='.urlencode($token);
+    $base   = rtrim(env('PUBLIC_BASE_URL', "$scheme://$host"), '/');
+
+    // URL final bonita (mantén rid y t como query). Esta lleva a manage.php (router: slug 'manage')
+    $manageSlug = $PREFERRED_MANAGE[$lang] ?? 'manage-booking-link';
+    $url = $base . '/' . rawurlencode($lang) . '/' . $manageSlug . '/?rid='.(int)$rid.'&t='.urlencode($token);
 
     $subject = __('find.mail.subject');
     $intro   = __('find.mail.intro');
@@ -114,89 +130,118 @@ function send_manage_link(string $toEmail, int $rid, string $token): bool {
     }
 }
 
-/* ===================== entrada ===================== */
-$rid        = (int)($_GET['rid']   ?? $_POST['rid']   ?? 0);
-$emailInput = (string)($_GET['email'] ?? $_POST['email'] ?? '');
-$email      = norm($emailInput);
-
+/* ===================== entrada (POST → PRG) ===================== */
 $sent = false;
-try {
-    if ($rid > 0 && $email !== '') {
-        $row = null;
 
-        $canJoinCustomers = columnExists($pdo, 'reservations', 'customer_id')
-            && columnExists($pdo, 'customers', 'id')
-            && columnExists($pdo, 'customers', 'email');
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $rid        = (int)($_POST['rid']   ?? 0);
+    $emailInput = (string)($_POST['email'] ?? '');
+    $email      = norm($emailInput);
 
-        $conds  = [];
-        $params = [$rid];
-        $join   = $canJoinCustomers ? "LEFT JOIN customers cu ON cu.id = r.customer_id" : "";
+    try {
+        if ($rid > 0 && $email !== '') {
+            $row = null;
 
-        if (columnExists($pdo, 'reservations', 'customer_email')) {
-            $conds[]  = "LOWER(TRIM(r.customer_email)) = LOWER(?)";
-            $params[] = $email;
-        }
-        if (columnExists($pdo, 'reservations', 'email')) {
-            $conds[]  = "LOWER(TRIM(r.email)) = LOWER(?)";
-            $params[] = $email;
-        }
-        if ($canJoinCustomers) {
-            $conds[]  = "LOWER(TRIM(cu.email)) = LOWER(?)";
-            $params[] = $email;
-        }
+            $canJoinCustomers = columnExists($pdo, 'reservations', 'customer_id')
+                && columnExists($pdo, 'customers', 'id')
+                && columnExists($pdo, 'customers', 'email');
 
-        if ($conds) {
-            $sql = "SELECT r.id, r.manage_token FROM reservations r $join
-                    WHERE r.id = ? AND (".implode(' OR ', $conds).") LIMIT 1";
-            $st = $pdo->prepare($sql);
-            $st->execute($params);
-            $row = $st->fetch(PDO::FETCH_ASSOC) ?: null;
-        }
+            $conds  = [];
+            $params = [$rid];
+            $join   = $canJoinCustomers ? "LEFT JOIN customers cu ON cu.id = r.customer_id" : "";
 
-        if ($row) {
-            if (empty($row['manage_token'])) {
-                $tok = bin2hex(random_bytes(16));
-                $pdo->prepare("UPDATE reservations SET manage_token=? WHERE id=? LIMIT 1")
-                    ->execute([$tok, $rid]);
-                $row['manage_token'] = $tok;
+            if (columnExists($pdo, 'reservations', 'customer_email')) {
+                $conds[]  = "LOWER(TRIM(r.customer_email)) = LOWER(?)";
+                $params[] = $email;
             }
-            $sent = send_manage_link($emailInput, $rid, $row['manage_token']);
+            if (columnExists($pdo, 'reservations', 'email')) {
+                $conds[]  = "LOWER(TRIM(r.email)) = LOWER(?)";
+                $params[] = $email;
+            }
+            if ($canJoinCustomers) {
+                $conds[]  = "LOWER(TRIM(cu.email)) = LOWER(?)";
+                $params[] = $email;
+            }
+
+            if ($conds) {
+                $sql = "SELECT r.id, r.manage_token FROM reservations r $join
+                        WHERE r.id = ? AND (".implode(' OR ', $conds).") LIMIT 1";
+                $st = $pdo->prepare($sql);
+                $st->execute($params);
+                $row = $st->fetch(PDO::FETCH_ASSOC) ?: null;
+            }
+
+            // Si coincide, garantizamos token y enviamos email
+            if ($row) {
+                if (empty($row['manage_token'])) {
+                    $tok = bin2hex(random_bytes(16));
+                    $pdo->prepare("UPDATE reservations SET manage_token=? WHERE id=? LIMIT 1")
+                        ->execute([$tok, $rid]);
+                    $row['manage_token'] = $tok;
+                }
+                $sent = send_manage_link($emailInput, $rid, $row['manage_token']);
+            } else {
+                // Para no revelar existencia de reserva/email, actuamos como si todo OK
+                $sent = true;
+            }
         }
+    } catch (Throwable $e) {
+        error_log("find-reservation error: ".$e->getMessage());
+        // Evitar enumeración → también redirigimos a “sent”
+        $sent = true;
     }
-} catch (Throwable $e) {
-    error_log("find-reservation error: ".$e->getMessage());
+
+    // PRG: redirige SIEMPRE a la ruta bonita del FIND con ?sent=1 (por idioma)
+    $lang = $GLOBALS['LANG'] ?? 'en';
+    $FIND_SLUGS = [
+        'es' => 'gestionar-reserva',
+        'en' => 'manage-booking',
+        'de' => 'buchung-verwalten',
+        'fr' => 'gerer-reservation',
+        'it' => 'gestisci-prenotazione',
+    ];
+    $findSlug = $FIND_SLUGS[$lang] ?? 'manage-booking';
+    header('Location: /' . rawurlencode($lang) . '/' . $findSlug . '/?sent=1');
+    exit;
 }
 
 /* ===================== vista ===================== */
+$LANG_UI = (string)($GLOBALS['LANG'] ?? 'en');
+$LANG_UI_ESC = htmlspecialchars($LANG_UI, ENT_QUOTES, 'UTF-8');
+
+// Slug bonito del FIND por idioma (para action del form y botón reintentar)
+$FIND_SLUGS = [
+    'es' => 'gestionar-reserva',
+    'en' => 'manage-booking',
+    'de' => 'buchung-verwalten',
+    'fr' => 'gerer-reservation',
+    'it' => 'gestisci-prenotazione',
+];
+$findSlug = $FIND_SLUGS[$LANG_UI] ?? 'manage-booking';
+$findSlugEsc = htmlspecialchars($findSlug, ENT_QUOTES, 'UTF-8');
 ?>
 <!doctype html>
-<html lang="<?= htmlspecialchars($GLOBALS['LANG'] ?? 'en') ?>">
+<html lang="<?= $LANG_UI_ESC ?>">
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= __('find.title') ?></title>
-    <!-- evita traducción automática de Chrome -->
-    <meta name="google" content="notranslate">
-
-    <!-- evita traducción automática de Chrome -->
     <meta name="google" content="notranslate">
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
-    <link rel="stylesheet" href="css/estilos.css">
-    <link rel="stylesheet" href="css/header.css">
-    <link rel="stylesheet" href="css/manage.css">
-    <link rel="stylesheet" href="css/cookies.css">
-    <script src="js/header.js" defer></script>
-    <script src="js/cookies.js" defer></script>
+    <link rel="stylesheet" href="/src/css/estilos.css">
+    <link rel="stylesheet" href="/src/css/header.css">
+    <link rel="stylesheet" href="/src/css/manage.css">
+    <link rel="stylesheet" href="/src/css/cookies.css">
+    <script src="/src/js/header.js" defer></script>
+    <script src="/src/js/cookies.js" defer></script>
 </head>
 <body>
 <?php include 'inc/header.inc'; ?>
@@ -209,20 +254,20 @@ try {
 </section>
 
 <main class="container py-5" style="max-width:720px;">
-    <?php if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['rid'])): ?>
+    <?php if (isset($_GET['sent'])): ?>
         <div class="alert alert-info mb-4">
             <?= __('find.alert.sent') ?>
         </div>
         <div class="d-flex gap-2">
-            <a href="index.php" class="btn btn-outline-secondary">
+            <a href="/<?= $LANG_UI_ESC ?>/" class="btn btn-outline-secondary">
                 <i class="bi bi-house"></i> <?= __('find.btn.home') ?>
             </a>
-            <a href="find-reservation.php" class="btn btn-primary">
+            <a href="/<?= $LANG_UI_ESC ?>/<?= $findSlugEsc ?>/" class="btn btn-primary">
                 <i class="bi bi-search"></i> <?= __('find.btn.retry') ?>
             </a>
         </div>
     <?php else: ?>
-        <form method="get" class="card card-body shadow-sm">
+        <form method="post" action="/<?= $LANG_UI_ESC ?>/<?= $findSlugEsc ?>/" class="card card-body shadow-sm">
             <h1 class="h5 mb-3"><?= __('find.title') ?></h1>
             <div class="mb-3">
                 <label class="form-label"><?= __('find.form.resid') ?></label>

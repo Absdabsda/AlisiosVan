@@ -65,10 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
             window.SearchState.saveLastSearch({from: start, to: end, series: ''});
         }
 
-        const url = new URL('buscar.php', location.href);
-        url.searchParams.set('start', start);
-        url.searchParams.set('end', end);
-        location.href = url.toString();
+        const lang = (window.APP_LANG || 'es').split('-')[0];
+        location.href = `/${lang}/buscar/${start}/${end}/`;
+
     });
 
     /* ===========================
@@ -141,10 +140,11 @@ document.addEventListener('DOMContentLoaded', () => {
         text.textContent = tpl.replace('%s', search.from).replace('%s', search.to);
 
         // Link directo a buscar.php
-        let url = 'buscar.php?start=' + encodeURIComponent(search.from) +
-            '&end=' + encodeURIComponent(search.to);
-        if (search.series) url += '&series=' + encodeURIComponent(search.series);
-        btn.href = url;
+        const lang2 = (window.APP_LANG || 'es').split('-')[0];
+        let url2 = `/${lang2}/buscar/${encodeURIComponent(search.from)}/${encodeURIComponent(search.to)}/`;
+        if (search.series) url2 += `?series=${encodeURIComponent(search.series)}`;
+        btn.href = url2;
+
 
         // Mostrar y manejar cierre
         banner.style.display = 'block';

@@ -24,45 +24,63 @@ document.addEventListener('DOMContentLoaded', () => {
     // Primera pasada (All)
     apply('');
 
-    // --- Navegación a la ficha ---
-    // Arrastra fechas si las hay
+    // --- Navegación a la ficha (rutas bonitas) ---
     const qs = new URLSearchParams(location.search);
     const start = qs.get('start') || '';
     const end   = qs.get('end')   || '';
+    const lang  = (document.documentElement.lang || 'es').split('-')[0];
+
+// Mapea ID → slug canónico (mantén esto sincronizado con tu camper-detail/router)
+    const slugById = { 1: 'matcha', 2: 'skye', 3: 'rusty' };
 
     function buildDetailsHref(id) {
-        const params = new URLSearchParams({ id: String(id) });
-        if (start && end) { params.set('start', start); params.set('end', end); }
-        // relativo al directorio actual (funciona en /.../campers.php -> /.../camper.php)
-        return `ficha-camper.php?${params.toString()}`;
+        const slug = slugById[id] || String(id);
+        const base = `/${encodeURIComponent(lang)}/camper/${encodeURIComponent(slug)}/`;
+        const url  = new URL(base, location.origin);
+        if (start && end) {
+            url.searchParams.set('start', start);
+            url.searchParams.set('end', end);
+        }
+        // Devolvemos path + query (sin origin) para que funcione igual en localhost/hostinger
+        return url.pathname + (url.search || '');
     }
 
-    // Haz cada card clicable + accesible
+// Haz cada card clicable solo si NO hay <a> envolviendo (si hay <a>, delega en ese href)
     cards.forEach(card => {
         const id = Number(card.dataset.id) || 0;
-        if (!id) return; // asegúrate de tener data-id en el HTML
+        if (!id) return;
 
         const href = buildDetailsHref(id);
 
+        // Si ya la has envuelto en <a class="camper-card"> en el PHP, solo ajusta el href y listo
+        if (card.tagName === 'A') {
+            card.setAttribute('href', href);
+            return;
+        }
+        const anchorInside = card.querySelector('a');
+        if (anchorInside) {
+            anchorInside.setAttribute('href', href);
+            return;
+        }
+
+        // Si NO hay <a>, hacemos la card clicable/accessible por teclado
         card.style.cursor = 'pointer';
         card.setAttribute('tabindex', '0');
         if (card.dataset.name) {
             card.setAttribute('aria-label', `View ${card.dataset.name} details`);
         }
 
-        // Clic
         card.addEventListener('click', (e) => {
-            // Evita que algún enlace interno (si lo hubiera) duplique navegación
-            if (e.target.closest('a')) return;
-            location.href = href;
+            if (e.target.closest('a')) return; // por si algún hijo es <a>
+            location.assign(href);
         });
 
-        // Teclado
         card.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                location.href = href;
+                location.assign(href);
             }
         });
     });
+
 });

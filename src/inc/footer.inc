@@ -66,11 +66,11 @@
             <div class="col-md-4 mb-4">
                 <h5 class="text-uppercase mb-4"><?= __('Quick Links') ?></h5>
                 <ul class="list-unstyled">
-                    <li><a href="index.php" class="text-white text-decoration-none"><?= __('Home') ?></a></li>
-                    <li><a href="campers.php" class="text-white text-decoration-none"><?= __('Campers') ?></a></li>
-                    <li><a href="sobre-nosotros.php" class="text-white text-decoration-none"><?= __('About Us') ?></a></li>
-                    <li><a href="faq.php" class="text-white text-decoration-none">FAQ</a></li>
-                    <li><a href="contacto.php" class="text-white text-decoration-none"><?= __('Contact') ?></a></li>
+                    <li><a href="/<?= htmlspecialchars($LANG) ?>/" class="text-white text-decoration-none"><?= __('Home') ?></a></li>
+                    <li><a href="/<?= htmlspecialchars($LANG) ?>/campers/" class="text-white text-decoration-none"><?= __('Campers') ?></a></li>
+                    <li><a href="/<?= htmlspecialchars($LANG) ?>/sobre-nosotros/" class="text-white text-decoration-none"><?= __('About Us') ?></a></li>
+                    <li><a href="/<?= htmlspecialchars($LANG) ?>/faq/" class="text-white text-decoration-none">FAQ</a></li>
+                    <li><a href="/<?= htmlspecialchars($LANG) ?>/contacto/" class="text-white text-decoration-none"><?= __('Contact') ?></a></li>
                 </ul>
             </div>
 
@@ -78,10 +78,10 @@
             <div class="col-md-4 mb-4">
                 <h5 class="text-uppercase mb-4"><?= __('Legal') ?></h5>
                 <ul class="list-unstyled mb-3">
-                    <li><a href="terms.php" class="text-white text-decoration-none"><?= __('Terms of Service') ?></a></li>
-                    <li><a href="legal.php" class="text-white text-decoration-none"><?= __('Legal Notice') ?></a></li>
-                    <li><a href="privacy.php" class="text-white text-decoration-none"><?= __('Privacy Policy') ?></a></li>
-                    <li><a href="cookies.php" class="text-white text-decoration-none"><?= __('Cookie Policy') ?></a></li>
+                    <li><a href="/<?= htmlspecialchars($LANG) ?>/terms/" class="text-white text-decoration-none"><?= __('Terms of Service') ?></a></li>
+                    <li><a href="/<?= htmlspecialchars($LANG) ?>/legal/" class="text-white text-decoration-none"><?= __('Legal Notice') ?></a></li>
+                    <li><a href="/<?= htmlspecialchars($LANG) ?>/privacy/" class="text-white text-decoration-none"><?= __('Privacy Policy') ?></a></li>
+                    <li><a href="/<?= htmlspecialchars($LANG) ?>/cookie/" class="text-white text-decoration-none"><?= __('Cookie Policy') ?></a></li>
                     <li><a href="#" class="text-white text-decoration-none" onclick="cookieConsent?.openSettings();return false;"><?= __('Cookie settings') ?></a></li>
                 </ul>
 

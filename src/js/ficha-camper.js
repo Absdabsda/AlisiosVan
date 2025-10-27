@@ -1,28 +1,23 @@
 // src/js/ficha-camper.js
 document.addEventListener('DOMContentLoaded', () => {
-    // ===== Rutas base =====
-    // p.ej. /CanaryVanGit/AlisiosVan/src/ficha-camper.php
+    // ===== Rutas base (compatibilidad local/dev) =====
     const PATH = location.pathname;
-
-    // ROOT = parte antes de /src (donde viven /api y /src al mismo nivel)
-    // BASE = carpeta /src para enlazar a otras páginas dentro de src
     let ROOT = '';
     let BASE = '';
     if (PATH.includes('/src/')) {
-        ROOT = PATH.split('/src/')[0];  // -> /CanaryVanGit/AlisiosVan
-        BASE = ROOT + '/src';           // -> /CanaryVanGit/AlisiosVan/src
+        ROOT = PATH.split('/src/')[0];  // ej: /CanaryVanGit/AlisiosVan
+        BASE = ROOT + '/src';           // ej: /CanaryVanGit/AlisiosVan/src
     } else {
-        // Si en producción sirves sin /src en la URL, ROOT = dominio y BASE = raíz
         ROOT = '';
         BASE = '';
     }
 
-    // URL helper para API correcto (al mismo nivel que /src)
+    // Helper para API correcto (al mismo nivel que /src)
     const API = (file) => new URL(`${ROOT}/api/${file}`, location.origin).toString();
 
     // ===== Parámetros de la URL =====
     const qs    = new URLSearchParams(location.search);
-    const from  = qs.get('from')  || '';        // "buscar" si vienes de buscar.php
+    const from  = qs.get('from')  || '';
     const start = qs.get('start') || '';
     const end   = qs.get('end')   || '';
 
@@ -31,15 +26,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnBack    = document.getElementById('btnBack');
     const camperId   = Number(btnReserve?.dataset.id || 0);
 
-    // ===== Back inteligente =====
+    // Idioma actual del <html lang="...">
+    const lang = (document.documentElement.lang || 'es').split('-')[0];
+
+    // ===== Back bonito por idioma =====
     if (btnBack) {
+        let backUrl = `/${encodeURIComponent(lang)}/campers/`;
         if (from === 'buscar') {
-            const u = new URL(`${BASE}/buscar.php`, location.origin);
-            if (start && end) { u.searchParams.set('start', start); u.searchParams.set('end', end); }
-            btnBack.href = u.toString();
-        } else {
-            btnBack.href = `${BASE}/campers.php`;
+            // /<lang>/buscar/ o /<lang>/buscar/YYYY-MM-DD/YYYY-MM-DD/
+            backUrl = `/${encodeURIComponent(lang)}/buscar/`;
+            if (start && end) backUrl += `${start}/${end}/`;
         }
+        btnBack.href = backUrl;
     }
 
     // ===== Overlay “redirigiendo” =====
@@ -48,9 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el) return el;
         el = document.createElement('div');
         el.id = 'checkoutOverlay';
-        el.style.cssText = 'position:fixed;inset:0;display:none;place-items:center;background:rgba(255,255,255,.9);z-index:2000;';
+        el.style.cssText = `
+      position:fixed;inset:0;display:none;place-items:center;
+      background:rgba(255,255,255,.9);z-index:2000;
+    `;
         el.innerHTML = `
-      <div style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:12px;padding:18px 22px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.12)">
+      <div style="background:#fff;border:1px solid rgba(0,0,0,.06);
+                  border-radius:12px;padding:18px 22px;text-align:center;
+                  box-shadow:0 10px 30px rgba(0,0,0,.12)">
         <div class="spinner-border" role="status" aria-hidden="true"></div>
         <p class="mt-3 mb-0">Redirecting you to a safe checkout…</p>
         <div class="text-muted small">Don’t close this window.</div>
@@ -58,11 +61,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(el);
         return el;
     }
+
     function showOverlay(msg) {
         const el = ensureOverlay();
         if (msg) el.querySelector('p').textContent = msg;
         el.style.display = 'grid';
     }
+
     function hideOverlay() {
         const el = document.getElementById('checkoutOverlay');
         if (el) el.style.display = 'none';
@@ -70,12 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== Reservar =====
     btnReserve?.addEventListener('click', async () => {
-        // Si no hay fechas, llévalo a la home con el buscador
+        // Si no hay fechas → home bonita con el buscador abierto
         if (!start || !end) {
-            const u = new URL(`${BASE}/index.php`, location.origin);
-            u.searchParams.set('openDates', '1');  // para que aterrices con el calendario abierto (si lo usas)
-            u.hash = 'searchForm';
-            location.href = u.toString();
+            const home = new URL(`/${encodeURIComponent(lang)}/`, location.origin);
+            home.searchParams.set('openDates', '1');
+            home.hash = 'searchForm';
+            location.href = home.pathname + home.search + home.hash;
             return;
         }
 
@@ -99,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json().catch(() => ({}));
 
             if (res.ok && data.ok && data.url) {
-                location.href = data.url;   // a Stripe
+                location.href = data.url;   // A Stripe
                 return;
             }
 

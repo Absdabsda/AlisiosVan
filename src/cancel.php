@@ -70,13 +70,13 @@ $lang = $GLOBALS['LANG'] ?? 'es';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
     <!-- Tus hojas de estilo -->
-    <link rel="stylesheet" href="css/estilos.css">
-    <link rel="stylesheet" href="css/cookies.css">
-    <script src="js/cookies.js" defer></script>
+    <link rel="stylesheet" href="/src/css/estilos.css">
+    <link rel="stylesheet" href="/src/css/cookies.css">
+    <script src="/src/js/cookies.js" defer></script>
 
     <style>
         /* Mismos estilos base que en thanks.php */
-        .page-hero{ background-image:url('img/matcha-landing-page.jpeg'); }
+        .page-hero{ background-image:url('/src/img/matcha-landing-page.jpeg'); }
         .wrap{ max-width: 1000px; margin-inline:auto; padding: var(--spacing-l); }
         .cardy{
             background: var(--color-blanco);
@@ -128,9 +128,16 @@ $lang = $GLOBALS['LANG'] ?? 'es';
         <?php endif; ?>
 
         <div class="d-flex flex-wrap gap-2">
-            <a class="btn" href="index.php"><i class="bi bi-house-door"></i> <?= __('Back to Home') ?></a>
-            <a class="btn btn-outline-secondary" href="campers.php"><i class="bi bi-truck"></i> <?= __('Browse campers') ?></a>
-            <a class="btn btn-outline-secondary" href="contact.php"><i class="bi bi-envelope"></i> <?= __('Contact us') ?></a>
+            <a class="btn" href="/<?= htmlspecialchars($lang) ?>/">
+                <i class="bi bi-house-door"></i> <?= __('Back to Home') ?>
+            </a>
+            <a class="btn btn-outline-secondary" href="/<?= htmlspecialchars($lang) ?>/campers/">
+                <i class="bi bi-truck"></i> <?= __('Browse campers') ?>
+            </a>
+            <a class="btn btn-outline-secondary" href="/<?= htmlspecialchars($lang) ?>/contacto/">
+                <i class="bi bi-envelope"></i> <?= __('Contact us') ?>
+            </a>
+
             <button class="btn btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer"></i> <?= __('Print') ?></button>
         </div>
 

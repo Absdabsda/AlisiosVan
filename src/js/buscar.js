@@ -1,20 +1,35 @@
 // src/js/buscar.js
 (function () {
-    // Detecta la raíz del proyecto según estés en /src/...
-    const ROOT = location.pathname.includes('/src/')
-        ? location.pathname.split('/src/')[0]
-        : '';
+    /* =========================================================
+       0) Prefijos dinámicos (funciona en raíz o subcarpeta)
+       ========================================================= */
+    const LANGS = ['es','en','de','fr','it'];
+    // ¿Estamos en /<lang>/buscar/YYYY-MM-DD/YYYY-MM-DD/ ?
+    const PRETTY_RE = new RegExp(`^/(?:${LANGS.join('|')})/buscar/\\d{4}-\\d{2}-\\d{2}/\\d{4}-\\d{2}-\\d{2}/?$`, 'i');
+    const isPrettyURL = PRETTY_RE.test(location.pathname);
 
-    // Helpers para construir URLs
-    const apiUrl = (file) => new URL(`${ROOT}/api/${file}`, location.origin).toString();
-    const IMG_PREFIX = `${ROOT}/src/`;
+    const parts = location.pathname.split('/').filter(Boolean);
+    const langIdx = parts.findIndex(p => LANGS.includes(p));
+    // base = "/"  o  "/mi-subcarpeta/"
+    const base = langIdx > 0 ? ('/' + parts.slice(0, langIdx).join('/') + '/') : '/';
 
-    // ---------- Helpers de imágenes ----------
+    // Prefijos coherentes en cualquier entorno
+    const API_PREFIX = base + 'api/';
+    const IMG_PREFIX = base + 'src/';
+
+    // Builder de endpoint API
+    const apiUrl = (file) => new URL(API_PREFIX + file, location.origin).toString();
+
+
+    /* =========================================================
+       1) Helpers de imágenes
+       ========================================================= */
     function resolveImage(path, fallback) {
         const p = (path || '').trim();
         if (!p) return IMG_PREFIX + (fallback || 'img/carousel/t3-azul-mar.webp');
-        if (/^https?:\/\//i.test(p) || p.startsWith('/')) return p;
-        return IMG_PREFIX + p.replace(/^\.?\//, '');
+        if (/^https?:\/\//i.test(p)) return p;      // absoluta http(s)
+        if (p.startsWith('/')) return p;            // absoluta al host (si ya la guardaste así)
+        return IMG_PREFIX + p.replace(/^\.?\//, ''); // relativa al /src/
     }
     const IMAGE_BY_ID = {
         1: 'img/carousel/matcha-surf.34.32.jpeg',
@@ -29,20 +44,37 @@
         return 'img/carousel/t3-azul-mar.webp';
     }
 
+    /* =========================================================
+       2) Estado inicial
+       ========================================================= */
     // ---------- Estado inicial ----------
     const qs = new URLSearchParams(location.search);
     let start = qs.get('start') || '';
     let end   = qs.get('end')   || '';
     let seriesFilter = '';
 
-    // ---------- Elementos del DOM ----------
+// Si no vienen en query, intenta leerlos de la URL bonita: /<lang>/buscar/YYYY-MM-DD/YYYY-MM-DD/
+    if (!start || !end) {
+        const m = location.pathname.match(/^\/(es|en|de|fr|it)\/buscar\/(\d{4}-\d{2}-\d{2})\/(\d{4}-\d{2}-\d{2})\/?$/i);
+        if (m) {
+            start = m[2];
+            end   = m[3];
+        }
+    }
+
+
+    /* =========================================================
+       3) Elementos del DOM
+       ========================================================= */
     const resultsEl  = document.getElementById('results');
     const emptyMsg   = document.getElementById('emptyMsg');
     const rangeLabel = document.getElementById('rangeLabel');
     const dateInput  = document.getElementById('dateRange');
     const backLink   = document.getElementById('backLink');
 
-    // ---------- Overlay checkout ----------
+    /* =========================================================
+       4) Overlay checkout
+       ========================================================= */
     function showCheckoutOverlay(msg){
         const el = document.getElementById('checkoutOverlay');
         if (!el) return;
@@ -56,7 +88,9 @@
         if (el) el.classList.remove('show');
     }
 
-    // ---------- Fechas: SIEMPRE local ----------
+    /* =========================================================
+       5) Fechas (siempre local)
+       ========================================================= */
     const ymdLocal = d => {
         const y = d.getFullYear();
         const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -75,7 +109,9 @@
         return Math.round((d2 - d1) / 86400000);
     }
 
-    // ---- i18n helpers ----
+    /* =========================================================
+       6) i18n helpers
+       ========================================================= */
     const __STRINGS = (window.I18N && window.I18N.strings) || {};
     function t(key, params) {
         let s = __STRINGS[key] || key;
@@ -84,16 +120,15 @@
         }
         return s;
     }
-    // Flatpickr locale dinámico (sin importar bundles extra)
     function flatpickrLocale(lang) {
         try {
             const weekdaysLong  = [];
             const weekdaysShort = [];
             const monthsLong    = [];
             const monthsShort   = [];
-            const base = new Date(Date.UTC(2023,0,1)); // domingo
+            const baseD = new Date(Date.UTC(2023,0,1));
             for (let i=0;i<7;i++){
-                const d = new Date(base); d.setUTCDate(base.getUTCDate()+i);
+                const d = new Date(baseD); d.setUTCDate(baseD.getUTCDate()+i);
                 weekdaysLong .push(new Intl.DateTimeFormat(lang, { weekday:'long',  timeZone:'UTC' }).format(d));
                 weekdaysShort.push(new Intl.DateTimeFormat(lang, { weekday:'short', timeZone:'UTC' }).format(d));
             }
@@ -123,12 +158,15 @@
     }
     const FP_LOCALE = flatpickrLocale((window.I18N && window.I18N.lang) || 'en');
 
-    // ---------- UI helpers ----------
+    /* =========================================================
+       7) UI helpers
+       ========================================================= */
     function updateRangeLabel() {
         if (!rangeLabel) return;
         rangeLabel.textContent = (start && end) ? t('from_to', [start, end]) : '';
     }
     function updateQueryString() {
+        if (isPrettyURL) return; // 👈 no ensuciar
         const url = new URL(location.href);
         if (start && end) {
             url.searchParams.set('start', start);
@@ -142,12 +180,18 @@
     function updateBackLinkHref() {
         if (!backLink) return;
         const url = new URL(backLink.href, location.origin);
-        if (start && end) {
-            url.searchParams.set('start', start);
-            url.searchParams.set('end', end);
-        } else {
+        if (isPrettyURL) {
+            // 👈 el “Back” vuelve limpio a /<lang>/ sin parámetros
             url.searchParams.delete('start');
             url.searchParams.delete('end');
+        } else {
+            if (start && end) {
+                url.searchParams.set('start', start);
+                url.searchParams.set('end', end);
+            } else {
+                url.searchParams.delete('start');
+                url.searchParams.delete('end');
+            }
         }
         backLink.href = url.toString();
     }
@@ -155,15 +199,27 @@
         start = newStart;
         end   = newEnd;
         updateRangeLabel();
-        updateQueryString();
         updateBackLinkHref();
+
+        if (isPrettyURL && start && end) {
+            // reconstruímos /<lang>/buscar/<start>/<end>/
+            const lang = (window.APP_LANG || 'es').split('-')[0];
+            const pretty = `/${lang}/buscar/${encodeURIComponent(start)}/${encodeURIComponent(end)}/`;
+            history.replaceState(null, '', pretty); // 👈 limpia sin recargar
+        } else {
+            updateQueryString();
+        }
+
         if (window.__datePicker) {
             window.__datePicker.setDate([parseYMDToLocalDate(start), parseYMDToLocalDate(end)], true);
         }
         loadAvailability();
     }
 
-    // ---------- Render de cards ----------
+
+    /* =========================================================
+       8) Render de cards
+       ========================================================= */
     function render(campers) {
         resultsEl.innerHTML = '';
         if (!campers.length) {
@@ -177,7 +233,7 @@
             const q = (start && end)
                 ? `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`
                 : '';
-            const detailsHref = `ficha-camper.php?id=${encodeURIComponent(c.id)}&from=buscar${q}`;
+            const detailsHref = `${IMG_PREFIX}ficha-camper.php?id=${encodeURIComponent(c.id)}&from=buscar${q}`;
 
             const col = document.createElement('div');
             col.className = 'col-md-4 camper-col';
@@ -202,7 +258,9 @@
         hookReserveButtons();
     }
 
-    // ---------- Cargar disponibilidad ----------
+    /* =========================================================
+       9) Cargar disponibilidad
+       ========================================================= */
     async function loadAvailability() {
         resultsEl.innerHTML = '';
         emptyMsg.style.display = 'none';
@@ -217,7 +275,7 @@
         url.searchParams.set('start', start);
         url.searchParams.set('end', end);
         if (seriesFilter) url.searchParams.set('series', seriesFilter);
-        url.searchParams.set('_ts', Date.now()); // evita caché
+        url.searchParams.set('_ts', Date.now()); // anti-caché
 
         try {
             const res = await fetch(url);
@@ -229,7 +287,7 @@
                 return;
             }
 
-            // ----- Sin resultados: construimos mensajes útiles -----
+            // ----- Sin resultados: mensajes útiles -----
             const meta = data.meta || {};
             const nights = meta.nights ?? nightsBetweenYmd(start, end);
             const PHONE = '34610136383';
@@ -259,8 +317,8 @@
                 document.getElementById(btnId)?.addEventListener('click', () => {
                     let suggestedEnd = meta.suggested_end;
                     if (!suggestedEnd) {
-                        const base = parseYMDToLocalDate(start);
-                        const e = new Date(base.getFullYear(), base.getMonth(), base.getDate() + min);
+                        const baseDate = parseYMDToLocalDate(start);
+                        const e = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + min);
                         suggestedEnd = ymdLocal(e); // end exclusivo
                     }
                     setDatesAndReload(start, suggestedEnd);
@@ -301,7 +359,9 @@
         }
     }
 
-    // ---------- Filtro por modelo ----------
+    /* =========================================================
+       10) Filtro por modelo
+       ========================================================= */
     document.querySelectorAll('.model-chip').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.model-chip').forEach(b => b.classList.remove('active'));
@@ -311,7 +371,9 @@
         });
     });
 
-    // ---------- Checkout directo (SIN modal) ----------
+    /* =========================================================
+       11) Checkout directo (sin modal)
+       ========================================================= */
     function hookReserveButtons() {
         document.querySelectorAll('.js-reserve').forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -354,11 +416,12 @@
         });
     }
 
-    // ---------- Inicializar UI ----------
+    /* =========================================================
+       12) Inicializar UI + Calendario + Primera carga
+       ========================================================= */
     updateRangeLabel();
     updateBackLinkHref();
 
-    // Calendario
     if (window.flatpickr && dateInput) {
         const isMobile = () => window.matchMedia('(max-width: 576px)').matches;
 
@@ -398,13 +461,10 @@
             }
         });
 
-        // Guarda referencia para poder ajustar fechas desde los CTA
         window.__datePicker = fp;
 
-        // Abrir tocando toda la “pill” de fechas
         dateInput.closest('.date-chip')?.addEventListener('click', () => fp.open());
 
-        // Si cambia el ancho, actualiza meses y anclaje (se aplica al reabrir)
         window.addEventListener('resize', () => {
             const m = isMobile();
             fp.set('showMonths', m ? 1 : 2);
@@ -413,12 +473,11 @@
         });
     }
 
-    // Primera carga
     loadAvailability();
 
-    /* ===========================
-       WHATSAPP MINI-CHAT (desktop) / Deep-link directo (móvil)
-       =========================== */
+    /* =========================================================
+       13) WhatsApp mini-chat
+       ========================================================= */
     const PHONE = '34610136383';           // sin +
     const REDIRECT_AFTER_SEND_MS = 900;
     const GREET_DELAY_MS = 150;
