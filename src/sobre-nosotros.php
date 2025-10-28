@@ -101,7 +101,7 @@ require __DIR__ . '/../config/i18n-lite.php';
                 <h4><?= __('Made with care, made for you.') ?></h4>
                 <p><?= __('Every Alisios Van is prepared with care by our team so every detail is ready for your next adventure. We believe in slow, mindful travel enjoying the journey as much as the destination.') ?></p>
                 <p><?= __('From maintenance to cleaning, we put our hearts into making sure your camper feels like a home on wheels.') ?></p>
-                <a href="contacto.php" class="btn"><?= __('Tell us about your trip') ?></a>
+                <a href="/<?= htmlspecialchars($LANG ?? 'es') ?>/contacto/" class="btn"><?= __('Tell us about your trip') ?></a>
             </div>
         </div>
     </section>

@@ -292,12 +292,20 @@ if ($slug && isset($ROUTES[$slug])) {
     // Solo redirige si NO es POST (GET/HEAD ok); en POST sirve el fichero directamente
     if ($pathNorm !== $preferred && $method !== 'POST') {
         $location = '/' . rawurlencode($lang) . '/' . $preferred . '/';
-        if (!empty($_SERVER['QUERY_STRING'])) {
-            $location .= '?' . $_SERVER['QUERY_STRING'];
+
+        // Mantén solo parámetros funcionales, nunca los de routing interno
+        $KEEP = ['start','end','rid','email','utm_source','utm_medium','utm_campaign','utm_term','utm_content'];
+        $q = [];
+        foreach ($KEEP as $k) {
+            if (isset($_GET[$k]) && $_GET[$k] !== '') $q[$k] = $_GET[$k];
         }
+        $qs = http_build_query($q);
+        if ($qs !== '') $location .= '?' . $qs;
+
         header('Location: ' . $location, true, 302);
         exit;
     }
+
 
     require __DIR__ . '/' . $ROUTES[$slug];
     exit;
