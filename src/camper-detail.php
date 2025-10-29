@@ -53,7 +53,7 @@ $CAMPERS = [
         'desc'   => 'Spacious green T3—great for friends or a small family. Simple to drive, fully equipped for island adventures.',
         'features' => [
             '5 travel seats','Sleeps 3','Baby seat can be included','Equipped kitchen: hob, sink & fridge',
-            'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs',
+            'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs', 'Basic insurance age ≥26 years',
         ],
     ],
     'skye' => [
@@ -75,7 +75,7 @@ $CAMPERS = [
         'desc' => 'Our blue T3 is an easy-going classic for two. Compact, comfy and ready for slow travel days.',
         'features' => [
             '2 travel seats','Sleeps 2','Equipped kitchen: hob, sink & fridge',
-            'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs',
+            'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs', 'Basic insurance age ≥26 years',
         ],
     ],
     'rusty' => [
@@ -96,7 +96,7 @@ $CAMPERS = [
         'desc' => 'A reliable T4 with a cosy setup for two—compact kitchen, outdoor shower and solar for off-grid stops.',
         'features' => [
             '2 travel seats','Sleeps 2','Equipped kitchen: hob, sink & fridge',
-            'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs','Projector',
+            'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs','Projector', 'Basic insurance age ≥26 years',
         ],
     ],
 ];

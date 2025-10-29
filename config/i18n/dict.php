@@ -99,6 +99,7 @@ return [
         '2 travel seats' => '2 plazas',
         'Sleeps 2' => 'Duermen 2',
         'Projector' => 'Proyector',
+        'Basic insurance age ≥26 years' => 'Seguro básico edad ≥26 años',
 
         // --sobre nosotros--
         // hero + párrafos
@@ -771,6 +772,7 @@ return [
         '2 travel seats' => '2 Sitzplätze',
         'Sleeps 2' => '2 Schlafplätze',
         'Projector' => 'Projektor',
+        'Basic insurance age ≥26 years' => 'Basisversicherung Alter ≥26 Jahre',
 
         // --sobre nosotros--
         'At <strong>Alisios Van</strong>, we believe travel is a way of life. Our love of freedom, nature, and one-of-a-kind experiences inspired us to create a project where every camper reflects our philosophy: comfort, simplicity, and soulful.' =>
@@ -1426,6 +1428,7 @@ return [
         '2 travel seats' => '2 sièges',
         'Sleeps 2' => '2 couchages',
         'Projector' => 'Projecteur',
+        'Basic insurance age ≥26 years' => 'Assurance de base âge ≥26 ans',
 
         // --sobre nosotros--
         'At <strong>Alisios Van</strong>, we believe travel is a way of life. Our love of freedom, nature, and one-of-a-kind experiences inspired us to create a project where every camper reflects our philosophy: comfort, simplicity, and soulful.' =>
@@ -2081,6 +2084,7 @@ return [
         '2 travel seats' => '2 posti a sedere',
         'Sleeps 2' => '2 posti letto',
         'Projector' => 'Proiettore',
+        'Basic insurance age ≥26 years' => 'Assicurazione base età ≥26 anni',
 
         // --sobre nosotros--
         'At <strong>Alisios Van</strong>, we believe travel is a way of life. Our love of freedom, nature, and one-of-a-kind experiences inspired us to create a project where every camper reflects our philosophy: comfort, simplicity, and soulful.' =>
