@@ -4,22 +4,17 @@
        0) Prefijos dinámicos (funciona en raíz o subcarpeta)
        ========================================================= */
     const LANGS = ['es','en','de','fr','it'];
-    // ¿Estamos en /<lang>/buscar/YYYY-MM-DD/YYYY-MM-DD/ ?
     const PRETTY_RE = new RegExp(`^/(?:${LANGS.join('|')})/buscar/\\d{4}-\\d{2}-\\d{2}/\\d{4}-\\d{2}-\\d{2}/?$`, 'i');
     const isPrettyURL = PRETTY_RE.test(location.pathname);
 
     const parts = location.pathname.split('/').filter(Boolean);
     const langIdx = parts.findIndex(p => LANGS.includes(p));
-    // base = "/"  o  "/mi-subcarpeta/"
     const base = langIdx > 0 ? ('/' + parts.slice(0, langIdx).join('/') + '/') : '/';
 
-    // Prefijos coherentes en cualquier entorno
     const API_PREFIX = base + 'api/';
     const IMG_PREFIX = base + 'src/';
 
-    // Builder de endpoint API
     const apiUrl = (file) => new URL(API_PREFIX + file, location.origin).toString();
-
 
     /* =========================================================
        1) Helpers de imágenes
@@ -27,15 +22,11 @@
     function resolveImage(path, fallback) {
         const p = (path || '').trim();
         if (!p) return IMG_PREFIX + (fallback || 'img/carousel/t3-azul-mar.webp');
-        if (/^https?:\/\//i.test(p)) return p;      // absoluta http(s)
-        if (p.startsWith('/')) return p;            // absoluta al host (si ya la guardaste así)
-        return IMG_PREFIX + p.replace(/^\.?\//, ''); // relativa al /src/
+        if (/^https?:\/\//i.test(p)) return p;
+        if (p.startsWith('/')) return p;
+        return IMG_PREFIX + p.replace(/^\.?\//, '');
     }
-    const IMAGE_BY_ID = {
-        1: 'img/carousel/matcha-surf.34.32.jpeg',
-        2: 'img/carousel/t3-azul-playa.webp',
-        3: 'img/carousel/t4-sol.webp'
-    };
+    const IMAGE_BY_ID = { 1: 'img/carousel/matcha-surf.34.32.jpeg', 2: 'img/carousel/t3-azul-playa.webp', 3: 'img/carousel/t4-sol.webp' };
     function guessImageFromName(name) {
         const n = (name || '').toLowerCase();
         if (n.includes('matcha')) return 'img/carousel/t3-azul-mar.webp';
@@ -47,24 +38,18 @@
     /* =========================================================
        2) Estado inicial
        ========================================================= */
-    // ---------- Estado inicial ----------
     const qs = new URLSearchParams(location.search);
     let start = qs.get('start') || '';
     let end   = qs.get('end')   || '';
     let seriesFilter = '';
 
-// Si no vienen en query, intenta leerlos de la URL bonita: /<lang>/buscar/YYYY-MM-DD/YYYY-MM-DD/
     if (!start || !end) {
         const m = location.pathname.match(/^\/(es|en|de|fr|it)\/buscar\/(\d{4}-\d{2}-\d{2})\/(\d{4}-\d{2}-\d{2})\/?$/i);
-        if (m) {
-            start = m[2];
-            end   = m[3];
-        }
+        if (m) { start = m[2]; end = m[3]; }
     }
 
-
     /* =========================================================
-       3) Elementos del DOM
+       3) DOM
        ========================================================= */
     const resultsEl  = document.getElementById('results');
     const emptyMsg   = document.getElementById('emptyMsg');
@@ -89,7 +74,7 @@
     }
 
     /* =========================================================
-       5) Fechas (siempre local)
+       5) Fechas (local)
        ========================================================= */
     const ymdLocal = d => {
         const y = d.getFullYear();
@@ -115,45 +100,26 @@
     const __STRINGS = (window.I18N && window.I18N.strings) || {};
     function t(key, params) {
         let s = __STRINGS[key] || key;
-        if (Array.isArray(params)) {
-            params.forEach(v => { s = s.replace(/%[sd]/, String(v)); });
-        }
+        if (Array.isArray(params)) params.forEach(v => { s = s.replace(/%[sd]/, String(v)); });
         return s;
     }
     function flatpickrLocale(lang) {
         try {
-            const weekdaysLong  = [];
-            const weekdaysShort = [];
-            const monthsLong    = [];
-            const monthsShort   = [];
+            const weekdaysLong  = [], weekdaysShort = [], monthsLong = [], monthsShort = [];
             const baseD = new Date(Date.UTC(2023,0,1));
-            for (let i=0;i<7;i++){
-                const d = new Date(baseD); d.setUTCDate(baseD.getUTCDate()+i);
-                weekdaysLong .push(new Intl.DateTimeFormat(lang, { weekday:'long',  timeZone:'UTC' }).format(d));
-                weekdaysShort.push(new Intl.DateTimeFormat(lang, { weekday:'short', timeZone:'UTC' }).format(d));
+            for (let i=0;i<7;i++){ const d = new Date(baseD); d.setUTCDate(baseD.getUTCDate()+i);
+                weekdaysLong.push(new Intl.DateTimeFormat(lang,{weekday:'long',timeZone:'UTC'}).format(d));
+                weekdaysShort.push(new Intl.DateTimeFormat(lang,{weekday:'short',timeZone:'UTC'}).format(d));
             }
-            for (let m=0;m<12;m++){
-                const d = new Date(Date.UTC(2023,m,1));
-                monthsLong .push(new Intl.DateTimeFormat(lang, { month:'long',  timeZone:'UTC' }).format(d));
-                monthsShort.push(new Intl.DateTimeFormat(lang, { month:'short', timeZone:'UTC' }).format(d));
+            for (let m=0;m<12;m++){ const d = new Date(Date.UTC(2023,m,1));
+                monthsLong.push(new Intl.DateTimeFormat(lang,{month:'long',timeZone:'UTC'}).format(d));
+                monthsShort.push(new Intl.DateTimeFormat(lang,{month:'short',timeZone:'UTC'}).format(d));
             }
-            return {
-                firstDayOfWeek: 1,
-                weekdays: { shorthand: weekdaysShort, longhand: weekdaysLong },
-                months:   { shorthand: monthsShort,   longhand:  monthsLong   },
-            };
+            return { firstDayOfWeek:1, weekdays:{shorthand:weekdaysShort,longhand:weekdaysLong}, months:{shorthand:monthsShort,longhand:monthsLong} };
         } catch {
-            return {
-                firstDayOfWeek: 1,
-                weekdays: {
-                    shorthand: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
-                    longhand:  ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
-                },
-                months: {
-                    shorthand: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-                    longhand:  ['January','February','March','April','May','June','July','August','September','October','November','December'],
-                },
-            };
+            return { firstDayOfWeek:1,
+                weekdays:{ shorthand:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], longhand:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'] },
+                months:{ shorthand:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], longhand:['January','February','March','April','May','June','July','August','September','October','November','December'] } };
         }
     }
     const FP_LOCALE = flatpickrLocale((window.I18N && window.I18N.lang) || 'en');
@@ -166,92 +132,78 @@
         rangeLabel.textContent = (start && end) ? t('from_to', [start, end]) : '';
     }
     function updateQueryString() {
-        if (isPrettyURL) return; // 👈 no ensuciar
+        if (isPrettyURL) return;
         const url = new URL(location.href);
-        if (start && end) {
-            url.searchParams.set('start', start);
-            url.searchParams.set('end', end);
-        } else {
-            url.searchParams.delete('start');
-            url.searchParams.delete('end');
-        }
+        if (start && end) { url.searchParams.set('start', start); url.searchParams.set('end', end); }
+        else { url.searchParams.delete('start'); url.searchParams.delete('end'); }
         history.replaceState(null, '', url);
     }
     function updateBackLinkHref() {
         if (!backLink) return;
         const url = new URL(backLink.href, location.origin);
-        if (isPrettyURL) {
-            // 👈 el “Back” vuelve limpio a /<lang>/ sin parámetros
-            url.searchParams.delete('start');
-            url.searchParams.delete('end');
-        } else {
-            if (start && end) {
-                url.searchParams.set('start', start);
-                url.searchParams.set('end', end);
-            } else {
-                url.searchParams.delete('start');
-                url.searchParams.delete('end');
-            }
+        if (isPrettyURL) { url.searchParams.delete('start'); url.searchParams.delete('end'); }
+        else {
+            if (start && end) { url.searchParams.set('start', start); url.searchParams.set('end', end); }
+            else { url.searchParams.delete('start'); url.searchParams.delete('end'); }
         }
         backLink.href = url.toString();
     }
     function setDatesAndReload(newStart, newEnd) {
-        start = newStart;
-        end   = newEnd;
-        updateRangeLabel();
-        updateBackLinkHref();
+        start = newStart; end = newEnd;
+        updateRangeLabel(); updateBackLinkHref();
 
         if (isPrettyURL && start && end) {
-            // reconstruímos /<lang>/buscar/<start>/<end>/
             const lang = (window.APP_LANG || 'es').split('-')[0];
             const pretty = `/${lang}/buscar/${encodeURIComponent(start)}/${encodeURIComponent(end)}/`;
-            history.replaceState(null, '', pretty); // 👈 limpia sin recargar
+            history.replaceState(null, '', pretty);
         } else {
             updateQueryString();
         }
-
-        if (window.__datePicker) {
-            window.__datePicker.setDate([parseYMDToLocalDate(start), parseYMDToLocalDate(end)], true);
-        }
+        if (window.__datePicker) window.__datePicker.setDate([parseYMDToLocalDate(start), parseYMDToLocalDate(end)], true);
         loadAvailability();
     }
 
-
     /* =========================================================
-       8) Render de cards
+       8) Render de cards  (RUTA BONITA /<lang>/camper/<slug>/)
        ========================================================= */
     function render(campers) {
         resultsEl.innerHTML = '';
-        if (!campers.length) {
-            emptyMsg.style.display = '';
-            return;
-        }
+        if (!campers.length) { emptyMsg.style.display = ''; return; }
         emptyMsg.style.display = 'none';
 
+        const lang = (window.APP_LANG || 'es').split('-')[0];
         campers.forEach(c => {
             const img = resolveImage(c.image || IMAGE_BY_ID[c.id] || guessImageFromName(c.name));
-            const q = (start && end)
-                ? `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`
+            const qsDates = (start && end)
+                ? `?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`
                 : '';
-            const detailsHref = `${IMG_PREFIX}ficha-camper.php?id=${encodeURIComponent(c.id)}&from=buscar${q}`;
+
+            // 👉 URL bonita con slug (fallback a PHP legacy si no hay slug)
+            let detailsHref = '';
+            if (c.slug && String(c.slug).trim()) {
+                detailsHref = `/${lang}/camper/${encodeURIComponent(String(c.slug).trim())}/${qsDates}`;
+            } else {
+                detailsHref = `${IMG_PREFIX}ficha-camper.php?id=${encodeURIComponent(c.id)}&from=buscar` +
+                    (qsDates ? `&${qsDates.slice(1)}` : '');
+            }
 
             const col = document.createElement('div');
             col.className = 'col-md-4 camper-col';
             col.innerHTML = `
-        <div class="camper-card">
-          <a href="${detailsHref}">
-            <img src="${img}" alt="${c.name}" loading="lazy">
-          </a>
-          <div class="camper-info">
-            <h3>"${c.name}"</h3>
-            <p>${Number(c.price_label ?? c.price_per_night).toFixed(0)}€ ${t('per_night')}.</p>
-            <div class="d-flex align-items-center mt-2">
-              <button class="btn btn-primary btn-sm js-reserve" data-id="${c.id}">${t('reserve')}</button>
-              <a class="btn btn-outline-secondary btn-sm ms-auto" href="${detailsHref}">${t('view_camper')}</a>
-            </div>
-          </div>
-        </div>
-      `;
+                <div class="camper-card">
+                  <a href="${detailsHref}">
+                    <img src="${img}" alt="${c.name}" loading="lazy">
+                  </a>
+                  <div class="camper-info">
+                    <h3>${c.name}</h3>
+                    <p>${Number(c.price_label ?? c.price_per_night).toFixed(0)}€ ${t('per_night')}.</p>
+                    <div class="d-flex align-items-center mt-2">
+                      <button class="btn btn-primary btn-sm js-reserve" data-id="${c.id}">${t('reserve')}</button>
+                      <a class="btn btn-outline-secondary btn-sm ms-auto" href="${detailsHref}">${t('view_camper')}</a>
+                    </div>
+                  </div>
+                </div>
+            `;
             resultsEl.appendChild(col);
         });
 
@@ -275,19 +227,15 @@
         url.searchParams.set('start', start);
         url.searchParams.set('end', end);
         if (seriesFilter) url.searchParams.set('series', seriesFilter);
-        url.searchParams.set('_ts', Date.now()); // anti-caché
+        url.searchParams.set('_ts', Date.now());
 
         try {
             const res = await fetch(url);
             const data = await res.json();
             if (!data.ok) throw new Error(data.error || 'Error');
 
-            if (data.campers && data.campers.length) {
-                render(data.campers);
-                return;
-            }
+            if (data.campers && data.campers.length) { render(data.campers); return; }
 
-            // ----- Sin resultados: mensajes útiles -----
             const meta = data.meta || {};
             const nights = meta.nights ?? nightsBetweenYmd(start, end);
             const PHONE = '34610136383';
@@ -298,20 +246,19 @@
                 const btnId = 'btnAdjustToMin';
                 const min = meta.min_required;
                 emptyMsg.innerHTML = `
-          <div class="alert alert-info" role="alert" style="line-height:1.45">
-            <strong>${t('no_results_title')}</strong>.
-            ${ (min === 1) ? t('min_stay_line_one', [min]) : t('min_stay_line', [min]) }
-            <div class="mt-2 d-flex gap-2 flex-wrap">
-              <button id="${btnId}" class="btn btn-primary btn-sm">
-                ${ (min === 1) ? t('adjust_to_min_one', [min]) : t('adjust_to_min', [min]) }
-              </button>
-              <a class="btn btn-outline-success btn-sm" href="${waUrl}" target="_blank" rel="noopener">
-                <i class="bi bi-whatsapp"></i> ${t('whatsapp_cta')}
-              </a>
-            </div>
-            <div class="text-muted small mt-2">${t('no_results_note')}</div>
-          </div>
-        `;
+                  <div class="alert alert-info" role="alert" style="line-height:1.45">
+                    <strong>${t('no_results_title')}</strong>.
+                    ${(min === 1) ? t('min_stay_line_one', [min]) : t('min_stay_line', [min])}
+                    <div class="mt-2 d-flex gap-2 flex-wrap">
+                      <button id="${btnId}" class="btn btn-primary btn-sm">
+                        ${(min === 1) ? t('adjust_to_min_one', [min]) : t('adjust_to_min', [min])}
+                      </button>
+                      <a class="btn btn-outline-success btn-sm" href="${waUrl}" target="_blank" rel="noopener">
+                        <i class="bi bi-whatsapp"></i> ${t('whatsapp_cta')}
+                      </a>
+                    </div>
+                    <div class="text-muted small mt-2">${t('no_results_note')}</div>
+                  </div>`;
                 emptyMsg.style.display = '';
 
                 document.getElementById(btnId)?.addEventListener('click', () => {
@@ -319,28 +266,25 @@
                     if (!suggestedEnd) {
                         const baseDate = parseYMDToLocalDate(start);
                         const e = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + min);
-                        suggestedEnd = ymdLocal(e); // end exclusivo
+                        suggestedEnd = ymdLocal(e);
                     }
                     setDatesAndReload(start, suggestedEnd);
                 });
-
                 return;
             }
 
-            // Ocupado / bloqueos
             emptyMsg.innerHTML = `
-        <div class="alert alert-warning" role="alert" style="line-height:1.45">
-          <strong>${t('occupied_title')}</strong> (${start} → ${end}).
-          ${t('occupied_line')}
-          <div class="mt-2 d-flex gap-2 flex-wrap">
-            <a class="btn btn-outline-primary btn-sm" href="#" id="btnTryShift">${t('try_plus_one')}</a>
-            <a class="btn btn-outline-success btn-sm" href="${waUrl}" target="_blank" rel="noopener">
-              <i class="bi bi-whatsapp"></i> WhatsApp
-            </a>
-          </div>
-          <div class="text-muted small mt-2">${t('alternatives_line')}</div>
-        </div>
-      `;
+              <div class="alert alert-warning" role="alert" style="line-height:1.45">
+                <strong>${t('occupied_title')}</strong> (${start} → ${end}).
+                ${t('occupied_line')}
+                <div class="mt-2 d-flex gap-2 flex-wrap">
+                  <a class="btn btn-outline-primary btn-sm" href="#" id="btnTryShift">${t('try_plus_one')}</a>
+                  <a class="btn btn-outline-success btn-sm" href="${waUrl}" target="_blank" rel="noopener">
+                    <i class="bi bi-whatsapp"></i> WhatsApp
+                  </a>
+                </div>
+                <div class="text-muted small mt-2">${t('alternatives_line')}</div>
+              </div>`;
             emptyMsg.style.display = '';
 
             document.getElementById('btnTryShift')?.addEventListener('click', (e) => {
@@ -372,23 +316,18 @@
     });
 
     /* =========================================================
-       11) Checkout directo (sin modal)
+       11) Checkout directo
        ========================================================= */
     function hookReserveButtons() {
         document.querySelectorAll('.js-reserve').forEach(btn => {
             btn.addEventListener('click', async () => {
-                if (!start || !end) {
-                    alert(t('select_dates_first'));
-                    return;
-                }
-
+                if (!start || !end) { alert(t('select_dates_first')); return; }
                 const camperId = Number(btn.dataset.id || 0);
                 if (!camperId) return;
 
                 const old = btn.innerHTML;
                 btn.disabled = true;
                 btn.innerHTML = t('redirecting');
-
                 showCheckoutOverlay(t('redirecting_overlay'));
 
                 try {
@@ -417,54 +356,31 @@
     }
 
     /* =========================================================
-       12) Inicializar UI + Calendario + Primera carga
+       12) Inicializar
        ========================================================= */
     updateRangeLabel();
     updateBackLinkHref();
 
     if (window.flatpickr && dateInput) {
         const isMobile = () => window.matchMedia('(max-width: 576px)').matches;
-
         const fp = flatpickr(dateInput, {
-            mode: 'range',
-            minDate: 'today',
-            dateFormat: 'Y-m-d',
-            altInput: true,
-            altFormat: 'j M Y',
+            mode: 'range', minDate:'today', dateFormat:'Y-m-d',
+            altInput:true, altFormat:'j M Y',
             defaultDate: (start && end) ? [parseYMDToLocalDate(start), parseYMDToLocalDate(end)] : null,
-            disableMobile: true,
-            allowInput: false,
-            clickOpens: true,
-
-            showMonths: isMobile() ? 1 : 2,
-            static: isMobile(),
-            appendTo: isMobile() ? undefined : document.body,
-            position: 'auto',
-            locale: FP_LOCALE,
-
-            onReady(_, __, inst){
-                if (!isMobile()) inst.calendarContainer.style.zIndex = '10010';
-                updateRangeLabel();
-            },
-            onOpen(_, __, inst){
-                if (!isMobile()) inst.calendarContainer.style.zIndex = '10010';
-            },
+            disableMobile:true, allowInput:false, clickOpens:true,
+            showMonths: isMobile() ? 1 : 2, static: isMobile(), appendTo: isMobile()?undefined:document.body,
+            position:'auto', locale: FP_LOCALE,
+            onReady(_, __, inst){ if (!isMobile()) inst.calendarContainer.style.zIndex = '10010'; updateRangeLabel(); },
+            onOpen(_, __, inst){ if (!isMobile()) inst.calendarContainer.style.zIndex = '10010'; },
             onClose(selectedDates){
                 if (selectedDates.length === 2) {
-                    start = ymdLocal(selectedDates[0]);
-                    end   = ymdLocal(selectedDates[1]);
-                    updateRangeLabel();
-                    updateQueryString();
-                    updateBackLinkHref();
-                    loadAvailability();
+                    start = ymdLocal(selectedDates[0]); end = ymdLocal(selectedDates[1]);
+                    updateRangeLabel(); updateQueryString(); updateBackLinkHref(); loadAvailability();
                 }
             }
         });
-
         window.__datePicker = fp;
-
         dateInput.closest('.date-chip')?.addEventListener('click', () => fp.open());
-
         window.addEventListener('resize', () => {
             const m = isMobile();
             fp.set('showMonths', m ? 1 : 2);
@@ -476,9 +392,9 @@
     loadAvailability();
 
     /* =========================================================
-       13) WhatsApp mini-chat
+       13) WhatsApp mini-chat (sin cambios)
        ========================================================= */
-    const PHONE = '34610136383';           // sin +
+    const PHONE = '34610136383';
     const REDIRECT_AFTER_SEND_MS = 900;
     const GREET_DELAY_MS = 150;
 
@@ -493,9 +409,7 @@
     if (!launcher || !panel) return;
 
     function isMobileDevice() {
-        if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
-            return navigator.userAgentData.mobile;
-        }
+        if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') return navigator.userAgentData.mobile;
         const ua = navigator.userAgent || navigator.vendor || window.opera;
         const mobileUA = /Android|iPhone|iPad|iPod|IEMobile|BlackBerry|Opera Mini/i.test(ua);
         const touch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
@@ -504,87 +418,46 @@
     }
 
     let greeted = false;
-
-    function addMsg(text, who) {
-        const div = document.createElement('div');
-        div.className = 'msg ' + (who || 'bot');
-        div.textContent = text;
-        messages.appendChild(div);
-        messages.scrollTop = messages.scrollHeight;
-    }
-
-    function openPanel() {
-        panel.hidden = false;
-        if (!greeted) {
-            greeted = true;
-            setTimeout(() => {
-                addMsg(t('wa_hello'));
-                addMsg(t('wa_hint'));
-            }, GREET_DELAY_MS);
-        }
-    }
+    function addMsg(text, who) { const div = document.createElement('div'); div.className = 'msg ' + (who || 'bot'); div.textContent = text; messages.appendChild(div); messages.scrollTop = messages.scrollHeight; }
+    function openPanel() { panel.hidden = false; if (!greeted) { greeted = true; setTimeout(() => { addMsg(t('wa_hello')); addMsg(t('wa_hint')); }, GREET_DELAY_MS); } }
     function closePanel() { panel.hidden = true; }
 
     function openWhatsApp(text, sameTab = false) {
         const msg = text && text.trim() ? text.trim() : t('wa_default_msg');
         const page = '\n\n(Página: ' + window.location.href + ')';
         const waUrl = 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(msg + page);
-
-        if (typeof gtag === 'function') {
-            gtag('event', 'click', { event_category: 'engagement', event_label: 'whatsapp_mini_chat' });
-        } else if (window.dataLayer) {
-            window.dataLayer.push({ event: 'whatsapp_click', source: 'mini_chat' });
-        }
+        if (typeof gtag === 'function') { gtag('event','click',{event_category:'engagement',event_label:'whatsapp_mini_chat'}); }
+        else if (window.dataLayer) { window.dataLayer.push({event:'whatsapp_click',source:'mini_chat'}); }
 
         if (sameTab) {
             const deep = 'whatsapp://send?phone=' + PHONE + '&text=' + encodeURIComponent(msg);
             const fallbackTimer = setTimeout(() => { window.location.href = waUrl; }, 600);
             window.location.href = deep;
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) clearTimeout(fallbackTimer);
-            }, { once: true });
+            document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(fallbackTimer); }, { once: true });
         } else {
             window.open(waUrl, '_blank', 'noopener');
         }
     }
 
     launcher.addEventListener('click', () => {
-        if (isMobileDevice()) {
-            const text = (input?.value || '').trim();
-            openWhatsApp(text, true);
-            return;
-        }
+        if (isMobileDevice()) { const text = (input?.value || '').trim(); openWhatsApp(text, true); return; }
         panel.hidden ? openPanel() : closePanel();
     });
     closeBtn?.addEventListener('click', closePanel);
-
     sendBtn?.addEventListener('click', () => {
         const text = input.value;
         if (!text.trim()) { input.focus(); return; }
-        addMsg(text, 'user');
-        input.value = '';
-        setTimeout(() => {
-            addMsg(t('wa_opening'), 'bot');
-            setTimeout(() => openWhatsApp(text, isMobileDevice()), REDIRECT_AFTER_SEND_MS);
-        }, 200);
+        addMsg(text, 'user'); input.value = '';
+        setTimeout(() => { addMsg(t('wa_opening'), 'bot'); setTimeout(() => openWhatsApp(text, isMobileDevice()), REDIRECT_AFTER_SEND_MS); }, 200);
     });
-    input?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); sendBtn.click(); }
-    });
-
+    input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendBtn.click(); } });
     quick?.addEventListener('click', (e) => {
         if (e.target.matches('button[data-text]')) {
             const t0 = e.target.getAttribute('data-text');
-            input.value = t0;
-            input.focus();
-            addMsg(t('wa_prepared'), 'bot');
+            input.value = t0; input.focus(); addMsg(t('wa_prepared'), 'bot');
         }
     });
-
     if (!sessionStorage.getItem('waOpenedOnce') && !isMobileDevice()) {
-        setTimeout(() => {
-            openPanel();
-            sessionStorage.setItem('waOpenedOnce', '1');
-        }, 6000);
+        setTimeout(() => { openPanel(); sessionStorage.setItem('waOpenedOnce','1'); }, 6000);
     }
 })();

@@ -10,12 +10,30 @@ header('Pragma: no-cache');
 require_once __DIR__ . '/../config/bootstrap_env.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../src/inc/pricing.php'; // ← precios por reglas
+
 $pdo = get_pdo();
 
+/* ---------- INPUT ---------- */
 $start    = $_GET['start'] ?? null; // YYYY-MM-DD (incl.)
 $end      = $_GET['end']   ?? null; // YYYY-MM-DD (excl.)
 $series   = trim((string)($_GET['series']   ?? ''));
 $maxPrice = isset($_GET['maxPrice']) && $_GET['maxPrice'] !== '' ? (float)$_GET['maxPrice'] : null;
+
+/* ---------- Helpers ---------- */
+function slugify(string $s): string {
+    $s = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
+    $s = preg_replace('~[^a-zA-Z0-9]+~', '-', $s);
+    $s = trim($s, '-');
+    $s = strtolower($s);
+    return $s ?: 'camper';
+}
+
+// mapa de último recurso por ID (mantener en sync con campers.php / router)
+const FALLBACK_SLUG_BY_ID = [
+    1 => 'matcha',
+    2 => 'skye',
+    3 => 'rusty',
+];
 
 try {
     if (!$start || !$end) throw new RuntimeException('Faltan start y end.');
@@ -31,7 +49,7 @@ try {
     if ($maxPrice !== null && $maxPrice > 0) $where[] = 'c.price_per_night <= :maxPrice';
     $whereSql = $where ? ' AND ' . implode(' AND ', $where) : '';
 
-    // Requisito de mínimo de noches (base y reglas)
+    // Mínimo de noches (base y reglas)
     $requiredExpr = "
       GREATEST(
         COALESCE(c.min_nights, 2),
@@ -45,9 +63,17 @@ try {
       )
     ";
 
-    // Consulta principal (aplica mínimo + ocupa/bloquea)
+    // Consulta principal
+    // IMPORTANTE: incluimos c.slug si existe en tu tabla
     $sql = "
-      SELECT c.id, c.name, c.series, c.price_per_night, c.image
+      SELECT c.id, c.name, c.series, c.price_per_night, c.image,
+             " . ( // si tu tabla NO tiene slug, esta expresión devuelve NULL y ya haremos fallback
+        "CASE WHEN EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                                WHERE TABLE_SCHEMA = DATABASE()
+                                  AND TABLE_NAME = 'campers'
+                                  AND COLUMN_NAME = 'slug')
+                   THEN c.slug ELSE NULL END"
+        ) . " AS slug
       FROM campers c
       WHERE 1=1
         $whereSql
@@ -69,6 +95,7 @@ try {
         )
       ORDER BY c.price_per_night ASC, c.name ASC
     ";
+
     $st = $pdo->prepare($sql);
 
     // Binds comunes
@@ -87,19 +114,45 @@ try {
     $st->execute();
     $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
-    // Inyectar precios calculados por reglas
+    // Inyectar precios + asegurar slug
     $campers = [];
     foreach ($rows as $r) {
         $cid = (int)$r['id'];
-        $r['price_label'] = nightly_price($pdo, $cid, $start);             // primera noche efectiva
-        $r['total_price'] = sum_price_range($pdo, $cid, $start, $end);     // total del rango (opcional)
+
+        // 1) slug preferido: columna de BD (si existe y no viene vacío)
+        $slug = isset($r['slug']) && trim((string)$r['slug']) !== '' ? (string)$r['slug'] : '';
+
+        // 2) fallback desde nombre
+        if ($slug === '' && !empty($r['name'])) {
+            $slug = slugify((string)$r['name']);
+        }
+
+        // 3) último recurso: mapa por id (matcha/skye/rusty)
+        if ($slug === '' && isset(FALLBACK_SLUG_BY_ID[$cid])) {
+            $slug = FALLBACK_SLUG_BY_ID[$cid];
+        }
+
+        // 4) si aún así nada, usa el id
+        if ($slug === '') $slug = (string)$cid;
+
+        // Precios calculados por reglas
+        $r['price_label'] = nightly_price($pdo, $cid, $start);             // primera noche efectiva (float)
+        $r['total_price'] = sum_price_range($pdo, $cid, $start, $end);     // total del rango (float)
+        $r['slug']        = $slug;
+
+        // Normaliza tipos por si acaso
+        $r['id']                = $cid;
+        $r['price_per_night']   = (float)$r['price_per_night'];
+        if (isset($r['image']) && !is_string($r['image'])) $r['image'] = (string)$r['image'];
+
         $campers[] = $r;
     }
 
-    // (Opcional) ordenar por precio efectivo y luego nombre
+    // Ordenar por precio efectivo y luego nombre
     if ($campers) {
         usort($campers, fn($a,$b) =>
-        ($a['price_label'] <=> $b['price_label']) ?: strcmp((string)$a['name'], (string)$b['name'])
+        ($a['price_label'] <=> $b['price_label'])
+            ?: strcmp((string)$a['name'], (string)$b['name'])
         );
 
         echo json_encode([
@@ -111,7 +164,7 @@ try {
         exit;
     }
 
-    // -------- Sin resultados: ¿mínimo de noches o ocupado? --------
+    /* -------- Sin resultados: ¿mínimo de noches o ocupado? -------- */
     $sql2 = "
       SELECT
         c.id, c.name,

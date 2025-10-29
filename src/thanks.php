@@ -1,6 +1,27 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * src/thanks.php — Alisios Van
+ * - Carga autoload y ENV
+ * - Verifica session_id y modo Stripe
+ * - Recupera Session de Stripe (una sola vez)
+ * - Crea/actualiza reserva en BD, vincula cliente, intenta localizar factura
+ * - Envía email de confirmación y renderiza la página de "Gracias"
+ */
+
+// ------------ LOG / ERRORES ------------
+ini_set('display_errors','0');
+ini_set('log_errors','1');
+ini_set('error_log','/home/u647357107/domains/alisiosvan.com/secure/php-errors.log');
+header('Content-Type: text/html; charset=utf-8');
+
+// ---------- Autoload & config ----------
+$vendor = dirname(__DIR__) . '/vendor/autoload.php';
+if (is_file($vendor)) {
+    require_once $vendor;
+}
+
 require_once __DIR__ . '/../config/bootstrap_env.php';
 require_once __DIR__ . '/../config/i18n-lite.php';
 require_once __DIR__ . '/../config/db.php';
@@ -10,21 +31,51 @@ use Stripe\Checkout\Session as CheckoutSession;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as MailException;
 
+// ---------- DB ----------
 $pdo = get_pdo();
 
-// Producción: log a fichero seguro
-ini_set('display_errors','0');
-ini_set('log_errors','1');
-ini_set('error_log','/home/u647357107/domains/alisiosvan.com/secure/php-errors.log');
-
-$sk = env('STRIPE_SECRET','');
-if (!$sk) { http_response_code(500); exit('Stripe not configured'); }
-Stripe::setApiKey($sk);
-
+// ---------- Entrada ----------
 $sessionId = $_GET['session_id'] ?? '';
-if (!$sessionId) { http_response_code(400); echo 'Missing session_id'; exit; }
+if ($sessionId === '') {
+    http_response_code(400);
+    exit('Missing session_id');
+}
 
-// Helpers --------------------------------------------------------------------
+// ---------- Clave Stripe ----------
+$sk = env('STRIPE_SECRET','');
+if (!$sk) {
+    http_response_code(500);
+    exit('Stripe not configured');
+}
+
+// Comprobación de modo (evita errores silenciosos)
+$isLiveSession = str_starts_with($sessionId, 'cs_live_');
+$isTestSession = str_starts_with($sessionId, 'cs_test_');
+$isLiveKey     = str_starts_with($sk, 'sk_live_');
+$isTestKey     = str_starts_with($sk, 'sk_test_');
+if (($isLiveSession && !$isLiveKey) || ($isTestSession && !$isTestKey)) {
+    error_log("THANKS mode mismatch: session=$sessionId ; key=" . substr($sk,0,7));
+    http_response_code(400);
+    exit('Stripe mode mismatch (session/key).');
+}
+
+// ---------- Stripe: recuperar sesión (UNA VEZ) ----------
+try {
+    Stripe::setApiKey($sk);
+    $session = CheckoutSession::retrieve($sessionId, [
+        'expand' => ['payment_intent.charges', 'invoice', 'customer']
+    ]);
+} catch (\Stripe\Exception\ApiErrorException $e) {
+    error_log('THANKS Stripe error: ' . $e->getMessage());
+    http_response_code(400);
+    exit('We could not verify the payment session. If you were charged, please contact support.');
+} catch (\Throwable $e) {
+    error_log('THANKS fatal: ' . $e->getMessage());
+    http_response_code(400);
+    exit('We could not complete the confirmation. Please contact support.');
+}
+
+// ---------------- Helpers ----------------
 function columnExists(PDO $pdo, string $table, string $column): bool {
     $sql = "SELECT 1
               FROM INFORMATION_SCHEMA.COLUMNS
@@ -36,40 +87,34 @@ function columnExists(PDO $pdo, string $table, string $column): bool {
     $st->execute([':t'=>$table, ':c'=>$column]);
     return (bool)$st->fetchColumn();
 }
-
 function publicBaseUrl(): string {
     $env = rtrim(env('PUBLIC_BASE_URL',''), '/');
     if ($env) return $env;
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $dir    = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+    $dir    = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\');
     return rtrim("$scheme://$host$dir", '/');
 }
-
 function norm($s){ return mb_strtolower(trim((string)$s)); }
 
+// ================= Idioma =================
+$lang = $GLOBALS['LANG'] ?? 'en';
+if (!empty($session->metadata->lang)) {
+    $lang = preg_replace('/[^a-zA-Z_-]/', '', (string)$session->metadata->lang);
+} elseif (columnExists($pdo, 'reservations', 'lang')) {
+    $q = $pdo->prepare("SELECT lang FROM reservations WHERE stripe_session_id = ? LIMIT 1");
+    $q->execute([$sessionId]);
+    $dbLang = $q->fetchColumn();
+    if ($dbLang) { $lang = preg_replace('/[^a-zA-Z_-]/', '', (string)$dbLang); }
+}
+if (function_exists('i18n_set_locale')) {
+    i18n_set_locale($lang);
+} else {
+    $GLOBALS['LANG'] = $lang;
+}
+
+// ================= Lógica principal =================
 try {
-    // Recupera la sesión e incluimos charges para poder sacar receipt_url sin otra llamada
-    $session = CheckoutSession::retrieve($sessionId, [
-        'expand' => ['payment_intent.charges', 'invoice', 'customer']
-    ]);
-
-    // ====== Determinar y fijar idioma para esta ejecución ===================
-    $lang = $GLOBALS['LANG'] ?? 'en';
-    if (!empty($session->metadata->lang)) {
-        $lang = preg_replace('/[^a-zA-Z_-]/', '', (string)$session->metadata->lang);
-    } elseif (columnExists($pdo, 'reservations', 'lang')) {
-        $q = $pdo->prepare("SELECT lang FROM reservations WHERE stripe_session_id = ? LIMIT 1");
-        $q->execute([$sessionId]);
-        $dbLang = $q->fetchColumn();
-        if ($dbLang) { $lang = preg_replace('/[^a-zA-Z_-]/', '', (string)$dbLang); }
-    }
-    if (function_exists('i18n_set_locale')) {
-        i18n_set_locale($lang);
-    } else {
-        $GLOBALS['LANG'] = $lang;
-    }
-
     if ($session->payment_status === 'paid') {
 
         // ========= 1) Crear/asegurar la reserva en BD =========
@@ -87,7 +132,7 @@ try {
         $metaDepoCents  = (int)($session->metadata->deposit_cents ?? 0);
         $metaLang       = (string)($session->metadata->lang ?? ($GLOBALS['LANG'] ?? 'en'));
 
-        // Normaliza fechas por si vienen vacías
+        // Normaliza fechas por si vienen vacías (copia metadata de invoice si estuviera)
         if (!$metaStart || !$metaEnd) {
             if (!empty($session->invoice) && is_object($session->invoice) && !empty($session->invoice->metadata)) {
                 $metaStart = $metaStart ?: (string)($session->invoice->metadata->start ?? '');
@@ -110,7 +155,7 @@ try {
             $hasLang   = columnExists($pdo, 'reservations', 'lang');
             $manageToken = $hasManage ? bin2hex(random_bytes(24)) : null;
 
-            // Asegura precio unitario si faltara (no debería)
+            // Asegura precio unitario si faltara
             if ($metaUnit <= 0 && $metaCamperId > 0) {
                 $stp = $pdo->prepare("SELECT price_per_night FROM campers WHERE id=?");
                 $stp->execute([$metaCamperId]);
@@ -120,7 +165,6 @@ try {
                 $metaTotalCents = (int)round($metaUnit * 100 * $metaNights);
             }
 
-            // Inserta la reserva ya como "paid"
             $cols = "camper_id,start_date,end_date,status,created_at,paid_at,stripe_session_id,stripe_payment_intent,total_cents,deposit_cents";
             $vals = "?,?,?,?,NOW(),NOW(),?,?,?,?";
             $args = [
@@ -142,13 +186,13 @@ try {
         } else {
             // Si existía, la marcamos pagada y enlazamos PI
             $up = $pdo->prepare("
-            UPDATE reservations
-               SET status='paid',
-                   stripe_payment_intent=:pi,
-                   paid_at=COALESCE(paid_at, NOW())
-             WHERE stripe_session_id=:ssid
-             LIMIT 1
-        ");
+                UPDATE reservations
+                   SET status='paid',
+                       stripe_payment_intent=:pi,
+                       paid_at=COALESCE(paid_at, NOW())
+                 WHERE stripe_session_id=:ssid
+                 LIMIT 1
+            ");
             $up->execute([':pi' => (string)$session->payment_intent, ':ssid' => $sessionId]);
         }
 
@@ -199,14 +243,14 @@ try {
                 $last  = $parts ? implode(' ', array_slice($parts, 1)) : '';
 
                 $ins = $pdo->prepare("INSERT INTO customers (first_name,last_name,email,email_norm,stripe_customer_id,created_at)
-                                  VALUES (?,?,?,?,?,NOW())");
+                                   VALUES (?,?,?,?,?,NOW())");
                 $ins->execute([$first, $last, $customerEmailNorm, $customerEmailNorm, $stripeCustomerId ?? null]);
                 $customerId = (int)$pdo->lastInsertId();
             }
 
             $pdo->prepare("UPDATE reservations
-              SET customer_id = COALESCE(customer_id, ?)
-            WHERE id = ? LIMIT 1")
+                              SET customer_id = COALESCE(customer_id, ?)
+                            WHERE id = ? LIMIT 1")
                 ->execute([$customerId, $reservationId]);
         }
 
@@ -248,8 +292,8 @@ try {
             && columnExists($pdo,'reservations','stripe_invoice_pdf')
             && columnExists($pdo,'reservations','stripe_invoice_url')) {
             $pdo->prepare("UPDATE reservations
-                          SET stripe_invoice_pdf=:pdf, stripe_invoice_url=:url
-                        WHERE id=:rid LIMIT 1")
+                              SET stripe_invoice_pdf=:pdf, stripe_invoice_url=:url
+                            WHERE id=:rid LIMIT 1")
                 ->execute([':pdf'=>$invoicePdf, ':url'=>$invoiceUrl, ':rid'=>$reservationId]);
         }
 
@@ -257,16 +301,16 @@ try {
         $hasManage = columnExists($pdo, 'reservations', 'manage_token');
 
         $select = "
-        SELECT r.id, r.start_date, r.end_date,
-               r.total_cents,
-               c.name AS camper, c.price_per_night,
-               DATEDIFF(r.end_date, r.start_date) AS nights";
+            SELECT r.id, r.start_date, r.end_date,
+                   r.total_cents,
+                   c.name AS camper, c.price_per_night,
+                   DATEDIFF(r.end_date, r.start_date) AS nights";
         if ($hasManage) { $select .= ", r.manage_token"; }
         $select .= "
-          FROM reservations r
-          JOIN campers c ON c.id = r.camper_id
-         WHERE r.id = :rid
-         LIMIT 1";
+              FROM reservations r
+              JOIN campers c ON c.id = r.camper_id
+             WHERE r.id = :rid
+             LIMIT 1";
         $st = $pdo->prepare($select);
         $st->execute([':rid' => $reservationId]);
         $res = $st->fetch(PDO::FETCH_ASSOC);
@@ -291,13 +335,13 @@ try {
             $manageUrl = publicBaseUrl() . '/manage.php?rid='.(int)$res['id'].'&t='.$res['manage_token'];
         }
 
-        // ========= 5) Email de confirmación (igual que tenías) =========
+        // ========= 5) Email de confirmación =========
         $customerEmail = $session->customer_details->email ?? $session->customer_email ?? '';
         $customerName  = $session->customer_details->name  ?? '';
 
         $receiptUrl = null;
         try {
-            $pi = $session->payment_intent ?? null; // ya viene expandido con charges
+            $pi = $session->payment_intent ?? null; // expandido con charges
             if ($pi && isset($pi->charges->data[0])) {
                 $receiptUrl = $pi->charges->data[0]->receipt_url ?? null;
             }
@@ -544,7 +588,6 @@ try {
             <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
             <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
             <link rel="stylesheet" href="/src/css/estilos.css">
@@ -763,6 +806,7 @@ try {
     echo "Payment not completed yet. Status: " . htmlspecialchars($session->payment_status);
 
 } catch (Throwable $e) {
+    error_log('THANKS_RUNTIME: ' . $e->getMessage());
     http_response_code(500);
     echo "Error: " . htmlspecialchars($e->getMessage());
 }
