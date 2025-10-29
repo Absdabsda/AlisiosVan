@@ -1,6 +1,6 @@
 <?php
 // ========================================================
-// HEADER MULTI-IDIOMA Alisios Van
+// HEADER MULTI-IDIOMA Alisios Van (FIX cambio de idioma)
 // ========================================================
 
 // Cargar i18n si aún no está cargado
@@ -14,16 +14,53 @@ $SUPPORTED_LANGS = ['es','en','de','fr','it'];
 $lang = strtolower($LANG ?? ($_GET['lang'] ?? 'es'));
 if (!in_array($lang, $SUPPORTED_LANGS, true)) $lang = 'es';
 
-// Detectar path actual (ej: 'campers', 'contacto', etc.)
-$reqPath = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-$parts = explode('/', $reqPath);       // ej: ['es','campers']
-$currentPath = $parts[1] ?? '';        // 'campers' o ''
-$currentPathPart = $currentPath ? $currentPath . '/' : '';
+// ---------- Detectar path actual ----------
+// p.ej. '/es/camper/van-x/' → parts = ['','es','camper','van-x','']
+$reqPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+$reqPath = $reqPath === '' ? '/' : $reqPath;
+$parts   = explode('/', trim($reqPath, '/')); // sin barras en extremos
 
-// Función para resaltar el menú activo
+// Segmento 0 es el idioma actual (si no está, $parts[0] será primera parte real)
+$hasLangPrefix = isset($parts[0]) && in_array(strtolower($parts[0]), $SUPPORTED_LANGS, true);
+
+// $restAfterLang = todo lo que va después del idioma, p.ej. 'camper/van-x' o 'faq' o ''
+$restAfterLang = '';
+if ($hasLangPrefix) {
+    $restAfterLang = implode('/', array_slice($parts, 1));
+} else {
+    $restAfterLang = implode('/', $parts);
+}
+$restAfterLang = trim($restAfterLang, '/'); // normalizado
+
+// Para resaltar menú activo seguimos usando solo el primer segmento tras el idioma
+$currentPath = $restAfterLang !== '' ? explode('/', $restAfterLang, 2)[0] : '';
 function navActive(string $slug): string {
     global $currentPath;
     return $currentPath === $slug ? 'active' : '';
+}
+
+// ---------- Query string: whitelist como el router ----------
+$QS_WHITELIST = ['start','end','rid','email','session_id','utm_source','utm_medium','utm_campaign','utm_term','utm_content'];
+$incomingQs = [];
+parse_str($_SERVER['QUERY_STRING'] ?? '', $incomingQs);
+
+function build_lang_href(string $targetLang, string $restAfterLang, array $qsAll, array $whitelist): string {
+    $targetLang = strtolower(substr($targetLang, 0, 2));
+    $rest = trim($restAfterLang, '/'); // puede ser '' | 'camper/van-x' | 'faq' | ...
+
+    // Barra final solo si hay "rest"
+    $restOut = ($rest !== '') ? ($rest . '/') : '';
+
+    // Construir query filtrada
+    $keep = [];
+    foreach ($whitelist as $k) {
+        if (isset($qsAll[$k]) && $qsAll[$k] !== '') $keep[$k] = $qsAll[$k];
+    }
+    $qs = http_build_query($keep);
+
+    $url = '/' . rawurlencode($targetLang) . '/' . $restOut;
+    if ($qs !== '') $url .= '?' . $qs;
+    return $url;
 }
 
 // Mapeo de banderas
@@ -36,7 +73,6 @@ $flagOf = [
 ];
 $curFlag = $flagOf[$lang] ?? 'gb';
 ?>
-
 <!-- =========================================== -->
 <!-- NAVBAR -->
 <!-- =========================================== -->
@@ -129,9 +165,13 @@ $curFlag = $flagOf[$lang] ?? 'gb';
 
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langMenu">
                         <?php foreach ($SUPPORTED_LANGS as $l): ?>
+                            <?php
+                            // Enlace que conserva el "rest" (incluye 'camper/<slug>' si aplica)
+                            $href = build_lang_href($l, $restAfterLang, $incomingQs, $QS_WHITELIST);
+                            ?>
                             <li>
                                 <a class="dropdown-item d-flex align-items-center gap-2 <?= $lang === $l ? 'active' : '' ?>"
-                                   href="/<?= $l ?>/<?= htmlspecialchars($currentPathPart) ?>">
+                                   href="<?= htmlspecialchars($href) ?>">
                                     <span class="fi fi-<?= $flagOf[$l] ?>"></span>
                                     <?= strtoupper($l) ?>
                                 </a>
@@ -148,7 +188,6 @@ $curFlag = $flagOf[$lang] ?? 'gb';
 <!-- =========================================== -->
 <!-- MODAL: Manage Booking -->
 <!-- =========================================== -->
-<!-- MODAL: Manage Booking -->
 <div class="modal fade" id="manageBookingModal" tabindex="-1"
      aria-labelledby="manageBookingTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -162,22 +201,22 @@ $curFlag = $flagOf[$lang] ?? 'gb';
 
             <?php
             $manageSlugByLang = [
-            'es' => 'gestionar-reserva',
-            'en' => 'manage-booking',
-            'de' => 'buchung-verwalten',
-            'fr' => 'gerer-reservation',
-            'it' => 'gestisci-prenotazione',
+                'es' => 'gestionar-reserva',
+                'en' => 'manage-booking',
+                'de' => 'buchung-verwalten',
+                'fr' => 'gerer-reservation',
+                'it' => 'gestisci-prenotazione',
             ];
             $manageSlug = $manageSlugByLang[$lang] ?? 'gestionar-reserva';
             ?>
 
-            <!-- IMPORTANTE: ahora POST y a la ruta bonita por idioma -->
+            <!-- IMPORTANTE: POST a la ruta bonita por idioma -->
             <form method="post"
                   action="/<?= htmlspecialchars($lang) ?>/<?= htmlspecialchars($manageSlug) ?>/"
                   class="needs-validation"
                   novalidate>
 
-            <div class="modal-body">
+                <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label"><?= __('Reservation #') ?></label>
                         <input type="number" name="rid" class="form-control"

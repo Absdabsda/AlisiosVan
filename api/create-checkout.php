@@ -6,7 +6,7 @@ ini_set('display_errors','0');
 try {
     require_once __DIR__ . '/../config/bootstrap_env.php';
     require_once __DIR__ . '/../config/i18n-lite.php';
-    require_once __DIR__.'/../src/inc/pricing.php';
+    require_once __DIR__ . '/../src/inc/pricing.php';
 
     $stripeSecret = env('STRIPE_SECRET');
     if (!$stripeSecret) throw new Exception('STRIPE_SECRET missing');
@@ -88,25 +88,37 @@ try {
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
-// Cuando sirves con php -S y dev-router.php, SCRIPT_NAME será /api/create-checkout.php
+    // Cuando sirves con php -S y dev-router.php, SCRIPT_NAME será /api/create-checkout.php
     $scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/'); // p.ej. /api
     $appBase   = preg_replace('~/api$~i', '', $scriptDir);           // -> '' (raíz del host)
 
-// Usa .env si existe; si no, construye con host + subcarpeta
+    // Usa .env si existe; si no, construye con host + subcarpeta
     $publicRoot = rtrim(env('PUBLIC_BASE_URL', "$scheme://$host$appBase"), '/');
 
-// Defensivo: si alguien dejó /src al final por error, quítalo
+    // Defensivo: si alguien dejó /src al final por error, quítalo
     $publicRoot = preg_replace('~/src/?$~i', '', $publicRoot);
 
-// Idioma 2 letras
+    // Idioma 2 letras (una sola asignación, default 'es')
     $lang = strtolower(substr($GLOBALS['LANG'] ?? 'es', 0, 2));
 
     // ---- STRIPE ----
     $stripe = new \Stripe\StripeClient($stripeSecret);
 
-    $lang = strtolower(substr($GLOBALS['LANG'] ?? 'en', 0, 2));
-    $stripeLocale = ['es'=>'es','en'=>'en','de'=>'de','fr'=>'fr','it'=>'it','pt'=>'pt','nl'=>'nl'][$lang] ?? 'en';
+    // Locale Stripe según idioma
+    $stripeLocale = [
+        'es'=>'es','en'=>'en','de'=>'de','fr'=>'fr','it'=>'it','pt'=>'pt','nl'=>'nl'
+    ][$lang] ?? 'en';
 
+    // Slugs localizadas (coherentes con tu router)
+    $thanksSlug = [
+        'es'=>'gracias','en'=>'thanks','de'=>'danke','fr'=>'merci','it'=>'grazie'
+    ][$lang] ?? 'thanks';
+
+    $cancelSlug = [
+        'es'=>'cancelado','en'=>'cancel','de'=>'storniert','fr'=>'annule','it'=>'annullato'
+    ][$lang] ?? 'cancel';
+
+    // Textos
     $nameLine = sprintf(
         __('%s (%s) – Booking deposit (%d%% of total) · %d nights total'),
         $camper['name'], $camper['series'], $depositPercent, $nights
@@ -129,10 +141,12 @@ try {
 
     $invoiceFooter = __('Alisios Van · Canary Islands · alisios.van@gmail.com · Cancellation: company cancellations → full refund; customer cancellations → deposit non-refundable.');
 
+    // ---- CREACIÓN DE SESIÓN ----
     $session = $stripe->checkout->sessions->create([
         'mode'        => 'payment',
-        'success_url' => $publicRoot . '/' . rawurlencode($lang) . '/thanks/?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url'  => $publicRoot . '/' . rawurlencode($lang) . '/cancel/',
+        // Usar slugs localizadas para evitar redirecciones y no perder session_id
+        'success_url' => $publicRoot . '/' . rawurlencode($lang) . '/' . $thanksSlug . '/?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url'  => $publicRoot . '/' . rawurlencode($lang) . '/' . $cancelSlug . '/',
         'locale'      => $stripeLocale,
 
         'payment_method_types' => ['card'],

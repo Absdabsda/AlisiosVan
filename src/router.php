@@ -155,7 +155,6 @@ $ALIASES = [
     'verwaltung-link'      => 'manage',          // DE
     'gestion-lien'         => 'manage',          // FR
     'gestisci-link'        => 'manage',          // IT
-
 ];
 
 // ---------------------------------------------------------
@@ -176,8 +175,6 @@ $ROUTES = [
     'thanks'             => 'thanks.php',
     'cancel'             => 'cancel.php',
     'manage'             => 'manage.php',
-
-
 ];
 
 // ---------------------------------------------------------
@@ -278,7 +275,6 @@ $PREFERRED = [
     ],
 ];
 
-
 // Tolerancia extra: si viniera con espacios (muy legacy)
 if ($slug === null) {
     $try = str_replace('-', ' ', $pathNorm);
@@ -294,7 +290,8 @@ if ($slug && isset($ROUTES[$slug])) {
         $location = '/' . rawurlencode($lang) . '/' . $preferred . '/';
 
         // Mantén solo parámetros funcionales, nunca los de routing interno
-        $KEEP = ['start','end','rid','email','utm_source','utm_medium','utm_campaign','utm_term','utm_content'];
+        // >>>>> CAMBIO: añadimos 'session_id' para no perderlo en la redirección
+        $KEEP = ['start','end','rid','email','session_id','utm_source','utm_medium','utm_campaign','utm_term','utm_content'];
         $q = [];
         foreach ($KEEP as $k) {
             if (isset($_GET[$k]) && $_GET[$k] !== '') $q[$k] = $_GET[$k];
@@ -306,13 +303,9 @@ if ($slug && isset($ROUTES[$slug])) {
         exit;
     }
 
-
     require __DIR__ . '/' . $ROUTES[$slug];
     exit;
 }
-
-
-
 
 // Soporte legacy: si llega con .php en el path, redirige a la bonita
 if (preg_match('~^(.+)\.php$~', $pathNorm, $mm)) {
