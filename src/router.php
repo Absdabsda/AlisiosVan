@@ -291,7 +291,7 @@ if ($slug && isset($ROUTES[$slug])) {
 
         // Mantén solo parámetros funcionales, nunca los de routing interno
         // >>>>> CAMBIO: añadimos 'session_id' para no perderlo en la redirección
-        $KEEP = ['start','end','rid','email','session_id','utm_source','utm_medium','utm_campaign','utm_term','utm_content'];
+        $KEEP = ['start','end','rid','email','session_id','utm_source','utm_medium','utm_campaign','utm_term','utm_content', 't', 'm', 'rn'];
         $q = [];
         foreach ($KEEP as $k) {
             if (isset($_GET[$k]) && $_GET[$k] !== '') $q[$k] = $_GET[$k];

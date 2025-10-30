@@ -458,14 +458,21 @@ $deposit      = $depositCents / 100.0;
 $msgTop = '';
 $refundNote = '';
 
+// Helper: redirigir a la MISMA ruta actual con nueva query (evita /.../manage/)
+function redirect_same_path(array $params, int $status = 303): void {
+    $path = (string)parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+    if ($path === '') $path = '/';
+    $qs = http_build_query($params);
+    header('Location: ' . $path . ($qs ? ('?'.$qs) : ''), true, $status);
+    exit;
+}
+
 if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel'){
     // 1) Ya estaba cancelada
     if (strpos((string)$r['status'],'cancelled') === 0) {
-        $qs = 'rid='.$rid.'&lang='.$LC;
-        if (!$adminACT && $t) { $qs .= '&t='.urlencode($t); }
-        $target = $adminACT ? 'manage-admin.php' : 'manage.php';
-        header('Location: '.$target.'?'.$qs.'&m=already');
-        exit;
+        $params = ['rid'=>$rid, 'lang'=>$LC, 'm'=>'already'];
+        if (!$adminACT && $t) { $params['t'] = $t; }
+        redirect_same_path($params, 303);
     }
 
     // Decide el nuevo estado según quién cancela
@@ -673,13 +680,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel
         error_log('Cancel mail exception: '.$e->getMessage());
     }
 
-    // 2) Redirección post-cancel (después de mandar email, etc.)
-    $qs = 'rid='.$rid.'&lang='.$LC;
-    if (!$adminACT && $t) { $qs .= '&t='.urlencode($t); }
-    if ($refundNote) { $qs .= '&rn='.urlencode($refundNote); } // nota técnica, opcional
-    $target = $adminACT ? 'manage-admin.php' : 'manage.php';
-    header('Location: '.$target.'?'.$qs.'&m=cancelled');
-    exit;
+    // 2) Redirección post-cancel (después de mandar email, etc.) — MISMA RUTA
+    $params = ['rid'=>$rid, 'lang'=>$LC, 'm'=>'cancelled'];
+    if (!$adminACT && $t) { $params['t'] = $t; }
+    if ($refundNote)     { $params['rn'] = $refundNote; }
+    redirect_same_path($params, 303);
 }
 
 // Mensajes de la vista
