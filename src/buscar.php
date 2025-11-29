@@ -33,6 +33,27 @@ try {
 <html lang="<?= htmlspecialchars($lang ?? 'en') ?>">
 <head>
     <meta charset="utf-8">
+    <!-- Google Ads event: “click en pagar” -->
+    <script>
+        function gtag_report_conversion(url) {
+            try {
+                var callback = function () {
+                    if (typeof(url) !== 'undefined') {
+                        window.location = url;
+                    }
+                };
+                gtag('event', 'conversion', {
+                    'send_to': 'AW-17688977836/-UuuCJOYkckbEKzD4fJB',
+                    'transaction_id': '',
+                    'event_callback': callback
+                });
+            } catch(e) {
+                console.warn("Google Ads blocked:", e);
+                if (typeof url !== "undefined") window.location = url;
+            }
+            return false;
+        }
+    </script>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Available campers | Alisios Van</title>
 

@@ -338,11 +338,28 @@
                     });
                     const data = await res.json();
                     if (data.ok && data.url) {
-                        window.location.href = data.url;
+
+                        let redirectedByGoogle = false;
+
+                        try {
+                            if (typeof gtag_report_conversion === "function") {
+                                gtag_report_conversion(data.url);
+                                redirectedByGoogle = true; // Google hará la redirección si funciona
+                            }
+                        } catch (e) {
+                            console.warn("Google Ads blocked or failed:", e);
+                        }
+
+                        // Si Google NO ha redirigido → redirigimos nosotros
+                        if (!redirectedByGoogle) {
+                            window.location.href = data.url;
+                        }
+
                     } else {
                         hideCheckoutOverlay();
                         alert(data.error || t('checkout_init_error'));
                     }
+
                 } catch (err) {
                     console.error(err);
                     hideCheckoutOverlay();
