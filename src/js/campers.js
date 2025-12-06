@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const lang  = (document.documentElement.lang || 'es').split('-')[0];
 
 // Mapea ID → slug canónico (mantén esto sincronizado con tu camper-detail/router)
-    const slugById = { 1: 'matcha', 2: 'skye', 3: 'rusty' };
+    const slugById = { 1: 'matcha', 2: 'skye', 3: 'rusty', 4: 'tibi' };
 
     function buildDetailsHref(id) {
         const slug = slugById[id] || String(id);

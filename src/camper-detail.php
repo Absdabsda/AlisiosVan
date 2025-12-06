@@ -17,7 +17,7 @@ $slug = preg_replace('~[^a-z0-9\-]~', '-', $slug);
 // 1.1) Compat legacy ?id= -> 301 a slug bonito
 if (!empty($_GET['id'])) {
     $legacyId = (int)$_GET['id'];
-    $slugById = [ 1=>'matcha', 2=>'skye', 3=>'rusty' ];
+    $slugById = [ 1=>'matcha', 2=>'skye', 3=>'rusty', 4=>'tibi' ];
     if (isset($slugById[$legacyId])) {
         $dest = '/' . rawurlencode($lang) . '/camper/' . $slugById[$legacyId] . '/';
         if (!empty($_SERVER['QUERY_STRING'])) {
@@ -99,6 +99,25 @@ $CAMPERS = [
             'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs','Projector', 'Basic insurance age ≥26 years',
         ],
     ],
+    'tibi' => [
+        'id' => 4,
+        'name'   => '“Tibi”',
+        'series' => 'Spacious Home',
+        'images' => [
+            'img/tibi/tibi-atardecer.jpeg',
+            'img/tibi/tibi-playa.jpeg',
+            'img/tibi/interior-tibi.jpeg',
+            'img/tibi/tibi-feliz.jpeg',
+            'img/tibi/tibi-atardecer.jpeg',
+            'img/tibi/tibi-comida.jpeg',
+        ],
+        'seats'=>2,'sleeps'=>2,
+        'desc' => 'A comfy camper-home with kitchen, solar power, outdoor shower and a built-in TV for relaxed evenings.',
+        'features' => [
+            '2 travel seats','Sleeps 2','Equipped kitchen: hob, sink & fridge',
+            'Cookware & utensils included','Outdoor shower','Solar panel','Camping table & chairs','TV', 'Basic insurance age ≥26 years',
+        ],
+    ],
 ];
 
 // 3) Resolver camper o 404
@@ -128,7 +147,7 @@ $title = $camper['series'].' '.$camper['name'];
 $hero  = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
 
 // Paleta para cabecera
-$headerPalette = [ 'matcha'=>'131,115,100', 'skye'=>'82,118,159', 'rusty'=>'167,176,183' ];
+$headerPalette = [ 'matcha'=>'131,115,100', 'skye'=>'82,118,159', 'rusty'=>'167,176,183', 'tibi'=>'173,132,88' ];
 $headerRgb = $headerPalette[$slug] ?? '131,115,100';
 ?>
 <!doctype html>

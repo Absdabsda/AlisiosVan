@@ -13,7 +13,7 @@ $SUPPORTED_LANGS = ['es','en','de','fr','it'];
 if (!in_array($lang, $SUPPORTED_LANGS, true)) { $lang = 'es'; }
 
 /* Slugs canónicos por id (coherentes con /<lang>/camper/<slug>/) */
-$slugById = [ 1=>'matcha', 2=>'skye', 3=>'rusty' ];
+$slugById = [ 1=>'matcha', 2=>'skye', 3=>'rusty', 4=>'tibi' ];
 
 /* Cargamos precios actuales por id */
 $prices = [];
@@ -127,6 +127,7 @@ try {
                 <button type="button" class="model-chip active" data-series=""><?= __('All') ?></button>
                 <button type="button" class="model-chip" data-series="T3">VW T3</button>
                 <button type="button" class="model-chip" data-series="T4">VW T4</button>
+                <button type="button" class="model-chip" data-series="Spacious">Spacious</button>
             </div>
         </div>
     </section>
@@ -186,6 +187,25 @@ try {
                              alt="<?= __('“Rusty” at sunset') ?>" loading="lazy">
                         <div class="camper-info">
                             <h3 class="mb-1">“Rusty”</h3>
+                            <p class="mb-0">
+                                <?= sprintf(__('From €%s per night'), number_format((float)($prices[$id] ?? 0), 0)) ?>
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Camper 4 -->
+                <?php $id=4; $slug=$slugById[$id]; ?>
+                <div class="col-md-4 camper-col">
+                    <a class="camper-card d-block text-decoration-none"
+                       href="/<?= htmlspecialchars($lang) ?>/camper/<?= htmlspecialchars($slug) ?>/"
+                       data-id="<?= $id ?>" data-name="Tibi" data-series="Spacious"
+                       data-price="<?= htmlspecialchars((string)($prices[$id] ?? 0)) ?>"
+                       aria-label="<?= __('View details') ?>: “Tibi”">
+                        <img src="/src/img/tibi/lado-tibi.jpeg"
+                             alt="<?= __('“Rusty” at sunset') ?>" loading="lazy">
+                        <div class="camper-info">
+                            <h3 class="mb-1">“Tibi”</h3>
                             <p class="mb-0">
                                 <?= sprintf(__('From €%s per night'), number_format((float)($prices[$id] ?? 0), 0)) ?>
                             </p>

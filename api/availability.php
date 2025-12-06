@@ -33,6 +33,7 @@ const FALLBACK_SLUG_BY_ID = [
     1 => 'matcha',
     2 => 'skye',
     3 => 'rusty',
+    4 => 'tibi',
 ];
 
 try {

@@ -231,6 +231,7 @@ try {
                 <button type="button" class="model-chip active" data-series=""><?= __('All') ?></button>
                 <button type="button" class="model-chip" data-series="T3">VW T3</button>
                 <button type="button" class="model-chip" data-series="T4">VW T4</button>
+                <button class="model-chip" data-series="Spacious">Spacious</button>
             </div>
         </div>
     </section>

@@ -26,12 +26,13 @@
         if (p.startsWith('/')) return p;
         return IMG_PREFIX + p.replace(/^\.?\//, '');
     }
-    const IMAGE_BY_ID = { 1: 'img/carousel/matcha-surf.34.32.jpeg', 2: 'img/carousel/t3-azul-playa.webp', 3: 'img/carousel/t4-sol.webp' };
+    const IMAGE_BY_ID = { 1: 'img/carousel/matcha-surf.34.32.jpeg', 2: 'img/carousel/t3-azul-playa.webp', 3: 'img/carousel/t4-sol.webp', 4: 'img/tibi/lado-tibi.jpeg' };
     function guessImageFromName(name) {
         const n = (name || '').toLowerCase();
         if (n.includes('matcha')) return 'img/carousel/t3-azul-mar.webp';
         if (n.includes('skye'))   return 'img/carousel/t3-azul-playa.webp';
         if (n.includes('rusty'))  return 'img/carousel/t4-sol.webp';
+        if (n.includes('tibi')) return 'img/tibi/lado-tibi.jpeg';
         return 'img/carousel/t3-azul-mar.webp';
     }
 
