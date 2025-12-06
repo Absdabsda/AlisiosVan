@@ -23,13 +23,52 @@ try {
         $prices[(int)$row['id']] = (float)$row['price_per_night'];
     }
 } catch (Throwable $e) { /* fallback visual */ }
+$canonical = "https://alisiosvan.com/$lang/campers/";
+
+$hreflangs = [];
+foreach ($SUPPORTED_LANGS as $l) {
+    $hreflangs[] = '<link rel="alternate" hreflang="'.$l.'" href="https://alisiosvan.com/'.$l.'/campers/" />';
+}
+$hreflangs[] = '<link rel="alternate" hreflang="x-default" href="https://alisiosvan.com/es/campers/" />';
+
+$descriptions = [
+    'es' => 'Alquiler de furgonetas camper en Fuerteventura. Explora la isla con campers clásicas VW totalmente equipadas con seguro y asistencia 24/7.',
+    'en' => 'Camper van rental in Fuerteventura. Explore the island with fully equipped classic VW campers, insurance and 24/7 assistance included.',
+    'de' => 'Miete einen Campervan auf Fuerteventura. Entdecke die Insel mit voll ausgestatteten klassischen VW-Campern, inklusive Versicherung und 24/7-Pannenhilfe.',
+    'fr' => 'Location de vans aménagés à Fuerteventura. Explorez l’île avec des campervans VW classiques entièrement équipés, assurance et assistance 24/7 incluses.',
+    'it' => 'Noleggio di camper a Fuerteventura. Esplora l’isola con camper VW classici completamente equipaggiati, assicurazione e assistenza 24/7 incluse.',
+];
+
+$description = $descriptions[$lang] ?? $descriptions['en'];
+
+$SEO_CAMPERS = <<<HTML
+<!-- SEO CAMPERS -->
+<meta name="description" content="$description" />
+<link rel="canonical" href="$canonical" />
+<!-- HREFLANG -->
+    {HREFLANGS}
+<!-- Open Graph -->
+<meta property="og:title" content="Camper rental in Fuerteventura | Alisios Van" />
+<meta property="og:description" content="$description" />
+<meta property="og:url" content="$canonical" />
+<meta property="og:image" content="https://alisiosvan.com/src/img/og/campers.jpg" />
+<meta property="og:type" content="website" />
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Camper rental in Fuerteventura | Alisios Van" />
+<meta name="twitter:description" content="$description" />
+<meta name="twitter:image" content="https://alisiosvan.com/src/img/og/campers.jpg" />
+HTML;
+
+$SEO_CAMPERS = str_replace('{HREFLANGS}', implode("\n", $hreflangs), $SEO_CAMPERS);
 ?>
 <!doctype html>
-<html lang="<?= htmlspecialchars($LANG ?? 'en') ?>">
+<html lang="<?= htmlspecialchars($lang) ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Campers | Alisios Van</title>
+    <title><?= __('Our Campers') ?> | Alisios Van</title>
+    <?= $SEO_CAMPERS ?>
 
     <!-- evita traducción automática de Chrome -->
     <meta name="google" content="notranslate">
@@ -146,7 +185,9 @@ try {
                        data-price="<?= htmlspecialchars((string)($prices[$id] ?? 0)) ?>"
                        aria-label="<?= __('View details') ?>: “Matcha”">
                         <img src="/src/img/carousel/matcha-surf.34.32.jpeg"
-                             alt="<?= __('Volkswagen T3 “Matcha” by the beach') ?>" loading="lazy">
+                             alt="<?= __('ALT_GALLERY_MATCHA') ?>"
+                             title="<?= __('TITLE_GALLERY_MATCHA') ?>"
+                             loading="lazy">
                         <div class="camper-info">
                             <h3 class="mb-1">“Matcha”</h3>
                             <p class="mb-0">
@@ -165,7 +206,9 @@ try {
                        data-price="<?= htmlspecialchars((string)($prices[$id] ?? 0)) ?>"
                        aria-label="<?= __('View details') ?>: “Skye”">
                         <img src="/src/img/carousel/t3-azul-playa.webp"
-                             alt="<?= __('“Skye” parked near the sea') ?>" loading="lazy">
+                             alt="<?= __('ALT_GALLERY_SKYE') ?>"
+                             title="<?= __('TITLE_GALLERY_SKYE') ?>"
+                             loading="lazy">
                         <div class="camper-info">
                             <h3 class="mb-1">“Skye”</h3>
                             <p class="mb-0">
@@ -184,7 +227,9 @@ try {
                        data-price="<?= htmlspecialchars((string)($prices[$id] ?? 0)) ?>"
                        aria-label="<?= __('View details') ?>: “Tibi”">
                         <img src="/src/img/tibi/tibi-feliz.jpeg"
-                             alt="<?= __('“Rusty” at sunset') ?>" loading="lazy">
+                             alt="<?= __('ALT_GALLERY_TIBI') ?>"
+                             title="<?= __('TITLE_GALLERY_TIBI') ?>"
+                             loading="lazy">
                         <div class="camper-info">
                             <h3 class="mb-1">“Tibi”</h3>
                             <p class="mb-0">
@@ -203,7 +248,9 @@ try {
                        data-price="<?= htmlspecialchars((string)($prices[$id] ?? 0)) ?>"
                        aria-label="<?= __('View details') ?>: “Rusty”">
                         <img src="/src/img/carousel/t4-sol.webp"
-                             alt="<?= __('“Rusty” at sunset') ?>" loading="lazy">
+                             alt="<?= __('ALT_GALLERY_RUSTY') ?>"
+                             title="<?= __('TITLE_GALLERY_RUSTY') ?>"
+                             loading="lazy">
                         <div class="camper-info">
                             <h3 class="mb-1">“Rusty”</h3>
                             <p class="mb-0">
