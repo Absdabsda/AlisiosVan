@@ -17,4 +17,7 @@ return [
     'about.values.li2'=> 'Compromiso con quienes nos eligen para sus experiencias.',
     'about.values.li3'=> 'Respeto por el medio ambiente.',
     'about.values.li4'=> 'Atención personal en cada detalle de la experiencia.',
+
+    //img
+    'about.img.preparing' => 'Preparando nuestra camper van para tu aventura en Fuerteventura',
 ];

@@ -1,73 +1,122 @@
 <?php
+declare(strict_types=1);
+require __DIR__ . '/../config/i18n-lite.php'; // necesario para $LANG y __()
+
 session_start();
 if (empty($_SESSION['csrf'])) {
     $_SESSION['csrf'] = bin2hex(random_bytes(32));
 }
+
+// Idioma actual
+$lang = strtolower($LANG ?? ($_GET['lang'] ?? 'es'));
+
+// Canonical
+$canonical = "https://alisiosvan.com/$lang/contacto/";
+
+// Idiomas disponibles
+$supportedLangs = ['es','en','de','fr','it'];
+
+// Meta description por idioma
+$descriptions = [
+    'es' => 'Contacta con Alisios Van para consultar disponibilidad, precios o resolver dudas sobre nuestras campers en Fuerteventura.',
+    'en' => 'Contact Alisios Van to check availability, prices or ask any questions about our camper rentals in Fuerteventura.',
+    'de' => 'Kontaktieren Sie Alisios Van für Verfügbarkeit, Preise oder Fragen zur Camper-Vermietung auf Fuerteventura.',
+    'fr' => 'Contactez Alisios Van pour vérifier la disponibilité, les tarifs ou poser vos questions sur nos vans à Fuerteventura.',
+    'it' => 'Contatta Alisios Van per disponibilità, prezzi o domande sui nostri camper a Fuerteventura.',
+];
+
+$metaDescription = $descriptions[$lang] ?? $descriptions['en'];
+
+// Hreflang
+$hreflangs = "";
+foreach ($supportedLangs as $l) {
+    $hreflangs .= '<link rel="alternate" hreflang="'.$l.'" href="https://alisiosvan.com/'.$l.'/contacto/" />'."\n";
+}
+$hreflangs .= '<link rel="alternate" hreflang="x-default" href="https://alisiosvan.com/es/contacto/" />';
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="<?= htmlspecialchars($lang) ?>">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Contact | Alisios Van</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- evita traducción automática de Chrome -->
+    <!-- SEO -->
+    <title><?= __('Contact | Alisios Van') ?></title>
+    <meta name="description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <link rel="canonical" href="<?= htmlspecialchars($canonical) ?>">
+    <?= $hreflangs ?>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="<?= __('Contact | Alisios Van') ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta property="og:image" content="https://alisiosvan.com/src/img/contact-og.jpg">
+    <meta property="og:url" content="<?= htmlspecialchars($canonical) ?>">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= __('Contact | Alisios Van') ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta name="twitter:image" content="https://alisiosvan.com/src/img/contact-og.jpg">
+
+    <!-- evita traducción automática -->
     <meta name="google" content="notranslate">
 
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" defer></script>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
+    <!-- CSS -->
     <link rel="stylesheet" href="/src/css/estilos.css">
     <link rel="stylesheet" href="/src/css/header.css">
     <link rel="stylesheet" href="/src/css/contacto.css">
     <link rel="stylesheet" href="/src/css/cookies.css">
-    <script src="/src/js/header.js" defer></script>
 
+    <!-- JS -->
+    <script src="/src/js/header.js" defer></script>
     <script src="/src/js/contacto.js" defer></script>
     <script src="/src/js/cookies.js" defer></script>
 
     <style>
-        :root { --header-bg-rgb: 84,70,62; } /* #54463E */
+        :root { --header-bg-rgb: 84,70,62; }
     </style>
 </head>
 
 <body>
 <?php include 'inc/header.inc'; ?>
 
-<!-- Mini Chat WhatsApp – Alisios Van -->
+<!-- WhatsApp Widget -->
 <div id="wa-widget" aria-live="polite">
-    <!-- Lanzador flotante -->
     <button id="wa-launcher" aria-label="<?= __('Open WhatsApp chat') ?>" title="WhatsApp">
-        <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+        <i class="fa-brands fa-whatsapp"></i>
     </button>
 
-    <!-- Ventana del chat -->
     <div id="wa-panel" hidden>
         <div class="wa-header">
             <div class="wa-identity">
-                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                <i class="fa-brands fa-whatsapp"></i>
                 <div>
                     <strong>Alisios Van</strong>
                     <div class="wa-status"><?= __('WhatsApp') ?></div>
                 </div>
             </div>
-            <button id="wa-close" aria-label="<?= __('Close chat') ?>" title="<?= __('Close') ?>">
-                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            <button id="wa-close" aria-label="<?= __('Close') ?>">
+                <i class="bi bi-x-lg"></i>
             </button>
         </div>
 
         <div class="wa-messages" id="wa-messages"></div>
 
-        <div class="wa-quick" id="wa-quick" aria-label="<?= __('Quick options') ?>">
+        <div class="wa-quick">
             <button type="button" data-text="<?= htmlspecialchars(__('Hello, I’d like to check availability.')) ?>">
                 <?= __('Availability') ?>
             </button>
@@ -80,9 +129,9 @@ if (empty($_SESSION['csrf'])) {
         </div>
 
         <div class="wa-input">
-            <input type="text" id="wa-input" placeholder="<?= __('Type and open WhatsApp…') ?>" />
+            <input type="text" id="wa-input" placeholder="<?= __('Type and open WhatsApp…') ?>">
             <button id="wa-send" aria-label="<?= __('Open WhatsApp') ?>">
-                <i class="bi bi-send-fill" aria-hidden="true"></i>
+                <i class="bi bi-send-fill"></i>
             </button>
         </div>
     </div>
@@ -96,11 +145,12 @@ if (empty($_SESSION['csrf'])) {
         </div>
     </section>
 
-    <!-- BLOQUE CONTACTO -->
+    <!-- CONTACT BLOCK -->
     <section class="contact-block">
         <div class="container">
             <div class="contact-grid">
-                <!-- Columna izquierda: info -->
+
+                <!-- LEFT COLUMN -->
                 <aside class="contact-card contact-info">
                     <h2 class="custom-title"><?= __('Let’s plan your trip') ?></h2>
                     <p><?= __('Tell us your dates and the van you’d like. We’ll get back to you quickly with availability and a simple quote.') ?></p>
@@ -113,32 +163,32 @@ if (empty($_SESSION['csrf'])) {
 
                     <div class="mini-note">
                         <?= __('Prefer text? DM us on Instagram:') ?>
-                        <a href="https://instagram.com/alisios_van" target="_blank" rel="noopener"> @alisios_van</a>
+                        <a href="https://instagram.com/alisios_van" target="_blank" rel="noopener">@alisios_van</a>
                     </div>
                 </aside>
 
-                <!-- Columna derecha: formulario -->
+                <!-- RIGHT COLUMN — FORM -->
                 <section class="contact-card">
-                    <form id="contactForm" action="../api/contact.php" method="post" novalidate>
-                        <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'] ?? '') ?>">
-                        <input type="text" name="website" tabindex="-1" autocomplete="off" class="hp-field" aria-hidden="true">
+                    <form id="contactForm" action="/api/contact.php" method="post" novalidate>
+                        <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf']) ?>">
+                        <input type="text" name="website" tabindex="-1" class="hp-field" aria-hidden="true">
 
                         <div class="form-row">
                             <div class="field">
                                 <label for="name"><?= __('Name*') ?></label>
-                                <input type="text" id="name" name="name" required />
+                                <input type="text" id="name" name="name" required>
                                 <div class="invalid"><?= __('Please enter your name.') ?></div>
                             </div>
 
                             <div class="field">
                                 <label for="email"><?= __('Email*') ?></label>
-                                <input type="email" id="email" name="email" required />
+                                <input type="email" id="email" name="email" required>
                                 <div class="invalid"><?= __('Please enter a valid email.') ?></div>
                             </div>
 
                             <div class="field">
                                 <label for="phone"><?= __('Phone (optional)') ?></label>
-                                <input type="tel" id="phone" name="phone" />
+                                <input type="tel" id="phone" name="phone">
                             </div>
 
                             <div class="field">
@@ -153,12 +203,12 @@ if (empty($_SESSION['csrf'])) {
 
                             <div class="field">
                                 <label for="start"><?= __('From') ?></label>
-                                <input type="date" id="start" name="start" />
+                                <input type="date" id="start" name="start">
                             </div>
 
                             <div class="field">
                                 <label for="end"><?= __('To') ?></label>
-                                <input type="date" id="end" name="end" />
+                                <input type="date" id="end" name="end">
                             </div>
 
                             <div class="field field--full">
@@ -169,7 +219,7 @@ if (empty($_SESSION['csrf'])) {
 
                             <div class="field field--full checkbox">
                                 <label>
-                                    <input type="checkbox" id="privacy" name="privacy" required />
+                                    <input type="checkbox" id="privacy" name="privacy" required>
                                     <?= __('I agree to the privacy policy.') ?>
                                 </label>
                                 <div class="invalid"><?= __('Please accept to continue.') ?></div>
@@ -180,7 +230,6 @@ if (empty($_SESSION['csrf'])) {
                             </div>
                         </div>
 
-                        <!-- Mensaje de éxito -->
                         <p class="form-success" hidden><?= __('Thanks! We’ve received your message and will reply soon.') ?></p>
                     </form>
                 </section>
@@ -188,9 +237,8 @@ if (empty($_SESSION['csrf'])) {
         </div>
     </section>
 
-    <!-- MAPA -->
+    <!-- MAP -->
     <?php
-    // idioma del mapa de Google
     $hl = in_array(($LANG ?? 'en'), ['es','en','de','fr','it'], true) ? $LANG : 'en';
     ?>
     <section class="map-section">
@@ -208,5 +256,4 @@ if (empty($_SESSION['csrf'])) {
 
 <?php include 'inc/footer.inc'; ?>
 </body>
-
 </html>

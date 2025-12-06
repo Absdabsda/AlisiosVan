@@ -17,4 +17,7 @@ return [
     'about.values.li2'=> 'Commitment to guests who choose us for their experiences.',
     'about.values.li3'=> 'Respect for the environment.',
     'about.values.li4'=> 'Personal attention to every detail of the experience.',
+
+    //img
+    'about.img.preparing' => 'Preparing our camper van for your adventure in Fuerteventura',
 ];

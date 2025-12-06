@@ -8,6 +8,53 @@ require __DIR__ . '/../config/i18n-lite.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= __('About Us | Alisios Van') ?></title>
+    <?php
+    // Idioma actual con fallback correcto (igual que en campers)
+    $lang = strtolower($LANG ?? ($_GET['lang'] ?? 'es'));
+
+    // URL canonical
+    $canonical = "https://alisiosvan.com/$lang/sobre-nosotros/";
+
+    // Idiomas soportados (los mismos que usas en toda la web)
+    $supportedLangs = ['es','en','de','fr','it'];
+
+    // META DESCRIPTION por idioma
+    $descriptions = [
+        'es' => 'Conoce Alisios Van: un proyecto familiar hecho con cariño en Fuerteventura. Preparación propia, atención cercana y campers creadas para disfrutar del viaje.',
+        'en' => 'Meet Alisios Van: a family-run project in Fuerteventura. Carefully prepared campers, personal attention and a passion for slow, meaningful travel.',
+        'de' => 'Lerne Alisios Van kennen: ein familiengeführtes Projekt auf Fuerteventura. Sorgfältig vorbereitete Camper und persönliche Betreuung für bewusstes Reisen.',
+        'fr' => 'Découvrez Alisios Van : un projet familial à Fuerteventura. Des vans préparés avec soin et un service proche pour un voyage en toute sérénité.',
+        'it' => 'Scopri Alisios Van: un progetto familiare a Fuerteventura. Camper preparati con cura e attenzione personale per un viaggio autentico e rilassato.',
+    ];
+
+    $metaDescription = $descriptions[$lang] ?? $descriptions['en'];
+
+    // Construimos hreflang
+    $hreflangs = "";
+    foreach ($supportedLangs as $l) {
+        $hreflangs .= '<link rel="alternate" hreflang="'.$l.'" href="https://alisiosvan.com/'.$l.'/sobre-nosotros/" />'."\n";
+    }
+    $hreflangs .= '<link rel="alternate" hreflang="x-default" href="https://alisiosvan.com/es/sobre-nosotros/" />';
+    ?>
+
+    <!-- SEO -->
+    <meta name="description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <link rel="canonical" href="<?= htmlspecialchars($canonical) ?>">
+    <?= $hreflangs ?>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="<?= __('About Us | Alisios Van') ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta property="og:image" content="https://alisiosvan.com/src/img/carlos-recogiendo-skye.jpeg">
+    <meta property="og:url" content="<?= htmlspecialchars($canonical) ?>">
+    <meta property="og:type" content="article">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= __('About Us | Alisios Van') ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta name="twitter:image" content="https://alisiosvan.com/src/img/carlos-recogiendo-skye.jpeg">
+
 
     <meta name="google" content="notranslate">
 
@@ -95,7 +142,8 @@ require __DIR__ . '/../config/i18n-lite.php';
     <section class="about-final-block">
         <div class="container about-final-container">
             <div class="about-final-image">
-                <img src="/src/img/carlos-recogiendo-skye.jpeg" alt="<?= __('Preparing our camper van') ?>">
+                <img src="/src/img/carlos-recogiendo-skye.jpeg" alt="<?= __('about.img.preparing') ?>" title="<?= __('about.img.preparing') ?>"
+                >
             </div>
             <div class="about-final-text">
                 <h4><?= __('Made with care, made for you.') ?></h4>

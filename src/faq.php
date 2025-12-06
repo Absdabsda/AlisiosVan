@@ -8,6 +8,52 @@ require __DIR__ . '/../config/i18n-lite.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= __('FAQ | Alisios Van') ?></title>
+    <?php
+    // Idioma actual
+    $lang = strtolower($LANG ?? ($_GET['lang'] ?? 'es'));
+
+    // Canonical
+    $canonical = "https://alisiosvan.com/$lang/faq/";
+
+    // Idiomas soportados
+    $supportedLangs = ['es','en','de','fr','it'];
+
+    // Meta description por idioma (SEO friendly)
+    $descriptions = [
+        'es' => 'Preguntas frecuentes sobre alquiler de campers en Fuerteventura: seguros, depósito, conducción, acampada, recogida, devoluciones y más.',
+        'en' => 'Frequently asked questions about camper rental in Fuerteventura: insurance, deposit, driving rules, camping, pickup, and more.',
+        'de' => 'Häufige Fragen zur Camper-Vermietung auf Fuerteventura: Versicherung, Kaution, Fahrregeln, Camping, Abholung und mehr.',
+        'fr' => 'FAQ sur la location de vans à Fuerteventura : assurances, caution, conduite, camping, horaires de retrait et plus.',
+        'it' => 'Domande frequenti sul noleggio camper a Fuerteventura: assicurazione, deposito, guida, campeggio, ritiro e altro.',
+    ];
+
+    $metaDescription = $descriptions[$lang] ?? $descriptions['en'];
+
+    // Construcción hreflang
+    $hreflangs = "";
+    foreach ($supportedLangs as $l) {
+        $hreflangs .= '<link rel="alternate" hreflang="'.$l.'" href="https://alisiosvan.com/'.$l.'/faq/" />'."\n";
+    }
+    $hreflangs .= '<link rel="alternate" hreflang="x-default" href="https://alisiosvan.com/es/faq/" />';
+    ?>
+    <!-- SEO -->
+    <meta name="description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <link rel="canonical" href="<?= htmlspecialchars($canonical) ?>">
+    <?= $hreflangs ?>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="<?= __('FAQ | Alisios Van') ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta property="og:image" content="https://alisiosvan.com/src/img/faq-og.jpg">
+    <meta property="og:url" content="<?= htmlspecialchars($canonical) ?>">
+    <meta property="og:type" content="article">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= __('FAQ | Alisios Van') ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta name="twitter:image" content="https://alisiosvan.com/src/img/faq-og.jpg">
+
 
     <meta name="google" content="notranslate">
 
