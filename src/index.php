@@ -48,6 +48,7 @@ function flatpickr_locale_file(string $lang): string {
 
     <!-- Indexación -->
     <meta name="robots" content="index,follow,max-snippet:-1,max-video-preview:-1,max-image-preview:large">
+    <link rel="canonical" href="https://alisiosvan.com/es/">
 
     <!-- i18n -->
     <link rel="alternate" href="https://alisiosvan.com/es/" hreflang="es">
