@@ -34,7 +34,7 @@ function flatpickr_locale_file(string $lang): string {
         gtag('config', 'AW-17688977836');
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alquiler de furgonetas camper en Fuerteventura | Alisios Van</title>
+    <title><?= __('Camper van rental in Fuerteventura | Alisios Van') ?></title>
     <meta name="google-site-verification" content="1-7OkRZByJKrXOA3Bu6n0h585TCZBAsY-rdHrVHx4PY" />
     <meta name="description" content="Alquila tu furgoneta camper en Fuerteventura con Alisios Van. Entrega en aeropuerto, opciones 4x4, seguro incluido y asistencia. Reserva fácil para descubrir Canarias a tu ritmo.">
 

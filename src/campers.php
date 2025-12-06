@@ -175,6 +175,25 @@ try {
                     </a>
                 </div>
 
+                <!-- Camper 4 -->
+                <?php $id=4; $slug=$slugById[$id]; ?>
+                <div class="col-md-4 camper-col">
+                    <a class="camper-card d-block text-decoration-none"
+                       href="/<?= htmlspecialchars($lang) ?>/camper/<?= htmlspecialchars($slug) ?>/"
+                       data-id="<?= $id ?>" data-name="Tibi" data-series="Spacious"
+                       data-price="<?= htmlspecialchars((string)($prices[$id] ?? 0)) ?>"
+                       aria-label="<?= __('View details') ?>: “Tibi”">
+                        <img src="/src/img/tibi/tibi-feliz.jpeg"
+                             alt="<?= __('“Rusty” at sunset') ?>" loading="lazy">
+                        <div class="camper-info">
+                            <h3 class="mb-1">“Tibi”</h3>
+                            <p class="mb-0">
+                                <?= sprintf(__('From €%s per night'), number_format((float)($prices[$id] ?? 0), 0)) ?>
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
                 <!-- Camper 3 -->
                 <?php $id=3; $slug=$slugById[$id]; ?>
                 <div class="col-md-4 camper-col">
@@ -194,24 +213,7 @@ try {
                     </a>
                 </div>
 
-                <!-- Camper 4 -->
-                <?php $id=4; $slug=$slugById[$id]; ?>
-                <div class="col-md-4 camper-col">
-                    <a class="camper-card d-block text-decoration-none"
-                       href="/<?= htmlspecialchars($lang) ?>/camper/<?= htmlspecialchars($slug) ?>/"
-                       data-id="<?= $id ?>" data-name="Tibi" data-series="Spacious"
-                       data-price="<?= htmlspecialchars((string)($prices[$id] ?? 0)) ?>"
-                       aria-label="<?= __('View details') ?>: “Tibi”">
-                        <img src="/src/img/tibi/tibi-feliz.jpeg"
-                             alt="<?= __('“Rusty” at sunset') ?>" loading="lazy">
-                        <div class="camper-info">
-                            <h3 class="mb-1">“Tibi”</h3>
-                            <p class="mb-0">
-                                <?= sprintf(__('From €%s per night'), number_format((float)($prices[$id] ?? 0), 0)) ?>
-                            </p>
-                        </div>
-                    </a>
-                </div>
+
 
             </div>
         </div>
