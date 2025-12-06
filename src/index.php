@@ -36,7 +36,8 @@ function flatpickr_locale_file(string $lang): string {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= __('Camper van rental in Fuerteventura | Alisios Van') ?></title>
     <meta name="google-site-verification" content="1-7OkRZByJKrXOA3Bu6n0h585TCZBAsY-rdHrVHx4PY" />
-    <meta name="description" content="Alquila tu furgoneta camper en Fuerteventura con Alisios Van. Entrega en aeropuerto, opciones 4x4, seguro incluido y asistencia. Reserva fácil para descubrir Canarias a tu ritmo.">
+    <meta name="description" content="<?= __('SEO_DESCRIPTION_HOME') ?>">
+    <meta name="author" content="Julia V. — Alisios Van">
 
     <!-- Canonical / hreflang dinámicos -->
     <link rel="canonical" href="<?= htmlspecialchars($currentUrl) ?>">
@@ -46,7 +47,6 @@ function flatpickr_locale_file(string $lang): string {
     <link rel="alternate" hreflang="x-default" href="<?= htmlspecialchars(abs_url('es', $path)) ?>">
 
     <!-- Indexación -->
-    <link rel="canonical" href="https://alisiosvan.com/es/">
     <meta name="robots" content="index,follow,max-snippet:-1,max-video-preview:-1,max-image-preview:large">
 
     <!-- i18n -->
@@ -111,7 +111,7 @@ function flatpickr_locale_file(string $lang): string {
 <?php include 'inc/header.inc'; ?>
 
 <div class="landing-hero" style="--header-bg-rgb: 129,193,208;">
-    <img src="img/matcha-landing-page.jpeg" alt="Landscape Camper Landing Image">
+    <img src="img/matcha-landing-page.jpeg" alt="<?= __('ALT_HERO_HOME') ?>" title="<?= __('TITLE_HERO_HOME') ?>">
     <div class="landing-overlay">
         <p class="landing-title"><?= __('Freedom is not a place') ?></p>
 
@@ -257,13 +257,16 @@ function flatpickr_locale_file(string $lang): string {
         <h2 class="section-title"><?= __('Our gallery of camper van rental in Fuerteventura') ?></h2>
         <div class="row mt-4">
             <div class="col-md-4 mb-3">
-                <img src="/src/img/carousel/matcha.34.32 (1).jpeg" class="img-fluid rounded" alt="Camper 1">
+                <img src="/src/img/carousel/matcha.34.32 (1).jpeg" class="img-fluid rounded" alt="<?= __('ALT_GALLERY_MATCHA') ?>" title="<?= __('TITLE_GALLERY_MATCHA') ?>">
+
             </div>
             <div class="col-md-4 mb-3">
-                <img src="/src/img/carousel/t3-azul-mar.webp" class="img-fluid rounded" alt="Camper 2">
+                <img src="/src/img/carousel/t3-azul-mar.webp" class="img-fluid rounded" alt="<?= __('ALT_GALLERY_SKYE') ?>" title="<?= __('TITLE_GALLERY_SKYE') ?>">
+
             </div>
             <div class="col-md-4 mb-3">
-                <img src="/src/img/carousel/t4-sol.webp" class="img-fluid rounded" alt="Camper 3">
+                <img src="/src/img/carousel/t4-sol.webp" class="img-fluid rounded" alt="<?= __('ALT_GALLERY_RUSTY') ?>" title="<?= __('TITLE_GALLERY_RUSTY') ?>">
+
             </div>
         </div>
     </div>

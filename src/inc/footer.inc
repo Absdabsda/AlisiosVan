@@ -55,7 +55,7 @@
             <!-- Logo y Descripción -->
             <div class="col-md-4 mb-4">
                 <a href="index.php" class="d-inline-flex align-items-center text-decoration-none mb-2">
-                    <img src="img/logo-blanco.png" alt="Alisios Van"
+                    <img src="img/logo-blanco.png" alt="Alisios Van" title="Alisios Van"
                          class="footer-logo-img" width="180" height="48"
                          loading="lazy" decoding="async">
                 </a>
@@ -82,17 +82,17 @@
                     <li><a href="/<?= htmlspecialchars($LANG) ?>/legal/" class="text-white text-decoration-none"><?= __('Legal Notice') ?></a></li>
                     <li><a href="/<?= htmlspecialchars($LANG) ?>/privacy/" class="text-white text-decoration-none"><?= __('Privacy Policy') ?></a></li>
                     <li><a href="/<?= htmlspecialchars($LANG) ?>/cookie/" class="text-white text-decoration-none"><?= __('Cookie Policy') ?></a></li>
-                    <li><a href="#" class="text-white text-decoration-none" onclick="cookieConsent?.openSettings();return false;"><?= __('Cookie settings') ?></a></li>
+                    <li><a href="javascript:void(0)" class="text-white text-decoration-none" onclick="cookieConsent?.openSettings();return false;"><?= __('Cookie settings') ?></a></li>
                 </ul>
 
                 <div class="d-flex justify-content-around gap-3 footer-social">
                     <a href="https://www.instagram.com/alisios_van/" target="_blank" class="text-white" aria-label="Instagram">
                         <i class="fab fa-instagram fa-lg"></i>
                     </a>
-                    <a href="#" class="text-white" aria-label="Facebook">
+                    <a href="javascript:void(0)" class="text-white" aria-label="Facebook">
                         <i class="fab fa-facebook fa-lg"></i>
                     </a>
-                    <a href="#" class="text-white" aria-label="TikTok">
+                    <a href="javascript:void(0)" class="text-white" aria-label="TikTok">
                         <i class="fab fa-tiktok fa-lg"></i>
                     </a>
                 </div>

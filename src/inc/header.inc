@@ -88,6 +88,7 @@ $curFlag = $flagOf[$lang] ?? 'gb';
           <source media="(max-width: 991.98px)" srcset="/img/icono.png">
           <img src="/img/alisios-logo.png"
                alt="Alisios Van"
+               title="Alisios Van"
                class="brand-logo"
                width="200"
                height="60"
@@ -154,12 +155,12 @@ $curFlag = $flagOf[$lang] ?? 'gb';
                 <!-- Selector de idioma -->
                 <li class="nav-item dropdown ms-lg-2">
                     <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
-                       href="#"
+                       href="javascript:void(0)"
                        id="langMenu"
                        role="button"
                        data-bs-toggle="dropdown"
                        aria-expanded="false">
-                        <span class="fi fi-<?= $curFlag ?>"></span>
+                    <span class="fi fi-<?= $curFlag ?>"></span>
                         <span class="d-none d-lg-inline text-uppercase"><?= htmlspecialchars($lang) ?></span>
                     </a>
 
