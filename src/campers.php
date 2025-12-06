@@ -202,7 +202,7 @@ try {
                        data-id="<?= $id ?>" data-name="Tibi" data-series="Spacious"
                        data-price="<?= htmlspecialchars((string)($prices[$id] ?? 0)) ?>"
                        aria-label="<?= __('View details') ?>: “Tibi”">
-                        <img src="/src/img/tibi/lado-tibi.jpeg"
+                        <img src="/src/img/tibi/tibi-feliz.jpeg"
                              alt="<?= __('“Rusty” at sunset') ?>" loading="lazy">
                         <div class="camper-info">
                             <h3 class="mb-1">“Tibi”</h3>
