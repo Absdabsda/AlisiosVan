@@ -149,6 +149,23 @@ $hero  = $camper['images'][0] ?? 'img/carousel/t3-azul-mar.webp';
 // Paleta para cabecera
 $headerPalette = [ 'matcha'=>'131,115,100', 'skye'=>'82,118,159', 'rusty'=>'167,176,183', 'tibi'=>'173,132,88' ];
 $headerRgb = $headerPalette[$slug] ?? '131,115,100';
+
+function camper_alt_text(string $slug, string $img, string $name): string {
+    $base = trim($name, '“”"');
+
+    $lower = strtolower($img);
+
+    if (str_contains($lower, 'cocina')) return "$base camper – interior kitchen area";
+    if (str_contains($lower, 'interior')) return "$base camper – interior view";
+    if (str_contains($lower, 'playa')) return "$base camper by the beach in Fuerteventura";
+    if (str_contains($lower, 'frente')) return "$base camper – front view";
+    if (str_contains($lower, 'ventana')) return "$base camper – window side";
+    if (str_contains($lower, 'cama')) return "$base camper – bed setup inside";
+    if (str_contains($lower, 'asiento')) return "$base camper – seating area";
+    if (str_contains($lower, 'tibi') && str_contains($lower, 'comida')) return "Tibi camper – kitchen and dining setup";
+
+    return "$base camper rental in Fuerteventura";
+}
 ?>
 <!doctype html>
 <html lang="<?= h($lang) ?>">
@@ -156,6 +173,78 @@ $headerRgb = $headerPalette[$slug] ?? '131,115,100';
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title><?= h($title) ?> | Alisios Van</title>
+    <?php
+    // META DESCRIPTION por idioma (única por camper)
+    $detailDescriptions = [
+        'matcha' => [
+            'es' => 'Matcha, nuestra Volkswagen T3 verde equipada para explorar Fuerteventura libremente. Perfecta para parejas o amigos.',
+            'en' => 'Matcha, our green VW T3 fully equipped for exploring Fuerteventura. Perfect for couples or friends seeking freedom.',
+            'de' => 'Matcha, unser grüner VW T3, ideal ausgestattet für die Erkundung von Fuerteventura. Perfekt für Paare oder Freunde.',
+            'fr' => 'Matcha, notre VW T3 verte entièrement équipée pour explorer Fuerteventura. Parfaite pour couples ou amis.',
+            'it' => 'Matcha, il nostro VW T3 verde completamente equipaggiato per esplorare Fuerteventura. Perfetta per coppie o amici.',
+        ],
+        'skye' => [
+            'es' => 'Skye, nuestra Volkswagen T3 azul. Compacta, cómoda y lista para un viaje tranquilo por Fuerteventura.',
+            'en' => 'Skye, our blue VW T3. Compact, comfortable and ready for slow travel adventures in Fuerteventura.',
+            'de' => 'Skye, unser blauer VW T3. Kompakt, gemütlich und bereit für entspannte Reisen auf Fuerteventura.',
+            'fr' => 'Skye, notre VW T3 bleue. Compacte, confortable et parfaite pour explorer Fuerteventura.',
+            'it' => 'Skye, il nostro VW T3 blu. Compatto, comodo e pronto per viaggi lenti a Fuerteventura.',
+        ],
+        'rusty' => [
+            'es' => 'Rusty, una T4 fiable con cocina, ducha exterior y energía solar. Ideal para dos en Fuerteventura.',
+            'en' => 'Rusty, a reliable VW T4 with kitchen, outdoor shower and solar power. Ideal for two in Fuerteventura.',
+            'de' => 'Rusty, ein zuverlässiger VW T4 mit Küche, Außendusche und Solarpanel. Ideal für zwei Personen.',
+            'fr' => 'Rusty, un VW T4 fiable avec cuisine, douche extérieure et panneau solaire. Idéal pour deux.',
+            'it' => 'Rusty, un VW T4 affidabile con cucina, doccia esterna e pannello solare. Perfetto per due persone.',
+        ],
+        'tibi' => [
+            'es' => 'Tibi, un hogar con ruedas: cocina, ducha exterior, energía solar y TV para noches tranquilas en Fuerteventura.',
+            'en' => 'Tibi, a home on wheels with kitchen, outdoor shower, solar power and TV for relaxed nights in Fuerteventura.',
+            'de' => 'Tibi, ein mobiles Zuhause mit Küche, Außendusche, Solarpanel und TV für entspannte Abende.',
+            'fr' => 'Tibi, une maison sur roues avec cuisine, douche extérieure, énergie solaire et TV pour des soirées tranquilles.',
+            'it' => 'Tibi, una casa su ruote con cucina, doccia esterna, energia solare e TV per serate rilassate.',
+        ],
+    ];
+
+    $metaDescription = $detailDescriptions[$slug][$lang] ?? $detailDescriptions[$slug]['en'];
+
+    // Canonical dinámico
+    $canonical = "https://alisiosvan.com/$lang/camper/$slug/";
+
+    // Hreflangs
+
+    $supportedLangs = $GLOBALS['SUPPORTED_LANGS'] ?? (
+    defined('SUPPORTED_LANGS') ? SUPPORTED_LANGS : ['es', 'en', 'de', 'fr', 'it']
+    );
+
+    $hreflangs = "";
+    foreach ($supportedLangs as $l) {
+        $hreflangs .= '<link rel="alternate" hreflang="'.$l.'" href="https://alisiosvan.com/'.$l.'/camper/'.$slug.'/" />'."\n";
+    }
+    $hreflangs .= '<link rel="alternate" hreflang="x-default" href="https://alisiosvan.com/es/camper/'.$slug.'/" />';
+
+    // OG image (usa la primera foto del camper)
+    $ogImage = "https://alisiosvan.com/" . ltrim($hero, '/');
+    ?>
+
+    <!-- SEO -->
+    <meta name="description" content="<?= h($metaDescription) ?>">
+    <link rel="canonical" href="<?= h($canonical) ?>">
+    <?= $hreflangs ?>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="<?= h($title) ?> | Alisios Van">
+    <meta property="og:description" content="<?= h($metaDescription) ?>">
+    <meta property="og:image" content="<?= h($ogImage) ?>">
+    <meta property="og:url" content="<?= h($canonical) ?>">
+    <meta property="og:type" content="article">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= h($title) ?> | Alisios Van">
+    <meta name="twitter:description" content="<?= h($metaDescription) ?>">
+    <meta name="twitter:image" content="<?= h($ogImage) ?>">
+
     <meta name="google" content="notranslate">
 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
@@ -221,10 +310,14 @@ $headerRgb = $headerPalette[$slug] ?? '131,115,100';
                     <div class="swiper" id="galleryMain">
                         <div class="swiper-wrapper">
                             <?php foreach (array_slice($camper['images'], 1) as $img): ?>
-                                <div class="swiper-slide"><img src="<?= h($img) ?>" alt="<?= h($camper['name']) ?>"></div>
+                                <div class="swiper-slide"><img src="<?= h($img) ?>"
+                                                               alt="<?= h(camper_alt_text($slug, $img, $camper['name'])) ?>">
+                                </div>
                             <?php endforeach; ?>
                             <?php if (count($camper['images']) < 2): ?>
-                                <div class="swiper-slide"><img src="<?= h($hero) ?>" alt="<?= h($camper['name']) ?>"></div>
+                                <div class="swiper-slide"><img src="<?= h($hero) ?>"
+                                                               alt="<?= h(camper_alt_text($slug, $hero, $camper['name'])) ?>">
+                                </div>
                             <?php endif; ?>
                         </div>
                         <div class="swiper-button-next"></div>
@@ -235,10 +328,14 @@ $headerRgb = $headerPalette[$slug] ?? '131,115,100';
                     <div class="swiper mt-2" id="galleryThumbs">
                         <div class="swiper-wrapper">
                             <?php foreach (array_slice($camper['images'], 1) as $img): ?>
-                                <div class="swiper-slide"><img src="<?= h($img) ?>" alt="<?= h($camper['name'].' '.__('thumbnail')) ?>"></div>
+                                <div class="swiper-slide"><img src="<?= h($img) ?>"
+                                                               alt="<?= h(camper_alt_text($slug, $img, $camper['name']) . ' thumbnail') ?>">
+                                </div>
                             <?php endforeach; ?>
                             <?php if (count($camper['images']) < 2): ?>
-                                <div class="swiper-slide"><img src="<?= h($hero) ?>" alt="<?= h($camper['name'].' '.__('thumbnail')) ?>"></div>
+                                <div class="swiper-slide"><img src="<?= h($hero) ?>"
+                                                               alt="<?= h(camper_alt_text($slug, $hero, $camper['name']) . ' thumbnail') ?>">
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
