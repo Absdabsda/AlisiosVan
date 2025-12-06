@@ -11,4 +11,15 @@ return [
 
     'ALT_GALLERY_TIBI' => '“Tibi”, a cosy camper-home by the beach at sunset in Fuerteventura',
     'TITLE_GALLERY_TIBI' => 'Tibi – spacious camper rental in Fuerteventura',
+
+    //seo
+    'seo.campers.h2' => 'Camper van rental in Fuerteventura',
+    'seo.campers.p1' => 'If you’re looking to rent a camper van in Fuerteventura, our VW T3, T4 and spacious models are the perfect option to explore the island freely. Fully equipped with kitchen, double bed, outdoor shower, auxiliary battery and 24/7 insurance.',
+    'seo.campers.h3' => 'Available models',
+    'seo.campers.li1' => 'VW T3 Matcha — classic, comfortable and fully equipped.',
+    'seo.campers.li2' => 'VW T3 Skye — compact, lightweight and ideal for two people.',
+    'seo.campers.li3' => 'VW T4 Rusty — practical, modern and ready for long routes.',
+    'seo.campers.li4' => 'Tibi — spacious camper with full kitchen and TV.',
+    'seo.campers.p2' => 'Book your camper in Fuerteventura and enjoy an authentic experience across beaches, volcanoes and stunning landscapes.',
+
 ];
